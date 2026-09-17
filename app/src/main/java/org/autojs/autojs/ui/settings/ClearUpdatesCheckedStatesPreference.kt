@@ -5,7 +5,7 @@ import android.util.AttributeSet
 import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.theme.preference.MaterialPreference
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on May 8, 2023.

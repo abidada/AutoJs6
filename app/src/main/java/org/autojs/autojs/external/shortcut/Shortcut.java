@@ -6,7 +6,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import org.autojs.autojs.util.BitmapUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on Jan 20, 2017.

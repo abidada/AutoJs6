@@ -5,7 +5,7 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.os.Build
 import org.autojs.autojs.app.GlobalAppContext
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by JetBrains AI Assistant (GPT-5.3-Codex (xhigh)) on Mar 9, 2026.

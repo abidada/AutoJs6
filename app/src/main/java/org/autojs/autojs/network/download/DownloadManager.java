@@ -31,7 +31,7 @@ import org.autojs.autojs.util.IntentUtils;
 import org.autojs.autojs.util.IntentUtils.ToastExceptionHolder;
 import org.autojs.autojs.util.StreamUtils;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 

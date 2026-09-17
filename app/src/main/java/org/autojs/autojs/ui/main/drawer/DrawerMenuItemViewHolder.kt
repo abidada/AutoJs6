@@ -8,7 +8,7 @@ import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import org.autojs.autojs.ui.widget.BindableViewHolder
 import org.autojs.autojs.ui.widget.PrefSwitch
 import org.autojs.autojs.util.ViewUtils.installFullRowRippleForwarder
-import org.autojs.autojs6.databinding.DrawerMenuItemBinding
+import com.xiaoyu.ai.databinding.DrawerMenuItemBinding
 
 /**
  * Created by Stardust on Dec 10, 2017.

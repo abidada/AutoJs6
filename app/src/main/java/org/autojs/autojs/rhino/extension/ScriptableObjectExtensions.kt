@@ -3,7 +3,7 @@ package org.autojs.autojs.rhino.extension
 import org.autojs.autojs.rhino.extension.AnyExtensions.isJsNullish
 import org.autojs.autojs.rhino.extension.ScriptableExtensions.prop
 import org.autojs.autojs.util.StringUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.ScriptableObject
 
 /**
@@ -19,7 +19,7 @@ object ScriptableObjectExtensions {
 
     fun <R> ScriptableObject.acquire(name: String, transformer: (o: Any) -> R): R {
         val result = transformer(acquire(name))
-        require(!result.isJsNullish()) { StringUtils.str(org.autojs.autojs6.R.string.error_the_transformer_for_required_property_cannot_return_nullish, name) }
+        require(!result.isJsNullish()) { StringUtils.str(com.xiaoyu.ai.R.string.error_the_transformer_for_required_property_cannot_return_nullish, name) }
         return result!!
     }
 

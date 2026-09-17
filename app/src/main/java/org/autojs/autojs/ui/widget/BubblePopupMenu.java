@@ -16,7 +16,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import org.autojs.autojs.util.ColorUtils;
 import org.autojs.autojs.util.DisplayUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

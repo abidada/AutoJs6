@@ -12,7 +12,7 @@ import org.autojs.autojs.util.RhinoUtils.isMainThread
 import org.autojs.autojs.util.StringUtils.key
 import org.autojs.autojs.util.ThreadUtils
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on Jan 30, 2018.

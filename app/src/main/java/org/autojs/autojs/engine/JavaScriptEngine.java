@@ -8,7 +8,7 @@ import org.autojs.autojs.runtime.api.augment.jsox.Jsox;
 import org.autojs.autojs.script.JavaScriptSource;
 import org.autojs.autojs.script.ScriptSource;
 import org.autojs.autojs.tool.CrashHandlerTestFunction;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.jetbrains.annotations.NotNull;
 
 import static org.autojs.autojs.util.StringUtils.str;

@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 import com.afollestad.materialdialogs.MaterialDialog;
 import org.autojs.autojs.util.MD5Utils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on Jan 30, 2017.

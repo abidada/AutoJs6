@@ -21,8 +21,8 @@ import org.autojs.autojs.inrt.autojs.AutoJs
 import org.autojs.autojs.inrt.launch.GlobalProjectLauncher
 import org.autojs.autojs.project.ProjectConfig
 import org.autojs.autojs.ui.splash.SplashActivity.Companion.INIT_TIMEOUT
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ActivitySplashInrtBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ActivitySplashInrtBinding
 
 /**
  * Created by Stardust on Feb 2, 2018.

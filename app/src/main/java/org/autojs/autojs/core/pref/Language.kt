@@ -4,7 +4,7 @@ import android.content.Context
 import org.autojs.autojs.annotation.KeyRes
 import org.autojs.autojs.util.LocaleUtils
 import org.autojs.autojs.util.StringUtils.key
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.Locale
 
 enum class Language(@JvmField val languageTag: String, @KeyRes private val keyRes: Int, private val entryNameRes: Int) {

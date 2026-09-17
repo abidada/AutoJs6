@@ -35,7 +35,7 @@ import org.autojs.autojs.tool.MapBuilder;
 import org.autojs.autojs.ui.log.LogActivity;
 import org.autojs.autojs.util.DisplayUtils;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on May 2, 2017.

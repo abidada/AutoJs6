@@ -23,7 +23,7 @@ import com.stardust.lang.ThreadCompat;
 import com.stardust.util.UiHandler;
 
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 

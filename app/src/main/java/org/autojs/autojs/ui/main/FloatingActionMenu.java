@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import io.reactivex.subjects.PublishSubject;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.jetbrains.annotations.NotNull;
 
 /**

@@ -19,7 +19,7 @@ import org.autojs.autojs.core.ui.widget.JsTextSwitcher
 import org.autojs.autojs.core.ui.widget.JsTextView
 import org.autojs.autojs.runtime.ScriptRuntime
 import org.autojs.autojs.util.ColorUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import kotlin.text.RegexOption.IGNORE_CASE
 
 class JsTextSwitcherAttributes(scriptRuntime: ScriptRuntime, resourceParser: ResourceParser, view: View) : TextSwitcherAttributes(scriptRuntime, resourceParser, view) {

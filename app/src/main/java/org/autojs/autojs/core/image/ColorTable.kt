@@ -4,7 +4,7 @@ package org.autojs.autojs.core.image
 
 import android.content.res.Resources.NotFoundException
 import org.autojs.autojs.app.GlobalAppContext
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on Dec 21, 2022.

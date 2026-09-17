@@ -2,7 +2,7 @@ package org.autojs.autojs.ui.storage
 
 import android.content.Context
 import org.autojs.autojs.pio.PFiles
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.Locale
 
 /**

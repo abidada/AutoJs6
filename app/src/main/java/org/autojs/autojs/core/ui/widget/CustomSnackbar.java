@@ -16,7 +16,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by SuperMonster003 on May 30, 2022.

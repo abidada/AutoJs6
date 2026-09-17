@@ -4,7 +4,7 @@ import android.content.Context
 import org.autojs.autojs.runtime.api.WrappedShizuku
 import org.autojs.autojs.ui.main.drawer.PermissionItemHelper
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import rikka.shizuku.Shizuku
 
 class ShizukuPermission(override val context: Context) : PermissionItemHelper {

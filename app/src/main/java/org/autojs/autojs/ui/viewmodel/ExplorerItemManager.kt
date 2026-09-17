@@ -6,7 +6,7 @@ import org.autojs.autojs.model.explorer.ExplorerItem
 import org.autojs.autojs.model.explorer.ExplorerPage
 import org.autojs.autojs.model.explorer.ExplorerSorter
 import org.autojs.autojs.core.pref.Pref
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on Sep 30, 2017.

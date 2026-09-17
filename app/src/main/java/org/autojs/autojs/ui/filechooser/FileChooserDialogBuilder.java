@@ -15,7 +15,7 @@ import org.autojs.autojs.model.explorer.Explorers;
 import org.autojs.autojs.model.script.Scripts;
 import org.autojs.autojs.pio.PFile;
 import org.autojs.autojs.theme.ThemeColorHelper;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.io.File;
 import java.io.FileFilter;

@@ -11,7 +11,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by SuperMonster003 on Apr 10, 2022.

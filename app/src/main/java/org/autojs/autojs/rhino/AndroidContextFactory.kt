@@ -6,7 +6,7 @@ import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.runtime.ScriptBridges
 import org.autojs.autojs.runtime.exception.ScriptInterruptedException
 import org.autojs.autojs.util.RhinoUtils.isBackgroundThread
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.ContextFactory
 import org.mozilla.javascript.Scriptable

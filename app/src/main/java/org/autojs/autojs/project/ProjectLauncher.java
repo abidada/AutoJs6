@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 import org.autojs.autojs.engine.ScriptEngineService;
 import org.autojs.autojs.execution.ExecutionConfig;
 import org.autojs.autojs.script.JavaScriptFileSource;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.io.File;
 

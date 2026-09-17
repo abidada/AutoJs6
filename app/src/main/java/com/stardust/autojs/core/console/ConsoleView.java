@@ -19,7 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.autojs.autojs.ui.enhancedfloaty.ResizableExpandableFloatyWindow;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import com.stardust.util.MapBuilder;
 import com.stardust.util.SparseArrayEntries;
 

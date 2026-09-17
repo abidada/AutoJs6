@@ -7,7 +7,7 @@ import io.reactivex.schedulers.Schedulers
 import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.external.ScriptIntents.handleIntent
 import org.autojs.autojs.util.StringUtils.key
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.concurrent.TimeUnit
 
 /**

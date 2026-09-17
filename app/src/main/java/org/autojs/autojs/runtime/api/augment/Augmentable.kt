@@ -24,7 +24,7 @@ import org.autojs.autojs.util.RhinoUtils.NOT_CONSTRUCTABLE
 import org.autojs.autojs.util.RhinoUtils.coerceString
 import org.autojs.autojs.util.RhinoUtils.newBaseFunction
 import org.autojs.autojs.util.StringUtils.lowercaseFirstChar
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.NativeJavaClass
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject

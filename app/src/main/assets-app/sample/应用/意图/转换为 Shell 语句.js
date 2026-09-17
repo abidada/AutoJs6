@@ -1,6 +1,6 @@
 console.show();
 
-// -n 'org.autojs.autojs6/Test'
+// -n 'com.xiaoyu.ai/Test'
 // --ei 'a' 1
 // --eia 'b' 2,2
 // --es 'c' 'hello'

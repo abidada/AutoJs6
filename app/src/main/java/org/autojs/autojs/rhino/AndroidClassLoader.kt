@@ -14,7 +14,7 @@ import net.lingala.zip4j.model.ZipParameters
 import org.autojs.autojs.pio.PFiles.deleteFilesOfDir
 import org.autojs.autojs.util.MD5Utils.md5
 import org.autojs.autojs.util.StringUtils.str
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.GeneratedClassLoader
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -70,9 +70,9 @@ class AndroidClassLoader(private val parent: ClassLoader, private val cacheDir: 
 
         // @Hint by SuperMonster003 on Nov 30, 2023.
         //  ! Try to avoid the exception which looks like below (API Level 34+):
-        //  # java.lang.SecurityException: Writable dex file '/data/user/0/org.autojs.autojs6/cache/classes/xxx.jar' is not allowed.
+        //  # java.lang.SecurityException: Writable dex file '/data/user/0/com.xiaoyu.ai/cache/classes/xxx.jar' is not allowed.
         //  ! zh-CN: 尝试避免如下异常 (API 级别 34+):
-        //  # java.lang.SecurityException: 不允许可写的 dex 文件 '/data/user/0/org.autojs.autojs6/cache/classes/xxx.jar'.
+        //  # java.lang.SecurityException: 不允许可写的 dex 文件 '/data/user/0/com.xiaoyu.ai/cache/classes/xxx.jar'.
         //  !
         // @Hint by SuperMonster003 on Jan 13, 2025.
         //  ! Copy the dex file to the cache path and set it as read-only.

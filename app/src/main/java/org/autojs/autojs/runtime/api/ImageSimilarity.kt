@@ -1,7 +1,7 @@
 package org.autojs.autojs.runtime.api
 
 import org.autojs.autojs.util.StringUtils.str
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import kotlin.math.abs

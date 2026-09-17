@@ -4,7 +4,7 @@ import androidx.annotation.Nullable;
 import android.view.View;
 import android.widget.TimePicker;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import com.stardust.autojs.core.ui.inflater.ResourceParser;
 import com.stardust.autojs.core.ui.inflater.ViewCreator;
 

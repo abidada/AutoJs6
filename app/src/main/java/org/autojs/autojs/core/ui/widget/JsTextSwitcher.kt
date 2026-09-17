@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.animation.AnimationUtils
 import android.widget.TextSwitcher
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class JsTextSwitcher : TextSwitcher {
 

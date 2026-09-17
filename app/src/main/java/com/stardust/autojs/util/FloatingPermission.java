@@ -11,7 +11,7 @@ import androidx.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.autojs.autojs.ui.enhancedfloaty.util.FloatingWindowPermissionUtil;
 
 import java.lang.reflect.Method;

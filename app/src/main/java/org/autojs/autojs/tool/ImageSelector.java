@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 import org.autojs.autojs.app.OnActivityResultDelegate;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.lang.ref.WeakReference;
 

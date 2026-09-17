@@ -12,7 +12,7 @@ import org.autojs.autojs.ui.enhancedfloaty.gesture.DragGesture;
 import org.autojs.autojs.ui.enhancedfloaty.gesture.ResizeGesture;
 import org.autojs.autojs.ui.enhancedfloaty.util.WindowTypeCompat;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on Apr 30, 2017.

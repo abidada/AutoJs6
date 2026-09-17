@@ -3,7 +3,7 @@ package org.autojs.autojs.core.image
 import android.graphics.Paint
 import android.util.Log
 import org.autojs.autojs.runtime.api.augment.colors.Colors
-import org.autojs.autojs6.BuildConfig
+import com.xiaoyu.ai.BuildConfig
 import java.util.concurrent.ConcurrentHashMap
 
 // @Hint by JetBrains AI Assistant (GPT-5.2) on Jan 16, 2026.

@@ -2,7 +2,7 @@ package org.autojs.autojs.ui.settings
 
 import android.content.Context
 import de.psdev.licensesdialog.licenses.License
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class MozillaPublicLicense20 : License() {
 

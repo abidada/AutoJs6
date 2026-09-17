@@ -14,7 +14,7 @@ import org.autojs.autojs.util.ProcessLogger
 import org.autojs.autojs.util.TextUtils
 import org.jsoup.Jsoup
 import java.io.File
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.EnumSet
 
 class ReleaseHistoryRepository {

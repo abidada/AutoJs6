@@ -13,7 +13,7 @@
     <!-- Forcibly use LeakCanary to detect memory leaks. -->
     <string name="leak_canary_test_class_name" translatable="false">assertk.Assert</string>
 
-    <string name="app_name" translatable="false">AutoJs6</string>
+    <string name="app_name" translatable="false">xiaoyu</string>
     <string name="app_name_qq" translatable="false">QQ</string>
     <string name="color_library_identifier_android_colors" translatable="false">Android</string>
     <string name="color_library_identifier_css_colors" translatable="false">CSS</string>
@@ -50,7 +50,7 @@
     <string name="entry_app_language_zh_hans" translatable="false">简体中文</string>
     <string name="entry_app_language_zh_hant_hk" translatable="false">繁體中文 (香港)</string>
     <string name="entry_app_language_zh_hant_tw" translatable="false">繁體中文 (台灣)</string>
-    <string name="format_default_package_name" formatted="true" translatable="false">org.autojs.autojs6.%s</string>
+    <string name="format_default_package_name" formatted="true" translatable="false">com.xiaoyu.ai.%s</string>
     <string name="format_dialog_progress_number_format_kilo_bytes" translatable="false">%.1fKiB/%.1fKiB</string>
     <string name="format_dialog_progress_number_format_mega_bytes" translatable="false">%.2fMiB/%.2fMiB</string>
     <string name="id_launcher_shortcut_docs" translatable="false">shortcut_$_docs</string>

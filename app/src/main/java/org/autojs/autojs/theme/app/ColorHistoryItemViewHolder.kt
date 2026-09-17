@@ -6,7 +6,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import org.autojs.autojs.theme.ThemeColorHelper
 import org.autojs.autojs.util.TimeUtils
-import org.autojs.autojs6.databinding.MtColorHistoryRecyclerViewItemBinding
+import com.xiaoyu.ai.databinding.MtColorHistoryRecyclerViewItemBinding
 
 class ColorHistoryItemViewHolder(itemViewBinding: MtColorHistoryRecyclerViewItemBinding) : RecyclerView.ViewHolder(itemViewBinding.root) {
 

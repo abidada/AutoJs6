@@ -6,7 +6,7 @@ import android.graphics.drawable.Drawable
 import androidx.core.net.toUri
 import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.util.IntentUtils.startSafely
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 

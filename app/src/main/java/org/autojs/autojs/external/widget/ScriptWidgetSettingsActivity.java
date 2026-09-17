@@ -15,8 +15,8 @@ import org.autojs.autojs.ui.BaseActivity;
 import org.autojs.autojs.ui.explorer.ExplorerView;
 import org.autojs.autojs.util.ViewUtils;
 import org.autojs.autojs.util.WorkingDirectoryUtils;
-import org.autojs.autojs6.R;
-import org.autojs.autojs6.databinding.ActivityScriptWidgetSettingsBinding;
+import com.xiaoyu.ai.R;
+import com.xiaoyu.ai.databinding.ActivityScriptWidgetSettingsBinding;
 
 /**
  * Created by Stardust on Jul 11, 2017.

@@ -10,7 +10,7 @@ import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.ui.common.NotAskAgainDialog
 import org.autojs.autojs.util.DialogUtils.widgetThemeColor
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 open class DrawerMenuToggleableItem : DrawerMenuItem, IToggleableItem {
 

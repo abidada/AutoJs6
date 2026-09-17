@@ -22,7 +22,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import org.autojs.autojs.app.OnActivityResultDelegate;
 import org.autojs.autojs.tool.ImageSelector;
 import org.autojs.autojs.util.IntentUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.util.Arrays;
 import java.util.List;

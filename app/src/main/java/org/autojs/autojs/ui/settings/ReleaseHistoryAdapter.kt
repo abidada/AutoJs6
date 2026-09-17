@@ -16,8 +16,8 @@ import org.autojs.autojs.ui.settings.ReleaseHistoryRepository.Companion.Category
 import org.autojs.autojs.ui.settings.ReleaseHistoryRepository.Companion.DEFAULT_FILTER
 import org.autojs.autojs.ui.settings.ReleaseHistoryRepository.Companion.compareVersion
 import org.autojs.autojs.util.ProcessLogger
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ItemReleaseHistoryBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ItemReleaseHistoryBinding
 
 @SuppressLint("NotifyDataSetChanged")
 class ReleaseHistoryAdapter(private val context: Context, private val markwon: Markwon) : RecyclerView.Adapter<ReleaseHistoryViewHolder>() {

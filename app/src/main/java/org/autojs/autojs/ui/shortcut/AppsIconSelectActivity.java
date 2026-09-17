@@ -25,8 +25,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.autojs.autojs.runtime.api.Mime;
 import org.autojs.autojs.ui.BaseActivity;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
-import org.autojs.autojs6.databinding.ActivityAppsIconSelectBinding;
+import com.xiaoyu.ai.R;
+import com.xiaoyu.ai.databinding.ActivityAppsIconSelectBinding;
 
 import java.util.ArrayList;
 import java.util.List;

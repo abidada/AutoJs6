@@ -6,7 +6,7 @@ import com.afollestad.materialdialogs.DialogAction
 import com.afollestad.materialdialogs.MaterialDialog
 import kotlinx.coroutines.launch
 import org.autojs.autojs.util.DialogUtils.widgetThemeColor
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 object PluginInstallActions {
 

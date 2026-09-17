@@ -16,7 +16,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import org.autojs.autojs.app.GlobalAppContext
 import org.autojs.autojs.util.IntentUtils.startSafely
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on Mar 10, 2023.

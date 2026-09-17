@@ -20,7 +20,7 @@ import org.autojs.autojs.util.DialogUtils.widgetThemeColor
 import org.autojs.autojs.util.StringUtils
 import org.autojs.autojs.util.StringUtils.key
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.io.File
 import java.io.IOException
 import java.nio.charset.Charset

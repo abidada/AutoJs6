@@ -8,7 +8,7 @@ import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on Nov 24, 2023.

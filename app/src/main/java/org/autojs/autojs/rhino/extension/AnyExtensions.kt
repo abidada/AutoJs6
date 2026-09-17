@@ -12,7 +12,7 @@ import org.autojs.autojs.util.RhinoUtils.coerceString
 import org.autojs.autojs.util.RhinoUtils.js_typeof
 import org.autojs.autojs.util.RhinoUtils.newNativeObject
 import org.autojs.autojs.util.StringUtils.str
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.ConsString
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeError

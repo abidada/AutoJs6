@@ -31,7 +31,7 @@ import org.autojs.autojs.theme.ThemeColorManager
 import org.autojs.autojs.theme.preference.LongClickablePreferenceLike
 import org.autojs.autojs.ui.explorer.ExplorerView
 import org.autojs.autojs.util.ViewUtils.setLinesEllipsizedIndividually
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.Locale
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch

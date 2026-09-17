@@ -14,7 +14,7 @@ import org.autojs.autojs.util.RhinoUtils.coerceLongNumber
 import org.autojs.autojs.util.RhinoUtils.coerceObject
 import org.autojs.autojs.util.RhinoUtils.coerceRunnable
 import org.autojs.autojs.util.RhinoUtils.undefined
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.Synchronizer

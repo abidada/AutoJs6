@@ -9,7 +9,7 @@ import org.autojs.autojs.model.explorer.ExplorerProjectPage
 import org.autojs.autojs.model.explorer.ExplorerSamplePage
 import org.autojs.autojs.pio.PFiles.getNameWithoutExtension
 import org.autojs.autojs.util.FileUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.*
 
 /**

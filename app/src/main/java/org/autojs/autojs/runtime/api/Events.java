@@ -31,7 +31,7 @@ import org.autojs.autojs.runtime.ScriptRuntime;
 import org.autojs.autojs.runtime.exception.ScriptException;
 import org.autojs.autojs.tool.MapBuilder;
 import org.autojs.autojs.util.IntentUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.mozilla.javascript.BaseFunction;
 
 import java.util.HashSet;

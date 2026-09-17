@@ -17,7 +17,7 @@ import org.autojs.autojs.execution.ExecutionConfig
 import org.autojs.autojs.pio.PFiles.copyAssetDir
 import org.autojs.autojs.pio.PFiles.deleteRecursively
 import org.autojs.autojs.rhino.TopLevelScope
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 

@@ -18,7 +18,7 @@ import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.RootUtils
 import org.autojs.autojs.util.SettingsUtils
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on Jan 26, 2017.

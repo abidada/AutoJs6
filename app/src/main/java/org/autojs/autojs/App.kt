@@ -36,7 +36,7 @@ import org.autojs.autojs.tool.CrashHandler
 import org.autojs.autojs.ui.error.CrashReportActivity
 import org.autojs.autojs.ui.floating.FloatyWindowManger
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.greenrobot.eventbus.EventBus
 import java.lang.ref.WeakReference
 import java.lang.reflect.Method

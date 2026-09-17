@@ -9,7 +9,7 @@ import org.autojs.autojs.ui.enhancedfloaty.FloatyService
 import org.autojs.autojs.ui.floating.LayoutFloatyWindow
 import org.autojs.autojs.event.BackCompat
 import org.autojs.autojs.util.EventUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on Mar 12, 2017.

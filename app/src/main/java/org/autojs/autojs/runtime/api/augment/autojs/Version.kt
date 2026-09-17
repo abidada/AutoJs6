@@ -5,7 +5,7 @@ import org.autojs.autojs.rhino.extension.AnyExtensions.isJsNullish
 import org.autojs.autojs.runtime.api.augment.Augmentable
 import org.autojs.autojs.util.RhinoUtils.coerceBoolean
 import org.autojs.autojs.util.RhinoUtils.coerceString
-import org.autojs.autojs6.BuildConfig
+import com.xiaoyu.ai.BuildConfig
 import io.github.g00fy2.versioncompare.Version as InternalVersion
 
 @Suppress("unused")

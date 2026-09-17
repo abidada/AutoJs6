@@ -6,7 +6,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.stardust.app.GlobalAppContext;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import com.stardust.autojs.ScriptEngineService;
 import com.stardust.autojs.annotation.ScriptVariable;
 import com.stardust.autojs.core.accessibility.AccessibilityBridge;

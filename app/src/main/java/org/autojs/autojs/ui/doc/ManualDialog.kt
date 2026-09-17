@@ -11,7 +11,7 @@ import android.widget.TextView
 import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.ui.widget.EWebView
 import org.autojs.autojs.util.IntentUtils.startSafely
-import org.autojs.autojs6.databinding.FloatingManualDialogBinding
+import com.xiaoyu.ai.databinding.FloatingManualDialogBinding
 
 /**
  * Created by Stardust on Oct 24, 2017.

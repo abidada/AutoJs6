@@ -10,7 +10,7 @@ import org.autojs.autojs.runtime.api.ProcessShell
 import org.autojs.autojs.runtime.exception.ScriptException
 import org.autojs.autojs.runtime.exception.ScriptInterruptedException
 import org.autojs.autojs.script.AutoFileSource
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.File

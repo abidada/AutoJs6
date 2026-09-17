@@ -3,7 +3,7 @@ package org.autojs.autojs.theme;
 import androidx.core.content.ContextCompat;
 
 import org.autojs.autojs.app.GlobalAppContext;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on Mar 12, 2017.

@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 
 import androidx.preference.CheckBoxPreference;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on Mar 5, 2017.

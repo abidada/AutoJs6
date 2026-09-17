@@ -12,7 +12,7 @@ import androidx.annotation.RequiresApi;
 
 import android.view.KeyEvent;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import com.stardust.autojs.core.accessibility.AccessibilityBridge;
 import com.stardust.autojs.core.boardcast.BroadcastEmitter;
 import com.stardust.autojs.core.eventloop.EventEmitter;

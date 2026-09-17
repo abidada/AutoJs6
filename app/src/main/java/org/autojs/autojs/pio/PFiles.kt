@@ -9,7 +9,7 @@ import org.autojs.autojs.runtime.api.augment.converter.core.Bytes
 import org.autojs.autojs.tool.Func1
 import org.autojs.autojs.util.EnvironmentUtils
 import org.autojs.autojs.util.FileUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.io.Closeable
 import java.io.File
 import java.io.File.separator

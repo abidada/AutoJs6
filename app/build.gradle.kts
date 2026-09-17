@@ -26,7 +26,7 @@ idea {
     }
 }
 
-val globalApplicationId = "org.autojs.autojs6"
+val globalApplicationId = "com.xiaoyu.ai"
 
 val flavorDimension = "channel"
 val flavorNameApp = "app"
@@ -502,7 +502,7 @@ android {
                     "appName" to "@string/app_name",
                     "intentCategory" to "android.intent.category.LAUNCHER",
                     "intentCategoryInrt" to "android.intent.category.DEFAULT",
-                    "authorities" to "org.autojs.autojs6.fileprovider",
+                    "authorities" to "com.xiaoyu.ai.fileprovider",
                     "icon" to "@mipmap/ic_app_launcher_adaptive",
                 )
             )
@@ -523,10 +523,10 @@ android {
             manifestPlaceholders.putAll(
                 mapOf(
                     "CHANNEL" to flavorNameInrt,
-                    "appName" to "AutoJs6.$flavorNameInrt",
+                    "appName" to "xiaoyu.$flavorNameInrt",
                     "intentCategory" to "android.intent.category.DEFAULT",
                     "intentCategoryInrt" to "android.intent.category.LAUNCHER",
-                    "authorities" to "org.autojs.autojs6.$flavorNameInrt.fileprovider",
+                    "authorities" to "com.xiaoyu.ai.$flavorNameInrt.fileprovider",
                     "icon" to "@mipmap/ic_launcher",
                 )
             )

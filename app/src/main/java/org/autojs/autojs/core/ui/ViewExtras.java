@@ -9,7 +9,7 @@ import org.autojs.autojs.core.ui.attribute.ViewAttributesFactory;
 import org.autojs.autojs.core.ui.inflater.ResourceParser;
 import org.autojs.autojs.core.ui.nativeview.NativeView;
 import org.autojs.autojs.runtime.ScriptRuntime;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.mozilla.javascript.Scriptable;
 
 public class ViewExtras {

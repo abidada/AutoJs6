@@ -13,7 +13,7 @@ import org.autojs.autojs.ui.common.NotAskAgainDialog
 import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.StringUtils.key
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 object ExactAlarmPermissionHelper {
 

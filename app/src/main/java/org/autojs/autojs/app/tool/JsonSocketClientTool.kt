@@ -23,7 +23,7 @@ import org.autojs.autojs.util.DialogUtils.choiceWidgetThemeColor
 import org.autojs.autojs.util.Observers
 import org.autojs.autojs.util.ThreadUtils.runOnMain
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.lang.ref.WeakReference
 import java.net.InetAddress
 

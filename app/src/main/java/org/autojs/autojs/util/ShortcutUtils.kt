@@ -15,7 +15,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.external.ScriptIntents
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on Oct 11, 2022.

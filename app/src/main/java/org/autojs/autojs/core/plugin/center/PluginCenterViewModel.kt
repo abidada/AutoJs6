@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.autojs.autojs.network.UpdateIgnoreStore
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Loads both index plugins and locally installed plugins,

@@ -28,7 +28,7 @@ import org.autojs.autojs.util.DialogUtils;
 import org.autojs.autojs.util.IntentUtils;
 import org.autojs.autojs.util.IntentUtils.ToastExceptionHolder;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.io.File;
 import java.util.Arrays;

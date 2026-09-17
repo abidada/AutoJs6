@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import org.autojs.autojs.theme.app.ColorEntities.PaletteHistory
-import org.autojs.autojs6.databinding.MtColorLibraryRecyclerViewItemBinding
+import com.xiaoyu.ai.databinding.MtColorLibraryRecyclerViewItemBinding
 
 @SuppressLint("NotifyDataSetChanged")
 class PaletteHistoryItemAdapter(

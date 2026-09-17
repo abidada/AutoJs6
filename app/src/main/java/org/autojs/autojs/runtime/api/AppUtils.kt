@@ -29,7 +29,7 @@ import org.autojs.autojs.util.App
 import org.autojs.autojs.util.IntentUtils
 import org.autojs.autojs.util.IntentUtils.start
 import org.autojs.autojs.util.IntentUtils.startSafely
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.lang.ref.WeakReference
 import java.net.URI
 import org.autojs.autojs.runtime.api.augment.app.App as AugmentableApp

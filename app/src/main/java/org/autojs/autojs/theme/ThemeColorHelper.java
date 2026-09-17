@@ -37,7 +37,7 @@ import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 import org.autojs.autojs.theme.internal.ScrollingViewEdgeGlowColorHelper;
 import org.autojs.autojs.util.ColorUtils;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on Oct 24, 2016.

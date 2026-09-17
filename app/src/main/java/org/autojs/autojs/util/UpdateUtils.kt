@@ -14,7 +14,7 @@ import org.autojs.autojs.network.UpdateChecker
 import org.autojs.autojs.network.UpdateChecker.PromptMode
 import org.autojs.autojs.network.entity.VersionInfo
 import org.autojs.autojs.util.DialogUtils.choiceWidgetThemeColor
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on May 29, 2022.

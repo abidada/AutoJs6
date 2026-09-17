@@ -15,7 +15,7 @@ import android.view.ViewConfiguration
 import org.autojs.autojs.concurrent.VolatileBox
 import org.autojs.autojs.concurrent.VolatileDispose
 import org.autojs.autojs.runtime.api.ScreenMetrics
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on May 16, 2017.

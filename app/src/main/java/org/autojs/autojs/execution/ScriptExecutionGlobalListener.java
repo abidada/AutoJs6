@@ -5,7 +5,7 @@ import org.autojs.autojs.core.pref.Language;
 import org.autojs.autojs.engine.ScriptEngine;
 import org.autojs.autojs.runtime.api.Console;
 import org.autojs.autojs.script.ScriptSource;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import static org.autojs.autojs.util.StringUtils.str;
 

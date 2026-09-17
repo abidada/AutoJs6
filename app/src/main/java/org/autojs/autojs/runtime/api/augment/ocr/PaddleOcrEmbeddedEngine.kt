@@ -5,7 +5,7 @@ import android.content.res.AssetManager
 import android.graphics.Bitmap
 import com.baidu.paddle.lite.ocr.PaddleOcrEngine
 import com.baidu.paddle.lite.ocr.VariantSpec
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.autojs.plugin.paddle.ocr.api.OcrOptions
 import org.autojs.plugin.paddle.ocr.api.OcrResult
 

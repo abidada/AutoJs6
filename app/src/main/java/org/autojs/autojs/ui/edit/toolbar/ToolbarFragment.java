@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.viewbinding.ViewBinding;
 import org.autojs.autojs.ui.edit.EditorView;
 import org.autojs.autojs.ui.fragment.BaseViewBindingFragment;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.util.List;
 

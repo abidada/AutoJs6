@@ -14,8 +14,8 @@ import kotlin.jvm.functions.Function2;
 import org.autojs.autojs.app.AppLevelThemeDialogBuilder;
 import org.autojs.autojs.core.accessibility.WindowInfo.Companion.WindowInfoDataItem;
 import org.autojs.autojs.core.accessibility.WindowInfo.Companion.WindowInfoDataSummary;
-import org.autojs.autojs6.R;
-import org.autojs.autojs6.databinding.DialogListViewBinding;
+import com.xiaoyu.ai.R;
+import com.xiaoyu.ai.databinding.DialogListViewBinding;
 
 import java.util.Comparator;
 import java.util.List;

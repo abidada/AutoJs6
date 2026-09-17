@@ -7,7 +7,7 @@ import androidx.core.content.pm.PackageInfoCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.autojs.autojs.core.plugin.ocr.PaddleOcrPluginHost
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.autojs.plugin.paddle.ocr.api.PluginInfo
 import java.io.File
 

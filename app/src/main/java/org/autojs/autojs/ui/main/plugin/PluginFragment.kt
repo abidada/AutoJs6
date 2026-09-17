@@ -25,7 +25,7 @@ import org.autojs.autojs.ui.main.QueryEvent
 import org.autojs.autojs.ui.main.ViewPagerFragment
 import org.autojs.autojs.ui.main.plugin.PluginFloatingActionMenu.OnFloatingActionButtonClickListener
 import org.autojs.autojs.ui.widget.ScrollAwareFABBehavior
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 

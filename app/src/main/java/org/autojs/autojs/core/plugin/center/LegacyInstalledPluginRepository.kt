@@ -10,7 +10,7 @@ import androidx.core.content.pm.PackageInfoCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.autojs.autojs.core.pref.Language
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.io.File
 
 class LegacyInstalledPluginRepository {

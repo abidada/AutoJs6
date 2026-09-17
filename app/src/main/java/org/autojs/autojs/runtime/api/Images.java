@@ -40,7 +40,7 @@ import org.autojs.autojs.runtime.ScriptRuntime;
 import org.autojs.autojs.runtime.api.ImageFeatureMatching.FeatureMatchingDescriptor;
 import org.autojs.autojs.runtime.exception.WrappedRuntimeException;
 import org.autojs.autojs.util.BitmapUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.opencv.android.Utils;

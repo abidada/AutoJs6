@@ -11,7 +11,7 @@ import org.autojs.autojs.util.FileUtils;
 import org.autojs.autojs.util.IntentUtils;
 import org.autojs.autojs.util.IntentUtils.SnackExceptionHolder;
 import org.autojs.autojs.util.IntentUtils.ToastExceptionHolder;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.jetbrains.annotations.NotNull;
 
 public interface ExplorerItem {

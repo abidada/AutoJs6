@@ -3,7 +3,7 @@ package org.autojs.autojs.leakcanary
 import android.app.Application
 import android.util.Log
 import leakcanary.LeakCanary
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 object LeakCanarySetup {
 

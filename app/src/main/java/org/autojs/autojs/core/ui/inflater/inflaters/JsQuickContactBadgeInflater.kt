@@ -7,7 +7,7 @@ import org.autojs.autojs.core.ui.inflater.ResourceParser
 import org.autojs.autojs.core.ui.inflater.ViewCreator
 import org.autojs.autojs.core.ui.widget.JsQuickContactBadge
 import org.autojs.autojs.runtime.ScriptRuntime
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class JsQuickContactBadgeInflater(scriptRuntime: ScriptRuntime, resourceParser: ResourceParser) : QuickContactBadgeInflater<JsQuickContactBadge>(scriptRuntime, resourceParser) {
 

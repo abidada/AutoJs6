@@ -13,7 +13,7 @@ import org.autojs.autojs.ui.main.ViewPagerFragment
 import org.autojs.autojs.ui.main.ViewStatesManageable
 import org.autojs.autojs.ui.widget.SimpleAdapterDataObserver
 import org.autojs.autojs.util.ViewUtils.excludePaddingClippableViewFromBottomNavigationBar
-import org.autojs.autojs6.databinding.FragmentTaskManagerBinding
+import com.xiaoyu.ai.databinding.FragmentTaskManagerBinding
 
 /**
  * Created by Stardust on Mar 24, 2017.

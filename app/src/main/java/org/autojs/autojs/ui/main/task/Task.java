@@ -12,7 +12,7 @@ import org.autojs.autojs.timing.TimedTask;
 import org.autojs.autojs.timing.TimedTaskManager;
 import org.autojs.autojs.ui.timing.TimedTaskSettingActivity;
 import org.autojs.autojs.util.WorkingDirectoryUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.joda.time.format.DateTimeFormat;
 
 import static org.autojs.autojs.util.FileUtils.TYPE.JAVASCRIPT;

@@ -13,7 +13,7 @@ import org.autojs.autojs.runtime.exception.ScriptInterruptedException
 import org.autojs.autojs.ui.enhancedfloaty.FloatyService
 import org.autojs.autojs.ui.enhancedfloaty.FloatyWindow
 import org.autojs.autojs.ui.enhancedfloaty.util.WindowTypeCompat
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Modified by SuperMonster003 as of Mar 27, 2022.

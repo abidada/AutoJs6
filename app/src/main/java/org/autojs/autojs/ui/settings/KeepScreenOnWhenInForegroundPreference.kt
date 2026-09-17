@@ -7,7 +7,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.theme.preference.MaterialListPreference
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class KeepScreenOnWhenInForegroundPreference : MaterialListPreference, SharedPreferences.OnSharedPreferenceChangeListener {
 

@@ -32,8 +32,8 @@ import org.autojs.autojs.script.JavaScriptSource
 import org.autojs.autojs.tool.UiHandler
 import org.autojs.autojs.util.StringUtils
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.BuildConfig
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.BuildConfig
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.ContextFactory
 import java.io.File
 

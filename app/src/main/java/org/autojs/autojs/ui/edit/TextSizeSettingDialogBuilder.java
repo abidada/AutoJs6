@@ -7,8 +7,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import com.afollestad.materialdialogs.MaterialDialog;
-import org.autojs.autojs6.R;
-import org.autojs.autojs6.databinding.DialogTextSizeSettingsBinding;
+import com.xiaoyu.ai.R;
+import com.xiaoyu.ai.databinding.DialogTextSizeSettingsBinding;
 
 /**
  * Created by Stardust on Feb 24, 2018.

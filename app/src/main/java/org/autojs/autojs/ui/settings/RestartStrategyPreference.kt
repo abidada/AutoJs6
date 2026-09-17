@@ -5,7 +5,7 @@ import android.util.AttributeSet
 import com.afollestad.materialdialogs.DialogAction
 import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.theme.preference.MaterialListPreference
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class RestartStrategyPreference : MaterialListPreference {
 

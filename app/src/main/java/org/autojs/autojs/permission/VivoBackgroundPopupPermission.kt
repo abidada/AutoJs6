@@ -9,7 +9,7 @@ import org.autojs.autojs.ui.main.drawer.PermissionItemHelper
 import org.autojs.autojs.util.IntentUtils.start
 import org.autojs.autojs.util.RomUtils
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on Jan 16, 2026.

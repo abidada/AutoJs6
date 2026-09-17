@@ -6,7 +6,7 @@ import io.noties.prism4j.GrammarLocator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.autojs.autojs.util.IntentUtils.startSafely
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class DisplayMediaInfoActivity : BaseDisplayContentActivity() {
 

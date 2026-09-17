@@ -40,7 +40,7 @@ import org.autojs.autojs.ui.floating.FloatyWindowManger
 import org.autojs.autojs.util.ContextUtils.findActivity
 import org.autojs.autojs.util.DialogUtils.choiceWidgetThemeColor
 import org.autojs.autojs.util.StringUtils.key
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit

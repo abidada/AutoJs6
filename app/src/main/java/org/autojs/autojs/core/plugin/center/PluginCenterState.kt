@@ -1,7 +1,7 @@
 package org.autojs.autojs.core.plugin.center
 
 import org.autojs.autojs.util.StringUtils.str
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 enum class PluginMechanism(val displayName: String) {
     AIDL(str(R.string.text_plugin_mechanism_aidl)),

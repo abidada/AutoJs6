@@ -14,7 +14,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LifecycleOwner
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Provides a unified back handling layer for:

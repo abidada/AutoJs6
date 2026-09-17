@@ -73,7 +73,7 @@ import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.runtime.ScriptRuntime
 import org.autojs.autojs.theme.ThemeColorManager
 import org.autojs.autojs.util.StringUtils.key
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max

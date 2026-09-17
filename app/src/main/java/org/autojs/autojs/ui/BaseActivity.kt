@@ -18,7 +18,7 @@ import org.autojs.autojs.theme.ThemeColorManager
 import org.autojs.autojs.util.LocaleUtils
 import org.autojs.autojs.util.ViewUtils
 import org.autojs.autojs.util.ViewUtils.excludeContentViewFromHorizontalNavigationBar
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on Jan 23, 2017.

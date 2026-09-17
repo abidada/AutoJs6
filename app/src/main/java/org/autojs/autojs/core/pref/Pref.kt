@@ -20,7 +20,7 @@ import org.autojs.autojs.util.ViewUtils
 import org.autojs.autojs.util.ViewUtils.AutoNightMode.Companion.isFunctional
 import org.autojs.autojs.util.ViewUtils.isNightModeYes
 import org.autojs.autojs.util.WorkingDirectoryUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import java.util.*

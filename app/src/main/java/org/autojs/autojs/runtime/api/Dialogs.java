@@ -14,7 +14,7 @@ import org.autojs.autojs.core.ui.dialog.BlockedMaterialDialog;
 import org.autojs.autojs.core.ui.dialog.JsDialogBuilder;
 import org.autojs.autojs.runtime.ScriptRuntime;
 import org.autojs.autojs.util.ArrayUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.mozilla.javascript.BaseFunction;
 
 /**

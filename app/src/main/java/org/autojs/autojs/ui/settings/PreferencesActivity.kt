@@ -7,8 +7,8 @@ import org.autojs.autojs.app.GlobalAppContext
 import org.autojs.autojs.theme.ThemeColorManager
 import org.autojs.autojs.ui.BaseActivity
 import org.autojs.autojs.util.IntentUtils.startSafely
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ActivityPreferencesBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ActivityPreferencesBinding
 
 /**
  * Created by Stardust on Feb 2, 2017.

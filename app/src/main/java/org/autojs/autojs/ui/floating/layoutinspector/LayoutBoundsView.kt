@@ -12,7 +12,7 @@ import android.view.MotionEvent
 import android.view.View
 import org.autojs.autojs.core.accessibility.NodeInfo
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.Collections
 
 /**

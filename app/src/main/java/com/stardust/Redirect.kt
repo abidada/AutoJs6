@@ -2,8 +2,8 @@
 
 package com.stardust
 
-import org.autojs.autojs6.R as AutoJs6R
-import org.autojs.autojs6.BuildConfig as AutoJs6BuildConfig
+import com.xiaoyu.ai.R as AutoJs6R
+import com.xiaoyu.ai.BuildConfig as AutoJs6BuildConfig
 
 object R {
 

@@ -7,7 +7,7 @@ import android.os.Looper
 import org.autojs.autojs.ui.BaseActivity
 import org.autojs.autojs.ui.floating.FloatyWindowManger
 import org.autojs.autojs.ui.main.MainActivity
-import org.autojs.autojs6.databinding.ActivitySplashBinding
+import com.xiaoyu.ai.databinding.ActivitySplashBinding
 
 /**
  * Created by Stardust on Jul 7, 2017.

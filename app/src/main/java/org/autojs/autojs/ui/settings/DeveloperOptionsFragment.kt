@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.preference.PreferenceFragmentCompat
 import org.autojs.autojs.util.ViewUtils.excludePaddingClippableViewFromBottomNavigationBar
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class DeveloperOptionsFragment : PreferenceFragmentCompat() {
 

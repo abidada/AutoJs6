@@ -6,8 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import org.autojs.autojs6.R;
-import org.autojs.autojs6.databinding.FragmentSearchToolbarBinding;
+import com.xiaoyu.ai.R;
+import com.xiaoyu.ai.databinding.FragmentSearchToolbarBinding;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;

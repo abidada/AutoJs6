@@ -21,7 +21,7 @@ import org.autojs.autojs.util.RhinoUtils.coerceBoolean
 import org.autojs.autojs.util.RhinoUtils.coerceFloatNumber
 import org.autojs.autojs.util.RhinoUtils.coerceIntNumber
 import org.autojs.autojs.util.RhinoUtils.coerceString
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.autojs.plugin.paddle.ocr.api.OcrOptions
 import org.mozilla.javascript.NativeArray
 import org.mozilla.javascript.NativeObject

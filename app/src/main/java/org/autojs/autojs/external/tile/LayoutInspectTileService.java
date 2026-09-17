@@ -16,7 +16,7 @@ import org.autojs.autojs.core.accessibility.LayoutInspector;
 import org.autojs.autojs.ui.floating.FloatyWindowManger;
 import org.autojs.autojs.ui.floating.FullScreenFloatyWindow;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class LayoutInspectTileService extends TileService implements LayoutInspector.CaptureAvailableListener {

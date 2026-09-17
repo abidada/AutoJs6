@@ -13,7 +13,7 @@ import org.autojs.autojs.ui.enhancedfloaty.FloatyWindow;
 
 import org.autojs.autojs.permission.DisplayOverOtherAppsPermission;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.lang.ref.WeakReference;
 

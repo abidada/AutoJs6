@@ -65,9 +65,9 @@ import org.autojs.autojs.util.NotificationUtils
 import org.autojs.autojs.util.RomUtils
 import org.autojs.autojs.util.ViewUtils
 import org.autojs.autojs.util.ViewUtils.MODE
-import org.autojs.autojs6.BuildConfig
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.FragmentDrawerBinding
+import com.xiaoyu.ai.BuildConfig
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.FragmentDrawerBinding
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import rikka.shizuku.Shizuku

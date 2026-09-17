@@ -25,7 +25,7 @@ import org.autojs.autojs.util.ViewUtils.setColorsByThemeColorLuminance
 import org.autojs.autojs.util.ViewUtils.setMenuIconsColorByThemeColorLuminance
 import org.autojs.autojs.util.ViewUtils.setNavigationIconColorByThemeColorLuminance
 import org.autojs.autojs.util.ViewUtils.setTitlesTextColorByThemeColorLuminance
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.Locale
 
 /**

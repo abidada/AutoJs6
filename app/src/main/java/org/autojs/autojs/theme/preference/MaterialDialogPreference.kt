@@ -3,7 +3,7 @@ package org.autojs.autojs.theme.preference
 import android.content.Context
 import android.util.AttributeSet
 import com.afollestad.materialdialogs.MaterialDialog
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 open class MaterialDialogPreference : MaterialPreference {
 

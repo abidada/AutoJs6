@@ -9,7 +9,7 @@ import org.autojs.autojs.theme.ThemeColorHelper
 import org.autojs.autojs.theme.ThemeColorManager.add
 import org.autojs.autojs.theme.ThemeColorMutable
 import org.autojs.autojs.util.ColorUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on May 10, 2017.

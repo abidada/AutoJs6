@@ -1,7 +1,7 @@
 package org.autojs.autojs.storage.history
 
 import org.autojs.autojs.core.pref.Pref
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Preferences for history/trash/drafts policies.

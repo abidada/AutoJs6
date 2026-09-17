@@ -12,7 +12,7 @@ import androidx.annotation.ColorRes
 import org.autojs.autojs.theme.ThemeColorManager
 import org.autojs.autojs.theme.ThemeColorManagerCompat
 import org.autojs.autojs.util.FileUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import kotlin.math.roundToInt
 
 class FirstCharView : TextView {

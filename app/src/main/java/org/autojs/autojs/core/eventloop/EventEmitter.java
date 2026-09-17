@@ -3,7 +3,7 @@ package org.autojs.autojs.core.eventloop;
 import org.autojs.autojs.core.looper.Timer;
 import org.autojs.autojs.runtime.ScriptBridges;
 import org.autojs.autojs.runtime.exception.ScriptException;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.mozilla.javascript.BaseFunction;
 
 import java.util.ArrayList;

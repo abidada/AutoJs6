@@ -9,7 +9,7 @@ import org.autojs.autojs.AbstractAutoJs.Companion.isInrt
 import org.autojs.autojs.tool.ForegroundServiceCreator
 import org.autojs.autojs.ui.main.MainActivity
 import org.autojs.autojs.util.ForegroundServiceUtils.FOREGROUND_SERVICE_TYPE_UNKNOWN
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.autojs.autojs.inrt.LogActivity as LogActivityInrt
 
 /**

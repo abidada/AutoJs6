@@ -10,8 +10,8 @@ import org.autojs.autojs.util.DialogUtils;
 import org.autojs.autojs.model.script.ScriptFile;
 import org.autojs.autojs.model.script.Scripts;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
-import org.autojs.autojs6.databinding.DialogScriptLoopBinding;
+import com.xiaoyu.ai.R;
+import com.xiaoyu.ai.databinding.DialogScriptLoopBinding;
 
 /**
  * Created by Stardust on Jul 8, 2017.

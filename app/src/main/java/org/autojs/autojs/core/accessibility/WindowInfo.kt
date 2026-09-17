@@ -5,7 +5,7 @@ import android.view.accessibility.AccessibilityWindowInfo
 import org.autojs.autojs.rhino.extension.IterableExtensions.toHashCode
 import org.autojs.autojs.util.ObjectUtils
 import org.autojs.autojs.util.StringUtils.str
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on May 18, 2024.

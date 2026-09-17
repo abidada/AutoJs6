@@ -19,7 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 

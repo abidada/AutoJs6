@@ -21,7 +21,7 @@ import org.autojs.autojs.util.ClipboardUtils
 import org.autojs.autojs.util.ShortcutUtils
 import org.autojs.autojs.util.StringUtils.key
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class LauncherIconPreference : MaterialListPreference, SharedPreferences.OnSharedPreferenceChangeListener {
 

@@ -5,7 +5,7 @@ import kotlin.text.Regex;
 import kotlin.text.RegexOption;
 import org.autojs.autojs.pio.UncheckedIOException;
 import org.autojs.autojs.util.ProcessUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

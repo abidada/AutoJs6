@@ -40,8 +40,8 @@ import org.autojs.autojs.util.ProcessLogger
 import org.autojs.autojs.util.ViewUtils.excludePaddingClippableViewFromBottomNavigationBar
 import org.autojs.autojs.util.ViewUtils.setMenuIconsColorByThemeColorLuminance
 import org.autojs.autojs.util.ViewUtils.setNavigationIconColorByThemeColorLuminance
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ActivityDisplayReleaseHistoryBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ActivityDisplayReleaseHistoryBinding
 
 class DisplayReleaseHistoryActivity : BaseActivity() {
 

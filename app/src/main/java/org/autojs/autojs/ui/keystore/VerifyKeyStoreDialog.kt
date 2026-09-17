@@ -13,8 +13,8 @@ import android.widget.LinearLayout
 import androidx.fragment.app.DialogFragment
 import org.autojs.autojs.apkbuilder.keystore.AESUtils
 import org.autojs.autojs.apkbuilder.keystore.KeyStore
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.DialogVerifyKeyStoreBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.DialogVerifyKeyStoreBinding
 
 open class VerifyKeyStoreDialog(
     private val callback: Callback,

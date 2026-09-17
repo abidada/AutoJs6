@@ -6,7 +6,7 @@ import androidx.core.content.ContextCompat
 import org.autojs.autojs.annotation.ScriptInterface
 import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.rhino.extension.IterableExtensions.toHashCode
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on Mar 5, 2017.

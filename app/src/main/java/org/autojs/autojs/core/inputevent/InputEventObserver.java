@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import android.text.TextUtils;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.autojs.autojs.core.record.inputevent.EventFormatException;
 import org.autojs.autojs.runtime.api.AbstractShell;
 import org.autojs.autojs.runtime.api.Shell;

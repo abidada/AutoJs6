@@ -19,8 +19,8 @@ import org.autojs.autojs.theme.ThemeColorManager
 import org.autojs.autojs.util.ViewUtils
 import org.autojs.autojs.util.ViewUtils.excludePaddingClippableViewFromBottomNavigationBar
 import org.autojs.autojs.util.ViewUtils.setMenuIconsColorByColorLuminance
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.MtActivityColorLibrariesBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.MtActivityColorLibrariesBinding
 
 @SuppressLint("NotifyDataSetChanged")
 class ColorLibrariesActivity : ColorSelectBaseActivity() {

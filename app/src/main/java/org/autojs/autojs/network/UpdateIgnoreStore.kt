@@ -3,7 +3,7 @@ package org.autojs.autojs.network
 import android.content.Context
 import androidx.core.content.edit
 import org.autojs.autojs.app.GlobalAppContext
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 object UpdateIgnoreStore {
 

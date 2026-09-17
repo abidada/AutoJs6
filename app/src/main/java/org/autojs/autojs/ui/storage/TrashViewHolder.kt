@@ -6,8 +6,8 @@ import androidx.recyclerview.widget.RecyclerView
 import org.autojs.autojs.pio.PFiles
 import org.autojs.autojs.storage.history.TrashEntities
 import org.autojs.autojs.util.StringUtils.normalizeTrailingSlash
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ItemTrashBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ItemTrashBinding
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date

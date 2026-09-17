@@ -12,7 +12,7 @@ import org.autojs.autojs.model.script.Scripts;
 import org.autojs.autojs.pio.PFiles;
 import org.autojs.autojs.script.StringScriptSource;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;

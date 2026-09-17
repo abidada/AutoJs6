@@ -6,7 +6,7 @@ import android.os.Looper;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import com.stardust.autojs.core.floaty.BaseResizableFloatyWindow;
 import com.stardust.autojs.core.floaty.RawWindow;
 import com.stardust.autojs.core.ui.JsViewHelper;

@@ -45,8 +45,8 @@ import org.autojs.autojs.util.ViewUtils.onceGlobalLayout
 import org.autojs.autojs.util.ViewUtils.setMenuIconsColorByThemeColorLuminance
 import org.autojs.autojs.util.ViewUtils.setOnTitleViewClickListener
 import org.autojs.autojs.util.ViewUtils.titleView
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ActivityEditBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ActivityEditBinding
 import java.io.File
 
 /**

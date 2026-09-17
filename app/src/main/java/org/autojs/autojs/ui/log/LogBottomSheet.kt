@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.autojs.autojs.AutoJs
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.BottomSheetLogBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.BottomSheetLogBinding
 
 /**
  * Bottom sheet dialog for displaying script logs in the editor.

@@ -40,7 +40,7 @@ import org.autojs.autojs.util.RhinoUtils.undefined
 import org.autojs.autojs.util.RhinoUtils.withRhinoContext
 import org.autojs.autojs.util.StringUtils.lowercaseFirstChar
 import org.autojs.autojs.util.StringUtils.uppercaseFirstChar
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeArray

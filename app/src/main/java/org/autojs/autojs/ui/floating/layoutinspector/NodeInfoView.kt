@@ -15,9 +15,9 @@ import org.autojs.autojs.core.accessibility.NodeInfo
 import org.autojs.autojs.rhino.extension.NumberExtensions.jsString
 import org.autojs.autojs.util.ClipboardUtils
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.NodeInfoViewHeaderBinding
-import org.autojs.autojs6.databinding.NodeInfoViewItemBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.NodeInfoViewHeaderBinding
+import com.xiaoyu.ai.databinding.NodeInfoViewItemBinding
 import org.opencv.core.Point
 import java.lang.reflect.Field
 import kotlin.math.ceil

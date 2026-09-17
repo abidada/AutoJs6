@@ -13,7 +13,7 @@ import org.autojs.autojs.ui.enhancedfloaty.ResizableExpandableFloaty;
 import org.autojs.autojs.ui.enhancedfloaty.ResizableExpandableFloatyWindow;
 import com.stardust.util.ScreenMetrics;
 import com.stardust.util.ViewUtil;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on 2017/4/20.

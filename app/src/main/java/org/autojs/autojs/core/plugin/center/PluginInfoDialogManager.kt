@@ -29,8 +29,8 @@ import org.autojs.autojs.util.TimeUtils
 import org.autojs.autojs.util.ViewUtils
 import org.autojs.autojs.util.ViewUtils.colorFilterWithDesaturateOrNull
 import org.autojs.autojs.util.ViewUtils.toCircular
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.PluginInfoDialogItemsBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.PluginInfoDialogItemsBinding
 import java.lang.ref.WeakReference
 import kotlin.math.roundToInt
 

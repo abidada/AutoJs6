@@ -10,7 +10,7 @@ import org.autojs.autojs.core.activity.ActivityInfoProvider;
 import org.autojs.autojs.permission.UsageStatsPermission;
 import org.autojs.autojs.runtime.accessibility.AccessibilityConfig;
 import org.autojs.autojs.tool.UiHandler;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.util.ArrayList;
 import java.util.Collections;

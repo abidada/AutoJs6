@@ -21,9 +21,9 @@ import org.autojs.autojs.ui.enhancedfloaty.ResizableExpandableFloatyWindow
 import org.autojs.autojs.util.ColorUtils
 import org.autojs.autojs.util.ViewUtils
 import org.autojs.autojs.util.ViewUtils.setViewMeasure
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.FloatingConsoleExpandBinding
-import org.autojs.autojs6.databinding.FloatingWindowCollapseBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.FloatingConsoleExpandBinding
+import com.xiaoyu.ai.databinding.FloatingWindowCollapseBinding
 import kotlin.math.roundToInt
 
 /**

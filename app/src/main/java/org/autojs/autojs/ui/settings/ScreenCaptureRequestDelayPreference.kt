@@ -5,7 +5,7 @@ import android.util.AttributeSet
 import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.theme.preference.MaterialPreference
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on Jan 19, 2026.

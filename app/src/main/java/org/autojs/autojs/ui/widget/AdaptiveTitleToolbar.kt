@@ -6,7 +6,7 @@ import android.util.AttributeSet
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.Toolbar
 import org.autojs.autojs.util.ViewUtils.titleView
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on May 30, 2025.

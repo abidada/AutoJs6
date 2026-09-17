@@ -7,7 +7,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.recyclerview.widget.RecyclerView
 import org.autojs.autojs.theme.ThemeColorManager
 import org.autojs.autojs.util.ViewUtils.excludePaddingClippableViewFromBottomNavigationBar
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class PreferencesFragment : PreferenceFragmentCompat() {
 

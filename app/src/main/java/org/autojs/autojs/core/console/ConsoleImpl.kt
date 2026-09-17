@@ -42,7 +42,7 @@ import org.autojs.autojs.util.ColorUtils
 import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.StringUtils.key
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.joda.time.format.DateTimeFormat
 import org.opencv.core.Point
 import org.opencv.core.Size

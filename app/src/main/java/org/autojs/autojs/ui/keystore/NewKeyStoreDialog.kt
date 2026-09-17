@@ -14,8 +14,8 @@ import android.widget.LinearLayout
 import androidx.fragment.app.DialogFragment
 import org.autojs.autojs.theme.ThemeColorHelper
 import org.autojs.autojs.theme.ThemeColorManager
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.DialogNewKeyStoreBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.DialogNewKeyStoreBinding
 
 open class NewKeyStoreDialog(
     private val callback: Callback,

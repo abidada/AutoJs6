@@ -15,7 +15,7 @@ import org.autojs.autojs.theme.ThemeColor
 import org.autojs.autojs.theme.ThemeColorHelper
 import org.autojs.autojs.theme.ThemeColorManager
 import org.autojs.autojs.theme.ThemeColorMutable
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on Mar 5, 2017.

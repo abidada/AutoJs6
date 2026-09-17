@@ -19,7 +19,7 @@ import org.autojs.autojs.util.DialogUtils.ProgressDialogSession
 import org.autojs.autojs.util.DialogUtils.choiceWidgetThemeColor
 import org.autojs.autojs.util.DialogUtils.setActionButtonText
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.io.File
 import java.util.regex.Pattern
 

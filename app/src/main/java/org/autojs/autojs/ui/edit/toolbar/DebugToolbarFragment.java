@@ -25,8 +25,8 @@ import org.autojs.autojs.ui.edit.debug.DebuggerSingleton;
 import org.autojs.autojs.ui.edit.debug.WatchingVariable;
 import org.autojs.autojs.ui.edit.editor.CodeEditor;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
-import org.autojs.autojs6.databinding.FragmentDebugToolbarBinding;
+import com.xiaoyu.ai.R;
+import com.xiaoyu.ai.databinding.FragmentDebugToolbarBinding;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;

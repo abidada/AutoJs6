@@ -6,7 +6,7 @@ import org.autojs.autojs.core.looper.MainThreadProxy
 import org.autojs.autojs.core.looper.Timer
 import org.autojs.autojs.runtime.ScriptRuntime
 import org.autojs.autojs.util.StringUtils.str
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.lang.ref.WeakReference
 import java.util.Collections
 import java.util.WeakHashMap

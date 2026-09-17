@@ -3,7 +3,7 @@ package com.stardust.autojs.core.ui;
 import android.util.Log;
 import android.view.View;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import com.stardust.autojs.core.ui.attribute.ViewAttributes;
 import com.stardust.autojs.core.ui.attribute.ViewAttributesFactory;
 import com.stardust.autojs.core.ui.inflater.ResourceParser;

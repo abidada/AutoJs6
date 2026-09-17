@@ -11,8 +11,8 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.ui.edit.editor.CodeEditor.CheckedPatternSyntaxException
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.DialogFindOrReplaceBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.DialogFindOrReplaceBinding
 
 /**
  * Created by Stardust on Sep 28, 2017.

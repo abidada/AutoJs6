@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.util.SparseArray;
-import org.autojs.autojs6.BuildConfig;
+import com.xiaoyu.ai.BuildConfig;
 
 import java.util.concurrent.ConcurrentHashMap;
 

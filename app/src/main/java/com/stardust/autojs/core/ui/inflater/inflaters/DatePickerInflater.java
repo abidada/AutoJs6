@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.DatePicker;
 
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import com.stardust.autojs.core.ui.inflater.ResourceParser;
 import com.stardust.autojs.core.ui.inflater.ViewCreator;
 

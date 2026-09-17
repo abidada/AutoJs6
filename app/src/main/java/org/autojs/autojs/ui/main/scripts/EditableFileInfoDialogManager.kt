@@ -23,8 +23,8 @@ import org.autojs.autojs.util.IntentUtils
 import org.autojs.autojs.util.IntentUtils.SnackExceptionHolder
 import org.autojs.autojs.util.StringUtils
 import org.autojs.autojs.util.StringUtils.dropBom
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.EditableFileInfoDialogItemsBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.EditableFileInfoDialogItemsBinding
 import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Files

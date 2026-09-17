@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.autojs.autojs.core.pref.Language;
 import org.autojs.autojs.util.StringUtils;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

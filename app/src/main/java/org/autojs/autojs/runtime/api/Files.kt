@@ -10,7 +10,7 @@ import org.autojs.autojs.runtime.ScriptRuntime
 import org.autojs.autojs.runtime.exception.WrappedIllegalArgumentException
 import org.autojs.autojs.tool.Func1
 import org.autojs.autojs.util.EnvironmentUtils.externalStoragePath
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.io.File
 import java.io.File.separator
 import java.io.IOException

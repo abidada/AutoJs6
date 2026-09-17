@@ -59,7 +59,7 @@ import org.autojs.autojs.util.RhinoUtils.newNativeObject
 import org.autojs.autojs.util.RhinoUtils.undefined
 import org.autojs.autojs.util.RhinoUtils.withRhinoContext
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeArray
@@ -919,7 +919,7 @@ class UI(private val scriptRuntime: ScriptRuntime) : AugmentableProxy(scriptRunt
 
         private fun <R> ensureActivity(scriptRuntime: ScriptRuntime, func: (activity: ScriptExecuteActivity) -> R): R {
             val activity = getActivity(scriptRuntime)
-            require(!activity.isJsNullish()) { globalContext.getString(org.autojs.autojs6.R.string.error_activity_is_required_for_ui_exec_mode) }
+            require(!activity.isJsNullish()) { globalContext.getString(com.xiaoyu.ai.R.string.error_activity_is_required_for_ui_exec_mode) }
             require(activity is ScriptExecuteActivity) { "Global activity ${activity.jsBrief()} must be a ScriptExecuteActivity" }
             return func.invoke(activity)
         }

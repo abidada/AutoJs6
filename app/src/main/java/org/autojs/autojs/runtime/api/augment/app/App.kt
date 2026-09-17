@@ -46,7 +46,7 @@ import org.autojs.autojs.util.RhinoUtils.newNativeArray
 import org.autojs.autojs.util.RhinoUtils.newNativeObject
 import org.autojs.autojs.util.RhinoUtils.undefined
 import org.autojs.autojs.util.RootUtils
-import org.autojs.autojs6.BuildConfig
+import com.xiaoyu.ai.BuildConfig
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.Undefined

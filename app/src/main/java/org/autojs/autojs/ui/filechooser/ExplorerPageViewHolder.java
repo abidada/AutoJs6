@@ -8,7 +8,7 @@ import org.autojs.autojs.model.explorer.ExplorerPage;
 import org.autojs.autojs.theme.ThemeColorHelper;
 import org.autojs.autojs.ui.explorer.ExplorerViewHelper;
 import org.autojs.autojs.ui.widget.BindableViewHolder;
-import org.autojs.autojs6.databinding.FileChooseListDirectoryBinding;
+import com.xiaoyu.ai.databinding.FileChooseListDirectoryBinding;
 
 class ExplorerPageViewHolder extends BindableViewHolder<Object> {
 

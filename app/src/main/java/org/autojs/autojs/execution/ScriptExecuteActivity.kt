@@ -39,7 +39,7 @@ import org.autojs.autojs.runtime.ScriptRuntime
 import org.autojs.autojs.script.ScriptSource
 import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.ContinuationPending
 
 /**

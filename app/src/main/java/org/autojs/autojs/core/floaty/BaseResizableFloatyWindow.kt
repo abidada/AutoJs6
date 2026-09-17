@@ -18,8 +18,8 @@ import org.autojs.autojs.ui.enhancedfloaty.WindowBridge
 import org.autojs.autojs.ui.enhancedfloaty.WindowBridge.DefaultImpl
 import org.autojs.autojs.ui.enhancedfloaty.gesture.DragGesture
 import org.autojs.autojs.ui.enhancedfloaty.gesture.ResizeGesture
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.FloatyWindowBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.FloatyWindowBinding
 
 /**
  * Created by Stardust on Dec 5, 2017.

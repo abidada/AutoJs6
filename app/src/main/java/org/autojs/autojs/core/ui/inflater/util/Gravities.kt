@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.view.Gravity
 import org.autojs.autojs.core.pref.Language
 import org.autojs.autojs.util.StringUtils.str
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on Nov 3, 2017.

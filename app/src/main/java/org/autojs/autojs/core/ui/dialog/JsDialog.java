@@ -39,7 +39,7 @@ import com.afollestad.materialdialogs.internal.MDButton;
 import com.google.android.material.snackbar.Snackbar;
 import org.autojs.autojs.core.eventloop.EventEmitter;
 import org.autojs.autojs.tool.UiHandler;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.mozilla.javascript.BaseFunction;
 
 import java.text.NumberFormat;

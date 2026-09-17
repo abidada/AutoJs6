@@ -28,7 +28,7 @@ import org.autojs.autojs.util.EnvironmentUtils
 import org.autojs.autojs.util.DialogUtils.choiceWidgetThemeColor
 import org.autojs.autojs.util.ViewUtils
 import org.autojs.autojs.util.WorkingDirectoryUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.io.File
 
 class WorkingDirectoryPreference : MaterialPreference {

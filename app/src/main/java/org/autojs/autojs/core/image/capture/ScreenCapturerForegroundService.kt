@@ -8,7 +8,7 @@ import android.os.Build
 import android.os.IBinder
 import org.autojs.autojs.tool.ForegroundServiceCreator
 import org.autojs.autojs.util.ForegroundServiceUtils.FOREGROUND_SERVICE_TYPE_UNKNOWN
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on Apr 10, 2022.

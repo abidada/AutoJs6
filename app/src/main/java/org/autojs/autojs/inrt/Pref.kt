@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import androidx.preference.PreferenceManager
 import org.autojs.autojs.project.ProjectConfig
 import org.autojs.autojs.app.GlobalAppContext
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by Stardust on Dec 8, 2017.

@@ -2,7 +2,7 @@ package org.autojs.autojs.core.internal;
 
 import static org.autojs.autojs.util.StringUtils.str;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on Jul 19, 2017.

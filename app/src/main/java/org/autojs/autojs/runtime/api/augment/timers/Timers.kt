@@ -15,7 +15,7 @@ import org.autojs.autojs.util.RhinoUtils.coerceFunction
 import org.autojs.autojs.util.RhinoUtils.coerceLongNumber
 import org.autojs.autojs.util.RhinoUtils.coerceNumber
 import org.autojs.autojs.util.RhinoUtils.newBaseFunction
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.Undefined
 

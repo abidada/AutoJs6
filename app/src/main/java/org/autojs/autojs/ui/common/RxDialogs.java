@@ -4,7 +4,7 @@ import android.content.Context;
 import com.afollestad.materialdialogs.MaterialDialog;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by Stardust on Oct 21, 2017.

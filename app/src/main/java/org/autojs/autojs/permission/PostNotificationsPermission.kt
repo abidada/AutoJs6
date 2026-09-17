@@ -13,7 +13,7 @@ import org.autojs.autojs.ui.main.drawer.PermissionItemHelper
 import org.autojs.autojs.util.ContextUtils.findActivity
 import org.autojs.autojs.util.DialogUtils.widgetThemeColor
 import org.autojs.autojs.util.NotificationUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.WeakHashMap
 
 /**

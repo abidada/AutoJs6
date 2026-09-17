@@ -100,9 +100,9 @@ import org.autojs.autojs.util.StringUtils
 import org.autojs.autojs.util.ViewUtils
 import org.autojs.autojs.util.ViewUtils.showSnack
 import org.autojs.autojs.util.ViewUtils.showToast
-import org.autojs.autojs6.R
-import org.autojs.autojs6.R.string.text_unknown
-import org.autojs.autojs6.databinding.EditorViewBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.R.string.text_unknown
+import com.xiaoyu.ai.databinding.EditorViewBinding
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.IOException

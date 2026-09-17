@@ -10,9 +10,9 @@ import org.autojs.autojs.ui.main.MainActivity
 import org.autojs.autojs.util.ClipboardUtils
 import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.BuildConfig
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ActivityErrorReportBinding
+import com.xiaoyu.ai.BuildConfig
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ActivityErrorReportBinding
 
 /**
  * Created by Stardust on Feb 2, 2017.

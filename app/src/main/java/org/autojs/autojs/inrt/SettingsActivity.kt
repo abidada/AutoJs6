@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import org.autojs.autojs.runtime.api.Permissions
 import org.autojs.autojs.theme.preference.Syncable
 import org.autojs.autojs.util.ViewUtils.excludePaddingClippableViewFromBottomNavigationBar
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ActivitySettingsInrtBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ActivitySettingsInrtBinding
 
 /**
  * Created by Stardust on Dec 8, 2017.

@@ -5,7 +5,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.autojs.autojs.theme.ThemeColorHelper
 import org.autojs.autojs.util.TimeUtils
-import org.autojs.autojs6.databinding.MtColorLibraryRecyclerViewItemBinding
+import com.xiaoyu.ai.databinding.MtColorLibraryRecyclerViewItemBinding
 
 class PaletteHistoryItemViewHolder(itemViewBinding: MtColorLibraryRecyclerViewItemBinding) : RecyclerView.ViewHolder(itemViewBinding.root) {
 

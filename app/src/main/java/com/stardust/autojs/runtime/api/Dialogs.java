@@ -8,7 +8,7 @@ import android.widget.CompoundButton;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import com.stardust.autojs.annotation.ScriptInterface;
 import com.stardust.autojs.annotation.ScriptVariable;
 import com.stardust.autojs.core.ui.dialog.BlockedMaterialDialog;

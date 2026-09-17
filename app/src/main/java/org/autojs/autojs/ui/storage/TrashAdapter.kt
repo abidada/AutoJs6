@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import org.autojs.autojs.storage.history.TrashEntities
-import org.autojs.autojs6.databinding.ItemTrashBinding
+import com.xiaoyu.ai.databinding.ItemTrashBinding
 
 /**
  * Created by JetBrains AI Assistant (GPT-5.2) on Feb 4, 2026.

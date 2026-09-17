@@ -33,9 +33,9 @@ import org.autojs.autojs.ui.timing.TimedTaskSettingActivity;
 import org.autojs.autojs.util.ColorUtils;
 import org.autojs.autojs.util.FileUtils;
 import org.autojs.autojs.util.IntentUtils;
-import org.autojs.autojs6.R;
-import org.autojs.autojs6.databinding.ExplorerFirstCharIconBinding;
-import org.autojs.autojs6.databinding.TaskListRecyclerViewItemBinding;
+import com.xiaoyu.ai.R;
+import com.xiaoyu.ai.databinding.ExplorerFirstCharIconBinding;
+import com.xiaoyu.ai.databinding.TaskListRecyclerViewItemBinding;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;

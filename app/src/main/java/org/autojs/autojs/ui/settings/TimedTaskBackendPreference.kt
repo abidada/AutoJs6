@@ -6,7 +6,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.theme.preference.MaterialListPreference
 import org.autojs.autojs.timing.ExactAlarmPermissionHelper
 import org.autojs.autojs.timing.TimedTaskScheduler
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 class TimedTaskBackendPreference : MaterialListPreference {
 

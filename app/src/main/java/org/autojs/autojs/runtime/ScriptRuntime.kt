@@ -111,7 +111,7 @@ import org.autojs.autojs.util.RootUtils
 import org.autojs.autojs.util.SdkVersionUtils
 import org.autojs.autojs.util.StringUtils
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mediainfo.android.MediaInfo
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.ContextFactory

@@ -30,7 +30,7 @@ import org.autojs.autojs.util.RhinoUtils.coerceNumber
 import org.autojs.autojs.util.RhinoUtils.withRhinoContext
 import org.autojs.autojs.util.SdkVersionUtils
 import org.autojs.autojs.util.StringUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.ImporterTopLevel

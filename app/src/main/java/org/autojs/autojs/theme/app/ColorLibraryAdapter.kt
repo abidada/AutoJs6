@@ -6,8 +6,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.theme.app.ColorLibrariesActivity.Companion.PresetColorLibrary
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.MtColorLibrariesRecyclerViewItemBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.MtColorLibrariesRecyclerViewItemBinding
 
 @SuppressLint("NotifyDataSetChanged")
 class ColorLibraryAdapter(

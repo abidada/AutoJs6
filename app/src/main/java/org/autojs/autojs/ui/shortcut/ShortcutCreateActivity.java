@@ -32,8 +32,8 @@ import org.autojs.autojs.util.BitmapUtils;
 import org.autojs.autojs.util.ColorUtils;
 import org.autojs.autojs.util.ShortcutUtils;
 import org.autojs.autojs.util.ViewUtils;
-import org.autojs.autojs6.R;
-import org.autojs.autojs6.databinding.ShortcutCreateDialogBinding;
+import com.xiaoyu.ai.R;
+import com.xiaoyu.ai.databinding.ShortcutCreateDialogBinding;
 
 /**
  * Created by Stardust on Oct 25, 2017.

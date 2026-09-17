@@ -25,8 +25,8 @@ import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.ViewUtils.excludeFloatingActionButtonFromBottomNavigationBar
 import org.autojs.autojs.util.ViewUtils.excludePaddingClippableViewFromBottomNavigationBar
 import org.autojs.autojs.util.ViewUtils.setMenuIconsColorByThemeColorLuminance
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ActivityManageKeyStoreBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ActivityManageKeyStoreBinding
 import java.io.File
 import java.io.IOException
 

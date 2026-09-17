@@ -34,8 +34,8 @@ import org.autojs.autojs.theme.app.ColorSelectBaseActivity.Companion.defaultColo
 import org.autojs.autojs.theme.app.ColorSelectBaseActivity.Companion.saveDatabaseForColorHistory
 import org.autojs.autojs.theme.app.ColorSelectBaseActivity.Companion.saveDatabaseForPaletteHistory
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.MtColorSettingRecyclerViewItemBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.MtColorSettingRecyclerViewItemBinding
 
 class ColorSettingRecyclerView : ThemeColorRecyclerView {
 

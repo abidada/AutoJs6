@@ -3,7 +3,7 @@ package org.autojs.autojs.util;
 import androidx.annotation.NonNull;
 import com.stericson.RootShell.RootShell;
 import org.autojs.autojs.core.pref.Pref;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.io.File;
 import java.text.MessageFormat;

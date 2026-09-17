@@ -13,7 +13,7 @@ import java.util.*
 class DeviceIdProvider : ContentProvider() {
 
     companion object {
-        private const val AUTH = "org.autojs.autojs6.deviceid.provider"
+        private const val AUTH = "com.xiaoyu.ai.deviceid.provider"
         private const val PATH = "v1/device_id"
         private const val CODE = 1
         private const val COL = "device_id"

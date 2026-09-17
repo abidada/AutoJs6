@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.google.android.material.snackbar.ContentViewCallback;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 /**
  * Created by SuperMonster003 on May 30, 2022.

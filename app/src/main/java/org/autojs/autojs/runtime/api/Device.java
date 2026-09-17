@@ -25,7 +25,7 @@ import org.autojs.autojs.runtime.ScriptRuntime;
 import org.autojs.autojs.util.DeviceUtils;
 import org.autojs.autojs.util.RomUtils;
 import org.autojs.autojs.util.RomUtils.Brand;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;

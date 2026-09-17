@@ -9,7 +9,7 @@ import androidx.core.net.toUri
 import org.autojs.autojs.ui.main.drawer.PermissionItemHelper
 import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 
 /**
  * Created by SuperMonster003 on Jun 21, 2022.

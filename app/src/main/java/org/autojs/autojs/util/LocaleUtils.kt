@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import org.autojs.autojs.app.GlobalAppContext
 import org.autojs.autojs.core.pref.Language
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.Locale
 
 object LocaleUtils {

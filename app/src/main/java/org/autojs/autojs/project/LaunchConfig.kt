@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 import org.autojs.autojs.annotation.SerializedNameCompatible
 import org.autojs.autojs.annotation.SerializedNameCompatible.With
 import org.autojs.autojs.app.GlobalAppContext
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import java.util.LinkedHashMap
 
 /**

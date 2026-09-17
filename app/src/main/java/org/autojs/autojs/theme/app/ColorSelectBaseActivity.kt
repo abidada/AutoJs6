@@ -52,7 +52,7 @@ import org.autojs.autojs.util.ViewUtils.setColorsByColorLuminance
 import org.autojs.autojs.util.ViewUtils.setMenuIconsColorByColorLuminance
 import org.autojs.autojs.util.ViewUtils.setNavigationIconColorByColorLuminance
 import org.autojs.autojs.util.ViewUtils.setTitlesTextColorByColorLuminance
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.greenrobot.eventbus.EventBus
 import java.util.Locale
 import kotlin.math.absoluteValue

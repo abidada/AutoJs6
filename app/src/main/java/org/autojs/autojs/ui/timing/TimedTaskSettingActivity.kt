@@ -48,8 +48,8 @@ import org.autojs.autojs.util.ViewUtils
 import org.autojs.autojs.util.ViewUtils.excludePaddingClippableViewFromBottomNavigationBar
 import org.autojs.autojs.util.ViewUtils.setMenuIconsColorByThemeColorLuminance
 import org.autojs.autojs.util.ViewUtils.showToast
-import org.autojs.autojs6.R
-import org.autojs.autojs6.databinding.ActivityTimedTaskSettingBinding
+import com.xiaoyu.ai.R
+import com.xiaoyu.ai.databinding.ActivityTimedTaskSettingBinding
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.joda.time.LocalTime

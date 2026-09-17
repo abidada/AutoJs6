@@ -6,7 +6,7 @@ import androidx.core.content.edit
 import org.autojs.autojs.core.pref.Language
 import org.autojs.autojs.util.LocaleUtils
 import org.autojs.autojs.util.StringUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap

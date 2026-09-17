@@ -10,7 +10,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.util.AttributeSet;
 
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 
 public class JsToolbar extends Toolbar {
 

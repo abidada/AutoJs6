@@ -113,7 +113,7 @@ import org.autojs.autojs.core.ui.widget.JsWebView
 import org.autojs.autojs.core.ui.xml.XmlConverter
 import org.autojs.autojs.runtime.ScriptRuntime
 import org.autojs.autojs.runtime.exception.WrappedRuntimeException
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import org.w3c.dom.Node
 import java.io.ByteArrayInputStream
 import javax.xml.parsers.DocumentBuilderFactory

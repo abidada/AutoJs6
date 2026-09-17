@@ -13,7 +13,7 @@ import org.autojs.autojs.model.script.ScriptFile;
 import org.autojs.autojs.pio.PFile;
 import org.autojs.autojs.ui.explorer.ExplorerView;
 import org.autojs.autojs.ui.widget.BindableViewHolder;
-import org.autojs.autojs6.R;
+import com.xiaoyu.ai.R;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

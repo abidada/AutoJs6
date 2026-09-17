@@ -17,7 +17,7 @@ import org.autojs.autojs.core.shizuku.UserService
 import org.autojs.autojs.util.App.SHIZUKU
 import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.ViewUtils
-import org.autojs.autojs6.R
+import com.xiaoyu.ai.R
 import rikka.shizuku.Shizuku
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
