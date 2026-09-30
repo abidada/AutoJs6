@@ -29,7 +29,6 @@ fun UiSettingsScreen(
     uiMode: BibiUiMode,
     themeMode: String,
     onBack: () -> Unit,
-    onOpenKeyboardLayout: () -> Unit,
     onSetUiMode: (BibiUiMode) -> Unit,
     onSetThemeMode: (String) -> Unit
 ) {
@@ -96,15 +95,13 @@ fun UiSettingsScreen(
                     onApplyExplainedSwitch = ::applyExplainedSwitch
                 )
             }
-            item("keyboard_ui") {
-                InputKeyboardUiSettingsSection(
+            item("haptic_ui") {
+                InputHapticUiSettingsSection(
                     uiMode = uiMode,
                     prefs = prefs,
                     uiState = uiState,
                     onUiStateChange = { uiState = it },
-                    onRefreshState = ::refreshState,
-                    onShowExtensionButtonsPicker = onOpenKeyboardLayout,
-                    onApplyExplainedSwitch = ::applyExplainedSwitch
+                    onRefreshState = ::refreshState
                 )
             }
         }

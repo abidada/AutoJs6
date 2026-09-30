@@ -85,6 +85,11 @@ class BootReceiver : BroadcastReceiver() {
                 }
                 context.startService(i2)
             }
+
+            // 语音唤醒自启：Android 14+ 禁止后台拉起麦克风前台服务，失败仅记录
+            if (prefs.wakeWordEnabled) {
+                com.brycewg.asrkb.wake.WakeWordService.start(context)
+            }
         } catch (t: Throwable) {
             Log.w("BootReceiver", "Failed to start overlay services on boot", t)
             DebugLogManager.logWarning(context, "keepalive", "boot_overlay_start_failed", t)

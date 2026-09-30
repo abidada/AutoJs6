@@ -31,7 +31,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.brycewg.asrkb.host.BibiPermissionType
 import com.brycewg.asrkb.host.PermissionRouter
 import com.brycewg.asrkb.R
-import com.brycewg.asrkb.imebridge.ImeBridgeClient
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.AsrAccessibilityService
 import com.brycewg.asrkb.ui.floating.FloatingServiceManager
@@ -57,14 +56,11 @@ import kotlinx.coroutines.withContext
 private const val FLOATING_TAG = "FloatingSettingsScreen"
 
 private data class FloatingPackageEdits(
-    val compat: String,
     val paste: String,
-    val compatChanged: Boolean,
     val pasteChanged: Boolean
 )
 
 private class FloatingPackagePersistState {
-    var compat: String? = null
     var paste: String? = null
 }
 
@@ -79,12 +75,9 @@ fun FloatingSettingsScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val prefs = remember(appContext) { Prefs(appContext) }
     val serviceManager = remember(appContext) { FloatingServiceManager(appContext) }
-    val imeBridgeClient = remember(appContext) { ImeBridgeClient(appContext) }
     val scope = rememberCoroutineScope()
     var uiState by remember(appContext) { mutableStateOf(FloatingSettingsUiState.placeholder) }
-    var compatPackages by remember(appContext) { mutableStateOf("") }
     var pastePackages by remember(appContext) { mutableStateOf("") }
-    var imeBridgeStatusText by remember(appContext) { mutableStateOf("") }
     val persistedPackages = remember(appContext) { FloatingPackagePersistState() }
     var settingsLoaded by remember(appContext) { mutableStateOf(false) }
     var pendingAsrEnable by remember { mutableStateOf(false) }
@@ -95,15 +88,12 @@ fun FloatingSettingsScreen(
     var choiceSheet by remember { mutableStateOf<SettingsChoiceSheetState?>(null) }
     var featureExplainerDialog by remember { mutableStateOf<SettingsFeatureExplainerDialogState?>(null) }
     var messageDialog by remember { mutableStateOf<SettingsMessageDialogState?>(null) }
-    val latestCompatPackages by rememberUpdatedState(compatPackages)
     val latestPastePackages by rememberUpdatedState(pastePackages)
     val latestSettingsLoaded by rememberUpdatedState(settingsLoaded)
 
     fun applySnapshot(snapshot: FloatingSettingsPrefsSnapshot) {
         if (uiState != snapshot.uiState) uiState = snapshot.uiState
-        if (compatPackages != snapshot.compatPackages) compatPackages = snapshot.compatPackages
         if (pastePackages != snapshot.pastePackages) pastePackages = snapshot.pastePackages
-        persistedPackages.compat = snapshot.compatPackages
         persistedPackages.paste = snapshot.pastePackages
         if (!settingsLoaded) settingsLoaded = true
     }
@@ -122,16 +112,6 @@ fun FloatingSettingsScreen(
 
     LaunchedEffect(prefs) {
         applySnapshot(loadSnapshot())
-    }
-
-    LaunchedEffect(compatPackages, settingsLoaded) {
-        if (!settingsLoaded) return@LaunchedEffect
-        if (compatPackages == persistedPackages.compat) return@LaunchedEffect
-        delay(300)
-        withContext(Dispatchers.IO) {
-            prefs.floatingWriteCompatPackages = compatPackages
-        }
-        persistedPackages.compat = compatPackages
     }
 
     LaunchedEffect(pastePackages, settingsLoaded) {
@@ -184,54 +164,28 @@ fun FloatingSettingsScreen(
         showFloatingMessage(R.string.toast_need_accessibility_perm)
     }
 
-    fun floatingAsrNeedsAccessibilityWhenEnabled(): Boolean = !uiState.imeBridgeEnabled
+    fun floatingAsrNeedsAccessibilityWhenEnabled(): Boolean = true
 
     fun floatingAsrNeedsAccessibility(): Boolean = policyFloatingAsrNeedsAccessibility(
-        floatingEnabled = uiState.asrEnabled,
-        imeBridgeEnabled = uiState.imeBridgeEnabled
+        floatingEnabled = uiState.asrEnabled
     )
 
     fun floatingInputNeedsAccessibility(): Boolean = policyFloatingInputNeedsAccessibility(
         floatingEnabled = uiState.asrEnabled,
         volumeKeyEnabled = uiState.volumeKeyRecordingEnabled,
-        imeBridgeEnabled = uiState.imeBridgeEnabled,
         shakeRecordingEnabled = uiState.shakeRecordingEnabled
     )
-
-    fun refreshImeBridgeStatus() {
-        scope.launch {
-            val result = withContext(Dispatchers.IO) {
-                imeBridgeClient.queryStatus()
-            }
-            imeBridgeStatusText = formatImeBridgeStatus(
-                context = context,
-                result = result,
-                bridgeEnabled = uiState.imeBridgeEnabled
-            )
-        }
-    }
 
     LaunchedEffect(
         settingsLoaded,
         uiState.asrEnabled,
         uiState.volumeKeyRecordingEnabled,
-        uiState.shakeRecordingEnabled,
-        uiState.imeBridgeEnabled,
-        uiState.onlyWhenImeVisible
+        uiState.shakeRecordingEnabled
     ) {
         if (!settingsLoaded || autoAccessibilityRequested) return@LaunchedEffect
         if (floatingInputNeedsAccessibility() && !isAccessibilityServiceEnabled(context)) {
             autoAccessibilityRequested = true
             requestAccessibilityPermission()
-        }
-    }
-
-    LaunchedEffect(settingsLoaded, uiState.imeBridgeEnabled) {
-        if (!settingsLoaded) return@LaunchedEffect
-        if (shouldQueryImeBridgeStatus(uiState.imeBridgeEnabled)) {
-            refreshImeBridgeStatus()
-        } else {
-            imeBridgeStatusText = context.getString(R.string.status_floating_ime_bridge_disabled)
         }
     }
 
@@ -332,15 +286,11 @@ fun FloatingSettingsScreen(
     DisposableEffect(lifecycleOwner) {
         fun pendingPackageEdits(): FloatingPackageEdits? {
             if (!latestSettingsLoaded) return null
-            val compat = latestCompatPackages
             val paste = latestPastePackages
-            val compatChanged = compat != persistedPackages.compat
             val pasteChanged = paste != persistedPackages.paste
-            if (!compatChanged && !pasteChanged) return null
+            if (!pasteChanged) return null
             return FloatingPackageEdits(
-                compat = compat,
                 paste = paste,
-                compatChanged = compatChanged,
                 pasteChanged = pasteChanged
             )
         }
@@ -349,17 +299,14 @@ fun FloatingSettingsScreen(
             val edits = pendingPackageEdits() ?: return
             scope.launch {
                 withContext(Dispatchers.IO) {
-                    if (edits.compatChanged) prefs.floatingWriteCompatPackages = edits.compat
                     if (edits.pasteChanged) prefs.floatingWritePastePackages = edits.paste
                 }
-                if (edits.compatChanged) persistedPackages.compat = edits.compat
                 if (edits.pasteChanged) persistedPackages.paste = edits.paste
             }
         }
 
         fun flushPackageEditsNow() {
             val edits = pendingPackageEdits() ?: return
-            if (edits.compatChanged) prefs.floatingWriteCompatPackages = edits.compat
             if (edits.pasteChanged) prefs.floatingWritePastePackages = edits.paste
         }
 
@@ -491,7 +438,7 @@ fun FloatingSettingsScreen(
 
             item("basic") {
                 FloatingSection(uiMode = uiMode, titleRes = R.string.section_floating_basic) {
-                    val basicItemCount = if (uiState.asrEnabled) 6 else 1
+                    val basicItemCount = if (uiState.asrEnabled) 5 else 1
                     FloatingExplainedSwitch(
                         id = "floating_asr",
                         titleRes = R.string.label_floating_asr,
@@ -511,31 +458,6 @@ fun FloatingSettingsScreen(
                     )
                     if (uiState.asrEnabled) {
                         FloatingExplainedSwitch(
-                            id = "floating_only_when_ime_visible",
-                            titleRes = R.string.label_floating_only_when_ime_visible,
-                            checked = uiState.onlyWhenImeVisible,
-                            onToggle = { target ->
-                                applyExplainedSwitch(
-                                    current = uiState.onlyWhenImeVisible,
-                                    target = target,
-                                    titleRes = R.string.label_floating_only_when_ime_visible,
-                                    offDescRes = R.string.feature_floating_only_when_ime_visible_off_desc,
-                                    onDescRes = R.string.feature_floating_only_when_ime_visible_on_desc,
-                                    preferenceKey = "floating_only_when_ime_visible_explained"
-                                ) { enabled ->
-                                    if (enabled && !isAccessibilityServiceEnabled(context)) {
-                                        showAccessibilityPermissionMessage()
-                                        requestAccessibilityPermission()
-                                    } else {
-                                        prefs.floatingSwitcherOnlyWhenImeVisible = enabled
-                                        serviceManager.refreshAsrService(uiState.asrEnabled)
-                                    }
-                                }
-                            },
-                            index = 1,
-                            count = basicItemCount
-                        )
-                        FloatingExplainedSwitch(
                             id = "floating_hold_to_record",
                             titleRes = R.string.label_floating_hold_to_record,
                             checked = uiState.holdToRecordEnabled,
@@ -549,7 +471,7 @@ fun FloatingSettingsScreen(
                                     preferenceKey = "floating_hold_to_record_explained"
                                 ) { prefs.floatingBallHoldToRecordEnabled = it }
                             },
-                            index = 2,
+                            index = 1,
                             count = basicItemCount
                         )
                         FloatingExplainedSwitch(
@@ -566,7 +488,7 @@ fun FloatingSettingsScreen(
                                     preferenceKey = "floating_direct_drag_explained"
                                 ) { prefs.floatingBallDirectDragEnabled = it }
                             },
-                            index = 3,
+                            index = 2,
                             count = basicItemCount
                         )
                         FloatingSliderPreference(
@@ -576,7 +498,7 @@ fun FloatingSettingsScreen(
                             valueRange = 30f..100f,
                             step = 5,
                             uiMode = uiMode,
-                            index = 4,
+                            index = 3,
                             count = basicItemCount,
                             onValueChange = { value ->
                                 uiState = uiState.copy(alphaPercent = value.roundFloatingToStep(5))
@@ -595,7 +517,7 @@ fun FloatingSettingsScreen(
                             valueRange = 28f..96f,
                             step = 4,
                             uiMode = uiMode,
-                            index = 5,
+                            index = 4,
                             count = basicItemCount,
                             onValueChange = { value ->
                                 uiState = uiState.copy(sizeDp = value.roundFloatingToStep(4).toInt().coerceIn(28, 96))
@@ -626,7 +548,7 @@ fun FloatingSettingsScreen(
 
             item("volume_key") {
                 FloatingSection(uiMode = uiMode, titleRes = R.string.section_volume_key_recording) {
-                    val volumeItemCount = if (uiState.volumeKeyRecordingEnabled) 4 else 1
+                    val volumeItemCount = if (uiState.volumeKeyRecordingEnabled) 3 else 1
                     FloatingExplainedSwitch(
                         id = "volume_key_recording",
                         titleRes = R.string.label_volume_key_recording,
@@ -672,30 +594,13 @@ fun FloatingSettingsScreen(
                             index = 2,
                             count = volumeItemCount
                         )
-                        FloatingExplainedSwitch(
-                            id = "volume_key_stop_on_ime_hidden",
-                            titleRes = R.string.label_volume_key_stop_on_ime_hidden,
-                            checked = uiState.volumeKeyStopOnImeHidden,
-                            onToggle = { target ->
-                                applyExplainedSwitch(
-                                    current = uiState.volumeKeyStopOnImeHidden,
-                                    target = target,
-                                    titleRes = R.string.label_volume_key_stop_on_ime_hidden,
-                                    offDescRes = R.string.feature_volume_key_stop_on_ime_hidden_off_desc,
-                                    onDescRes = R.string.feature_volume_key_stop_on_ime_hidden_on_desc,
-                                    preferenceKey = "volume_key_stop_on_ime_hidden_explained"
-                                ) { prefs.volumeKeyStopOnImeHidden = it }
-                            },
-                            index = 3,
-                            count = volumeItemCount
-                        )
                     }
                 }
             }
 
             item("shake_recording") {
                 FloatingSection(uiMode = uiMode, titleRes = R.string.section_shake_recording) {
-                    val shakeItemCount = if (uiState.shakeRecordingEnabled) 4 else 1
+                    val shakeItemCount = if (uiState.shakeRecordingEnabled) 3 else 1
                     FloatingExplainedSwitch(
                         id = "shake_recording",
                         titleRes = R.string.label_shake_recording,
@@ -739,22 +644,69 @@ fun FloatingSettingsScreen(
                             index = 2,
                             count = shakeItemCount
                         )
+                    }
+                }
+            }
+
+            item("wake_word") {
+                FloatingSection(uiMode = uiMode, titleRes = R.string.section_wake_word) {
+                    FloatingExplainedSwitch(
+                        id = "wake_word_enabled",
+                        titleRes = R.string.label_wake_word_enabled,
+                        checked = uiState.wakeWordEnabled,
+                        onToggle = { target ->
+                            if (target &&
+                                androidx.core.content.ContextCompat.checkSelfPermission(
+                                    context,
+                                    android.Manifest.permission.RECORD_AUDIO
+                                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+                            ) {
+                                // 缺麦克风权限：路由到宿主权限区，不写开关
+                                try {
+                                    PermissionRouter.route(context, BibiPermissionType.MICROPHONE)
+                                } catch (t: Throwable) {
+                                    Log.e(FLOATING_TAG, "Failed to route microphone permission", t)
+                                }
+                            } else {
+                                prefs.wakeWordEnabled = target
+                                if (target) {
+                                    com.brycewg.asrkb.wake.WakeWordService.start(context)
+                                } else {
+                                    com.brycewg.asrkb.wake.WakeWordService.stop(context)
+                                }
+                                refreshState()
+                            }
+                        },
+                        index = 0,
+                        count = 3
+                    )
+                    if (uiState.wakeWordEnabled) {
                         FloatingExplainedSwitch(
-                            id = "shake_recording_stop_on_ime_hidden",
-                            titleRes = R.string.label_shake_recording_stop_on_ime_hidden,
-                            checked = uiState.shakeRecordingStopOnImeHidden,
+                            id = "wake_word_only_charging",
+                            titleRes = R.string.label_wake_word_only_charging,
+                            checked = prefs.wakeWordOnlyWhileCharging,
                             onToggle = { target ->
-                                applyExplainedSwitch(
-                                    current = uiState.shakeRecordingStopOnImeHidden,
-                                    target = target,
-                                    titleRes = R.string.label_shake_recording_stop_on_ime_hidden,
-                                    offDescRes = R.string.feature_shake_recording_stop_on_ime_hidden_off_desc,
-                                    onDescRes = R.string.feature_shake_recording_stop_on_ime_hidden_on_desc,
-                                    preferenceKey = "shake_recording_stop_on_ime_hidden_explained"
-                                ) { prefs.shakeRecordingStopOnImeHidden = it }
+                                prefs.wakeWordOnlyWhileCharging = target
+                                refreshState()
                             },
-                            index = 3,
-                            count = shakeItemCount
+                            index = 1,
+                            count = 3
+                        )
+                        FloatingSliderPreference(
+                            titleRes = R.string.label_wake_word_threshold,
+                            valueLabel = { "${it.roundFloatingToStep(5).toInt()}%" },
+                            value = prefs.wakeWordThresholdPercent.toFloat(),
+                            valueRange = 50f..95f,
+                            step = 5,
+                            uiMode = uiMode,
+                            index = 2,
+                            count = 3,
+                            onValueChange = { },
+                            onValueChangeFinished = { value ->
+                                prefs.wakeWordThresholdPercent =
+                                    value.roundFloatingToStep(5).toInt().coerceIn(50, 95)
+                                refreshState()
+                            }
                         )
                     }
                 }
@@ -762,97 +714,6 @@ fun FloatingSettingsScreen(
 
             item("compat") {
                 FloatingSection(uiMode = uiMode, titleRes = R.string.section_floating_compat) {
-                    FloatingExplainedSwitch(
-                        id = "floating_ime_bridge",
-                        titleRes = R.string.label_floating_ime_bridge,
-                        checked = uiState.imeBridgeEnabled,
-                        onToggle = { target ->
-                            applyExplainedSwitch(
-                                current = uiState.imeBridgeEnabled,
-                                target = target,
-                                titleRes = R.string.label_floating_ime_bridge,
-                                offDescRes = R.string.feature_floating_ime_bridge_off_desc,
-                                onDescRes = R.string.feature_floating_ime_bridge_on_desc,
-                                preferenceKey = "floating_ime_bridge_explained"
-                            ) {
-                                prefs.floatingImeBridgeEnabled = it
-                                if (shouldQueryImeBridgeStatus(it)) {
-                                    refreshImeBridgeStatus()
-                                } else {
-                                    imeBridgeStatusText =
-                                        context.getString(R.string.status_floating_ime_bridge_disabled)
-                                }
-                            }
-                        },
-                        index = 0,
-                        count = if (uiState.imeBridgeEnabled) 2 else 1
-                    )
-                    if (uiState.imeBridgeEnabled) {
-                        FloatingValuePreference(
-                            titleRes = R.string.label_floating_ime_bridge_status,
-                            value = if (imeBridgeStatusText.isEmpty()) {
-                                stringResource(R.string.status_floating_ime_bridge_unknown)
-                            } else {
-                                imeBridgeStatusText
-                            },
-                            uiMode = uiMode,
-                            index = 1,
-                            count = 2,
-                            onClick = {
-                                refreshImeBridgeStatus()
-                            }
-                        )
-                    }
-                    FloatingSubsectionGap(compact = !uiState.imeBridgeEnabled)
-                    if (Build.VERSION.SDK_INT >= 33) {
-                        FloatingExplainedSwitch(
-                            id = "floating_a11y_android13_api",
-                            titleRes = R.string.label_floating_a11y_android13_api,
-                            checked = uiState.a11yAndroid13ApiEnabled,
-                            onToggle = { target ->
-                                applyExplainedSwitch(
-                                    current = uiState.a11yAndroid13ApiEnabled,
-                                    target = target,
-                                    titleRes = R.string.label_floating_a11y_android13_api,
-                                    offDescRes = R.string.feature_floating_a11y_android13_api_off_desc,
-                                    onDescRes = R.string.feature_floating_a11y_android13_api_on_desc,
-                                    preferenceKey = "floating_a11y_android13_api_explained"
-                                ) { prefs.floatingA11yAndroid13ApiEnabled = it }
-                            },
-                            index = 0,
-                            count = 1
-                        )
-                        FloatingSubsectionGap()
-                    }
-                    FloatingExplainedSwitch(
-                        id = "floating_write_compat",
-                        titleRes = R.string.label_floating_write_compat,
-                        checked = uiState.writeCompatEnabled,
-                        onToggle = { target ->
-                            applyExplainedSwitch(
-                                current = uiState.writeCompatEnabled,
-                                target = target,
-                                titleRes = R.string.label_floating_write_compat,
-                                offDescRes = R.string.feature_floating_write_compat_off_desc,
-                                onDescRes = R.string.feature_floating_write_compat_on_desc,
-                                preferenceKey = "floating_write_compat_explained"
-                            ) { prefs.floatingWriteTextCompatEnabled = it }
-                        },
-                        index = 0,
-                        count = 2
-                    )
-                    FloatingPackagesField(
-                        value = compatPackages,
-                        onValueChange = {
-                            compatPackages = it
-                        },
-                        label = stringResource(R.string.label_floating_write_compat_pkgs),
-                        helper = stringResource(R.string.hint_floating_write_compat_pkgs),
-                        uiMode = uiMode,
-                        index = 1,
-                        count = 2
-                    )
-                    FloatingSubsectionGap()
                     FloatingExplainedSwitch(
                         id = "floating_write_paste",
                         titleRes = R.string.label_floating_write_paste,

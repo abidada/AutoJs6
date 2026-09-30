@@ -174,4 +174,27 @@
     <string name="feature_floating_keep_alive_on_desc">يعرض إشعاراً مستمراً للمساعدة على إبقاء ميزات الكرة العائمة ومفاتيح الصوت متاحة في الخلفية. قد تتطلّب بعض الهواتف تغيير إعدادات البطارية.</string>
     <string name="feature_floating_keep_alive_privileged_off_desc">يستخدم الطريقة القياسية فقط للبقاء نشطاً في الخلفية. قد توقف بعض الهواتف ميزات الكرة العائمة أو مفاتيح الصوت.</string>
     <string name="feature_floating_keep_alive_privileged_on_desc">يستخدم Shizuku أو root لاستعادة الخدمة الخلفية دورياً، مما يقلّل انقطاع ميزات الكرة العائمة أو مفاتيح الصوت. يلزم إذن Shizuku أو root.</string>
+    <string name="section_haptic_feedback">الاهتزاز اللمسي</string>
+    <string name="floating_pill_ready">ابدأ الصوت</string>
+    <string name="floating_pill_listening">جارٍ الاستماع…</string>
+    <string name="listening_panel_placeholder">قل شيئًا…</string>
+    <string name="listening_panel_listening">جارٍ الاستماع…</string>
+    <string name="listening_panel_relisten">استمع مجددًا</string>
+    <string name="listening_panel_copy">نسخ</string>
+    <string name="listening_panel_share">مشاركة</string>
+    <string name="listening_panel_copied">تم النسخ</string>
+    <string name="listening_panel_error_prefix">خطأ في التعرف: %1$s</string>
+    <string name="notif_channel_wake_word">كلمة الاستيقاظ</string>
+    <string name="notif_channel_wake_word_desc">يحافظ على الاستماع لكلمة الاستيقاظ في الخلفية</string>
+    <string name="notif_wake_word_title">بانتظار كلمة الاستيقاظ</string>
+    <string name="notif_wake_word_desc">قل كلمة الاستيقاظ لبدء التعرف على الصوت</string>
+    <string name="section_wake_word">الاستيقاظ الصوتي</string>
+    <string name="label_wake_word_enabled">تفعيل الاستيقاظ الصوتي (قل \"Hey Mycroft\")</string>
+    <string name="label_wake_word_only_charging">الاستماع أثناء الشحن فقط</string>
+    <string name="label_wake_word_threshold">حد حساسية الاستيقاظ</string>
+    <string name="title_voice_dispatch">توزيع الصوت</string>
+    <string name="voice_dispatch_feedback_miss">لا توجد مهمة مطابقة</string>
+    <string name="voice_dispatch_feedback_hit">تم التوزيع：%1$s</string>
+    <string name="label_voice_ready_collapse">زمن انكماش كبسولة الصوت</string>
+    <string name="voice_time_seconds_value">%1$d ث</string>
 </resources>

@@ -28,7 +28,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.brycewg.asrkb.BuildConfig
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.asr.LlmPostProcessor
-import com.brycewg.asrkb.ime.AsrKeyboardService
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.ai.AiPostSettingsViewModel
 import com.brycewg.asrkb.ui.settings.asr.LargePromptEditorActivity
@@ -109,11 +108,7 @@ fun AiSettingsScreen(
     }
 
     fun sendRefreshBroadcast() {
-        context.sendBroadcast(
-            Intent(AsrKeyboardService.ACTION_REFRESH_IME_UI).apply {
-                setPackage(context.packageName)
-            }
-        )
+        // IME 移除后无键盘刷新广播；保留函数供调用方使用
     }
 
     fun showAiMessage(messageRes: Int) {

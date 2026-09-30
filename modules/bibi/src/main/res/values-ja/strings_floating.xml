@@ -175,4 +175,27 @@
     <string name="feature_floating_keep_alive_on_desc">常駐通知を表示し、フローティングボールや音量キー機能をバックグラウンドでも利用しやすくします。端末によっては電池設定の変更も必要です。</string>
     <string name="feature_floating_keep_alive_privileged_off_desc">通常の方法だけでバックグラウンド動作を維持します。端末によってはフローティングボールや音量キー機能が停止する場合があります。</string>
     <string name="feature_floating_keep_alive_privileged_on_desc">Shizuku または root を使ってバックグラウンドサービスを定期的に復帰させ、機能の中断を減らします。Shizuku または root 権限が必要です。</string>
+    <string name="section_haptic_feedback">触覚フィードバック</string>
+    <string name="floating_pill_ready">音声入力</string>
+    <string name="floating_pill_listening">録音中…</string>
+    <string name="listening_panel_placeholder">何か話してください…</string>
+    <string name="listening_panel_listening">録音中…</string>
+    <string name="listening_panel_relisten">再録音</string>
+    <string name="listening_panel_copy">コピー</string>
+    <string name="listening_panel_share">共有</string>
+    <string name="listening_panel_copied">コピーしました</string>
+    <string name="listening_panel_error_prefix">認識エラー：%1$s</string>
+    <string name="notif_channel_wake_word">ウェイクワード</string>
+    <string name="notif_channel_wake_word_desc">バックグラウンドのウェイクワード検出を維持します</string>
+    <string name="notif_wake_word_title">ウェイクワード待機中</string>
+    <string name="notif_wake_word_desc">ウェイクワードを話すと音声認識を開始します</string>
+    <string name="section_wake_word">音声ウェイクワード</string>
+    <string name="label_wake_word_enabled">音声ウェイクワードを有効化（\"Hey Mycroft\"）</string>
+    <string name="label_wake_word_only_charging">充電中のみリッスン</string>
+    <string name="label_wake_word_threshold">検出感度しきい値</string>
+    <string name="title_voice_dispatch">音声ディスパッチ</string>
+    <string name="voice_dispatch_feedback_miss">一致するタスクがありません</string>
+    <string name="voice_dispatch_feedback_hit">ディスパッチ：%1$s</string>
+    <string name="label_voice_ready_collapse">音声ピル収縮までの時間</string>
+    <string name="voice_time_seconds_value">%1$d 秒</string>
 </resources>

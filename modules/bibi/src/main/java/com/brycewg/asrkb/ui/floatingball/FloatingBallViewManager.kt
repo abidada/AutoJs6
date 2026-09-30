@@ -54,6 +54,8 @@ class FloatingBallViewManager(
     private var ballContainer: FrameLayout? = null
     private var ballIcon: ImageView? = null
     private var edgeHandleIcon: ImageView? = null
+    private var pillContainer: View? = null
+    private var pillText: android.widget.TextView? = null
     private var processingSpinner: ProcessingSpinnerView? = null
     private var recordingAuraView: RecordingAuraView? = null
     private var recordingAuraLp: WindowManager.LayoutParams? = null
@@ -77,6 +79,7 @@ class FloatingBallViewManager(
     private var lastAppliedAlpha: Float? = null
     private var lastAppliedBallSizeDp: Int? = null
     private var keepScreenOnRequested: Boolean = false
+    private var currentVisualMode: FloatingBallInteractionMode = FloatingBallInteractionMode.ROUND
 
     // 贴边半隐时仅显示“箭头把手”的宽度（需与布局一致）
 
@@ -144,6 +147,18 @@ class FloatingBallViewManager(
             val view = FloatingBallComposeViewFactory.create(dynCtx, prefs)
             ballIcon = view.findViewById(R.id.ballIcon)
             edgeHandleIcon = view.findViewById(R.id.edgeHandleIcon)
+            pillContainer = try {
+                view.findViewById(R.id.pillContainer)
+            } catch (e: Throwable) {
+                Log.w(TAG, "Failed to find pillContainer", e)
+                null
+            }
+            pillText = try {
+                view.findViewById(R.id.pillText)
+            } catch (e: Throwable) {
+                Log.w(TAG, "Failed to find pillText", e)
+                null
+            }
             ballContainer = try {
                 view.findViewById<FrameLayout>(R.id.ballContainer)
             } catch (e: Throwable) {
@@ -177,6 +192,9 @@ class FloatingBallViewManager(
             view.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
             ballIcon?.setOnTouchListener(onTouchListener)
             edgeHandleIcon?.setOnTouchListener(onTouchListener)
+            pillContainer?.setOnTouchListener(onTouchListener)
+            pillContainer?.isClickable = true
+            pillContainer?.isLongClickable = true
 
             // 创建 WindowManager.LayoutParams
             val params = createWindowLayoutParams()
@@ -189,6 +207,7 @@ class FloatingBallViewManager(
             applyKeepScreenOnToCurrentView()
             applyBallAlpha()
             applyBallSize()
+            setBallVisualMode(currentVisualMode)
             // 应用初始状态
             try {
                 updateStateVisual(initialState, force = true)
@@ -231,12 +250,15 @@ class FloatingBallViewManager(
         ballContainer = null
         ballIcon = null
         edgeHandleIcon = null
+        pillContainer = null
+        pillText = null
         processingSpinner = null
         recordingAuraView = null
         recordingAuraLp = null
         edgeHandleVisible = false
         lastAppliedAlpha = null
         lastAppliedBallSizeDp = null
+        currentVisualMode = FloatingBallInteractionMode.ROUND
         lp = null
     }
 
@@ -265,40 +287,96 @@ class FloatingBallViewManager(
             Log.w(TAG, "Failed to get size, using default", e)
             56
         }
-        val logicalSizePx = dp(size)
-        val previousLogicalSizePx = currentRenderedLogicalSizePx()
-        val logicalX = currentLogicalX(previousLogicalSizePx)
-        val logicalY = currentLogicalY(previousLogicalSizePx)
-        val targetX = logicalX
-        val targetY = logicalY
-        if (lastAppliedBallSizeDp == size &&
-            p.width == logicalSizePx &&
-            p.height == logicalSizePx &&
-            p.x == targetX &&
-            p.y == targetY
-        ) {
-            return
-        }
-
-        p.width = logicalSizePx
-        p.height = logicalSizePx
-        p.x = targetX
-        p.y = targetY
-        try {
-            windowManager.updateViewLayout(v, p)
-            updateRecordingAuraLayout()
-        } catch (e: Throwable) {
-            Log.e(TAG, "Failed to update view layout", e)
+        val ballSizePx = dp(size)
+        if (p.height != ballSizePx) {
+            p.height = ballSizePx
+            try {
+                windowManager.updateViewLayout(v, p)
+            } catch (e: Throwable) {
+                Log.e(TAG, "Failed to update view layout", e)
+            }
         }
         lastAppliedBallSizeDp = size
 
         // 同步调整内部图标大小，保持随悬浮球缩放
         try {
-            updateBallContainerSize(logicalSizePx)
+            updateBallContainerSize(ballSizePx)
             updateBallIconSize()
         } catch (e: Throwable) {
             Log.w(TAG, "Failed to update ball icon size", e)
         }
+        // 按当前交互模式重设窗口宽度（球心不动）
+        setBallVisualMode(currentVisualMode)
+    }
+
+    /**
+     * 切换交互视觉：完整圆球 / 「发起语音」胶囊 / 「正在听...」胶囊。
+     * 窗口宽度在方形球与胶囊宽度间动态调整，并补偿 X 保持球心不动。
+     */
+    fun setBallVisualMode(mode: FloatingBallInteractionMode) {
+        currentVisualMode = mode
+        val v = ballView ?: return
+        val p = lp ?: return
+        val ballSizePx = getBallSizePx()
+        val oldW = p.width
+        val newW = if (mode == FloatingBallInteractionMode.ROUND) {
+            ballSizePx
+        } else {
+            measurePillWidthPx(mode, ballSizePx)
+        }
+
+        ballContainer?.visibility =
+            if (mode == FloatingBallInteractionMode.ROUND) View.VISIBLE else View.GONE
+        pillContainer?.visibility =
+            if (mode == FloatingBallInteractionMode.ROUND) View.GONE else View.VISIBLE
+        pillText?.setText(
+            if (mode == FloatingBallInteractionMode.LISTENING_PILL) {
+                R.string.floating_pill_listening
+            } else {
+                R.string.floating_pill_ready
+            }
+        )
+
+        if (newW != oldW) {
+            p.width = newW
+            p.x += (oldW - newW) / 2
+            try {
+                windowManager.updateViewLayout(v, p)
+            } catch (e: Throwable) {
+                Log.e(TAG, "Failed to update pill window width", e)
+            }
+        }
+        updateRecordingAuraLayout()
+    }
+
+    /** 估算胶囊窗口宽度：左右内边距 + 图标 + 图标间距 + 文本宽度。 */
+    private fun measurePillWidthPx(mode: FloatingBallInteractionMode, ballSizePx: Int): Int {
+        val dm = context.resources.displayMetrics
+        val density = dm.density
+        val text = context.getString(
+            if (mode == FloatingBallInteractionMode.LISTENING_PILL) {
+                R.string.floating_pill_listening
+            } else {
+                R.string.floating_pill_ready
+            }
+        )
+        val textPx = try {
+            android.text.TextPaint().apply {
+                textSize = android.util.TypedValue.applyDimension(
+                    android.util.TypedValue.COMPLEX_UNIT_SP,
+                    15f,
+                    dm
+                )
+            }.measureText(text)
+        } catch (e: Throwable) {
+            Log.w(TAG, "Failed to measure pill text", e)
+            text.length * 14 * density
+        }
+        val maxTextPx = 180 * density
+        val paddingPx = (14 * 2 * density).toInt()
+        val iconPx = (22 + 8) * density
+        return (paddingPx + iconPx + textPx.coerceAtMost(maxTextPx)).toInt()
+            .coerceAtLeast(ballSizePx)
     }
 
     /** 用实时录音振幅驱动悬浮球脉动。 */
@@ -320,7 +398,7 @@ class FloatingBallViewManager(
     /** 根据悬浮球窗口大小按比例调整麦克风图标尺寸 */
     private fun updateBallIconSize() {
         val icon = ballIcon ?: return
-        val target = getLogicalBallSizePx()
+        val target = getBallSizePx()
         val lpIcon = icon.layoutParams ?: return
         if (lpIcon.width != target || lpIcon.height != target) {
             lpIcon.width = target
@@ -405,122 +483,17 @@ class FloatingBallViewManager(
     }
 
     /**
-     * 若当前在左右边缘，执行“完全显示”的贴边浮现动画。
-     * - 仅对左右边缘生效；底部贴边不处理（保持完全显示）。
+     * 交互重做后悬浮球常显、不贴边收缩；保留 API 以兼容既有调用（无动作）。
      */
     fun animateRevealFromEdgeIfNeeded() {
-        val p = lp ?: return
-        val v = ballView ?: return
-
-        val dock = detectDockSide()
-        if (dock == DockSide.BOTTOM || dock == DockSide.NONE) {
-            try {
-                switchToBallVisual(dock, animate = false)
-            } catch (e: Throwable) {
-                Log.w(TAG, "Failed to switch to ball visual (no-reveal dock)", e)
-            }
-            return
-        }
-
-        try {
-            switchToBallVisual(dock, animate = true)
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to switch to ball visual on reveal", e)
-        }
-
-        val target = fullyVisiblePositionForSide(dock)
-        val startX = p.x
-        val startY = p.y
-        val dx = target.first - startX
-        val dy = target.second - startY
-
-        if (dx == 0 && dy == 0) return
-
-        edgeAnimator?.cancel()
-        edgeAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 230
-            interpolator = DecelerateInterpolator()
-            addUpdateListener { anim ->
-                val f = anim.animatedValue as Float
-                val nx = (startX + dx * f).toInt()
-                val ny = (startY + dy * f).toInt()
-                if (p.x == nx && p.y == ny) return@addUpdateListener
-                p.x = nx
-                p.y = ny
-                try {
-                    windowManager.updateViewLayout(v, p)
-                    updateRecordingAuraLayout()
-                } catch (e: Throwable) {
-                    Log.e(TAG, "Failed to update layout during reveal", e)
-                }
-            }
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    persistBallPosition()
-                }
-            })
-            start()
-        }
+        // no-op
     }
 
     /**
-     * 若当前处于静息，应在左右贴边时执行半隐动画；
-     * - 不对底部贴边执行半隐，保持完全可见。
-     * - 若未贴边，则将自动吸附到就近左右边并半隐。
+     * 交互重做后半隐动画取消：保持当前位置（仅持久化）。
      */
     fun animateHideToEdgePartialIfNeeded() {
-        val p = lp ?: return
-        val v = ballView ?: return
-
-        val dock = detectDockSide(allowChooseNearest = true)
-        if (dock == DockSide.BOTTOM || dock == DockSide.NONE) {
-            try {
-                switchToBallVisual(dock, animate = false)
-            } catch (e: Throwable) {
-                Log.w(TAG, "Failed to switch to ball visual (no-hide dock)", e)
-            }
-            return
-        }
-
-        try {
-            switchToEdgeHandleVisual(dock, animate = true)
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to switch to edge-handle visual on hide", e)
-        }
-
-        val target = partiallyHiddenPositionForSide(dock)
-        val startX = p.x
-        val startY = p.y
-        val dx = target.first - startX
-        val dy = target.second - startY
-
-        if (dx == 0 && dy == 0) return
-
-        edgeAnimator?.cancel()
-        edgeAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 230
-            interpolator = DecelerateInterpolator()
-            addUpdateListener { anim ->
-                val f = anim.animatedValue as Float
-                val nx = (startX + dx * f).toInt()
-                val ny = (startY + dy * f).toInt()
-                if (p.x == nx && p.y == ny) return@addUpdateListener
-                p.x = nx
-                p.y = ny
-                try {
-                    windowManager.updateViewLayout(v, p)
-                    updateRecordingAuraLayout()
-                } catch (e: Throwable) {
-                    Log.e(TAG, "Failed to update layout during partial hide", e)
-                }
-            }
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    persistBallPosition()
-                }
-            })
-            start()
-        }
+        persistBallPosition()
     }
 
     /** 显示完成对勾 */
@@ -554,66 +527,14 @@ class FloatingBallViewManager(
     /** 对勾展示是否仍在活动周期内（用于延后半隐） */
     fun isCompletionTickActive(): Boolean = completionResetPosted
 
-    /** 吸附到边缘（带动画） */
+    /** 拖动释放后不再吸附边缘：保持当前位置（仅持久化）。 */
     fun animateSnapToEdge(v: View, onComplete: (() -> Unit)? = null) {
-        val p = lp ?: return
-        val (targetX, targetY) = calculateSnapTarget()
-
-        val startX = p.x
-        val startY = p.y
-        val dx = targetX - startX
-        val dy = targetY - startY
-
-        if (dx == 0 && dy == 0) {
-            persistBallPosition()
-            onComplete?.invoke()
-            return
-        }
-
-        edgeAnimator?.cancel()
-        edgeAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 250
-            interpolator = DecelerateInterpolator()
-            addUpdateListener { anim ->
-                val f = anim.animatedValue as Float
-                val nx = (startX + dx * f).toInt()
-                val ny = (startY + dy * f).toInt()
-                if (p.x == nx && p.y == ny) return@addUpdateListener
-                p.x = nx
-                p.y = ny
-                try {
-                    windowManager.updateViewLayout(v, p)
-                    updateRecordingAuraLayout()
-                } catch (e: Throwable) {
-                    Log.e(TAG, "Failed to update layout during snap animation", e)
-                }
-            }
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    persistBallPosition()
-                    onComplete?.invoke()
-                }
-            })
-            start()
-        }
+        persistBallPosition()
+        onComplete?.invoke()
     }
 
-    /** 吸附到边缘（无动画） */
+    /** 拖动释放后不再吸附边缘：保持当前位置（仅持久化）。 */
     fun snapToEdge(v: View) {
-        val p = lp ?: return
-        val (targetX, targetY) = calculateSnapTarget()
-        if (p.x == targetX && p.y == targetY) {
-            persistBallPosition()
-            return
-        }
-        p.x = targetX
-        p.y = targetY
-        try {
-            windowManager.updateViewLayout(v, p)
-            updateRecordingAuraLayout()
-        } catch (e: Throwable) {
-            Log.e(TAG, "Failed to update layout during snap", e)
-        }
         persistBallPosition()
     }
 
@@ -867,7 +788,8 @@ class FloatingBallViewManager(
         .toInt()
         .coerceAtLeast(logicalSizePx)
 
-    private fun getLogicalBallSizePx(): Int {
+    /** 圆球方形边长（含胶囊高度基准）。 */
+    private fun getBallSizePx(): Int {
         val sizeDp = try {
             prefs.floatingBallSizeDp
         } catch (e: Throwable) {
@@ -875,6 +797,15 @@ class FloatingBallViewManager(
             56
         }
         return dp(sizeDp)
+    }
+
+    /**
+     * 当前窗口逻辑宽度：ROUND 模式等于球边长；胶囊模式为胶囊宽度。
+     * 录音光晕定位与拖动钳位均依赖该值。
+     */
+    private fun getLogicalBallSizePx(): Int {
+        lp?.width?.takeIf { it > 0 }?.let { return it }
+        return getBallSizePx()
     }
 
     private fun currentLogicalX(logicalSizePx: Int = getLogicalBallSizePx()): Int {
@@ -896,11 +827,11 @@ class FloatingBallViewManager(
         return if (params != null && params.width > 0) {
             params.width
         } else {
-            getLogicalBallSizePx()
+            getBallSizePx()
         }
     }
 
-    private fun updateBallContainerSize(logicalSizePx: Int = getLogicalBallSizePx()) {
+    private fun updateBallContainerSize(logicalSizePx: Int = getBallSizePx()) {
         val container = ballContainer ?: return
         val params = container.layoutParams as? FrameLayout.LayoutParams ?: return
         if (params.width == logicalSizePx &&
@@ -1566,7 +1497,7 @@ class FloatingBallViewManager(
         dm.widthPixels to dm.heightPixels
     }
 
-    private fun persistBallPosition() {
+    internal fun persistBallPosition() {
         if (lp == null) return
         val logicalSizePx = getLogicalBallSizePx()
         val logicalX = currentLogicalX(logicalSizePx)

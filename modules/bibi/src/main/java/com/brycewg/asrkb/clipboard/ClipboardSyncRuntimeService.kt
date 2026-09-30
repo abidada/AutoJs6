@@ -9,10 +9,9 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.os.IBinder
 import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.brycewg.asrkb.imebridge.ImeBridgeClient
-import com.brycewg.asrkb.imebridge.ImeBridgeClipboardSyncService
 import com.brycewg.asrkb.store.Prefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,14 +24,12 @@ import kotlinx.coroutines.withContext
 
 private sealed interface ClipboardSyncOwner {
     data object Direct : ClipboardSyncOwner
-    data class Bridge(val targetPackage: String, val sessionId: String) : ClipboardSyncOwner
 }
 
 /**
  * App 本体拥有的 Clipboard Sync Runtime Service。
  *
- * 不属于悬浮球。主 IME Direct 与第三方 Bridge Screen Session 均由此承载；
- * 凭证与网络只留在本进程。
+ * 不属于悬浮球。系统剪贴板 Direct 观察由此承载；凭证与网络只留在本进程。
  */
 class ClipboardSyncRuntimeService : Service() {
     companion object {
@@ -44,14 +41,6 @@ class ClipboardSyncRuntimeService : Service() {
             "com.brycewg.asrkb.clipboard.action.DEACTIVATE_DIRECT"
         const val ACTION_CONFIG_CHANGED =
             "com.brycewg.asrkb.clipboard.action.CONFIG_CHANGED"
-        const val ACTION_ACTIVATE_BRIDGE =
-            "com.brycewg.asrkb.clipboard.action.ACTIVATE_BRIDGE"
-        const val ACTION_DEACTIVATE_BRIDGE =
-            "com.brycewg.asrkb.clipboard.action.DEACTIVATE_BRIDGE"
-        const val ACTION_BRIDGE_ACTOR_DIED =
-            "com.brycewg.asrkb.clipboard.action.BRIDGE_ACTOR_DIED"
-        const val EXTRA_TARGET_IME_PACKAGE = "target_ime_package"
-        const val EXTRA_BRIDGE_SESSION_ID = "bridge_session_id"
 
         @Volatile
         private var runningInstance: ClipboardSyncRuntimeService? = null
@@ -71,23 +60,6 @@ class ClipboardSyncRuntimeService : Service() {
             start(context, ACTION_CONFIG_CHANGED)
         }
 
-        fun activateBridge(context: Context, targetImePackage: String, sessionId: String) {
-            context.applicationContext.startService(
-                Intent(context.applicationContext, ClipboardSyncRuntimeService::class.java)
-                    .setAction(ACTION_ACTIVATE_BRIDGE)
-                    .putExtra(EXTRA_TARGET_IME_PACKAGE, targetImePackage)
-                    .putExtra(EXTRA_BRIDGE_SESSION_ID, sessionId)
-            )
-        }
-
-        fun deactivateBridge(context: Context, sessionId: String) {
-            start(context, ACTION_DEACTIVATE_BRIDGE, sessionId)
-        }
-
-        fun onBridgeActorDied(context: Context, sessionId: String) {
-            start(context, ACTION_BRIDGE_ACTOR_DIED, sessionId)
-        }
-
         fun downloadFile(entryId: String): Boolean = runningInstance?.runtime?.downloadFile(entryId) ?: false
 
         fun setUiListener(listener: SyncClipboardManager.Listener?) {
@@ -95,13 +67,10 @@ class ClipboardSyncRuntimeService : Service() {
             runningInstance?.attachListener(listener)
         }
 
-        private fun start(context: Context, action: String, bridgeSessionId: String? = null) {
+        private fun start(context: Context, action: String) {
             context.applicationContext.startService(
                 Intent(context.applicationContext, ClipboardSyncRuntimeService::class.java)
                     .setAction(action)
-                    .apply {
-                        bridgeSessionId?.let { putExtra(EXTRA_BRIDGE_SESSION_ID, it) }
-                    }
             )
         }
     }
@@ -143,14 +112,16 @@ class ClipboardSyncRuntimeService : Service() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action != Intent.ACTION_INPUT_METHOD_CHANGED) return
             val current = try {
-                ImeBridgeClient.resolveCurrentImePackage(this@ClipboardSyncRuntimeService)
+                Settings.Secure.getString(
+                    contentResolver,
+                    Settings.Secure.DEFAULT_INPUT_METHOD
+                )?.substringBefore('/')
             } catch (t: Throwable) {
                 Log.w(TAG, "Failed to resolve IME after change", t)
                 null
             }
-            val expectedIme = when (val currentOwner = owner) {
+            val expectedIme = when (owner) {
                 ClipboardSyncOwner.Direct -> packageName
-                is ClipboardSyncOwner.Bridge -> currentOwner.targetPackage
                 null -> null
             }
             if (expectedIme != null && current != expectedIme) {
@@ -203,31 +174,6 @@ class ClipboardSyncRuntimeService : Service() {
                 runtime?.notifyConfigChanged()
                 maybeStopSelf()
             }
-            ACTION_ACTIVATE_BRIDGE -> {
-                val target = intent.getStringExtra(EXTRA_TARGET_IME_PACKAGE).orEmpty()
-                val sessionId = intent.getStringExtra(EXTRA_BRIDGE_SESSION_ID).orEmpty()
-                if (target.isNotBlank() && sessionId.isNotBlank()) {
-                    activateBridgePath(target, sessionId)
-                }
-                maybeStopSelf()
-            }
-            ACTION_DEACTIVATE_BRIDGE -> {
-                val sessionId = intent.getStringExtra(EXTRA_BRIDGE_SESSION_ID)
-                if ((owner as? ClipboardSyncOwner.Bridge)?.sessionId == sessionId) {
-                    runtime?.forceDeactivateSession()
-                    owner = null
-                }
-                maybeStopSelf()
-            }
-            ACTION_BRIDGE_ACTOR_DIED -> {
-                val sessionId = intent.getStringExtra(EXTRA_BRIDGE_SESSION_ID)
-                if ((owner as? ClipboardSyncOwner.Bridge)?.sessionId == sessionId) {
-                    owner = null
-                    // Actor 死亡后丢弃旧 Port，下次激活重建。
-                    tearDownRuntime()
-                }
-                maybeStopSelf()
-            }
             else -> Unit
         }
         return START_NOT_STICKY
@@ -278,30 +224,6 @@ class ClipboardSyncRuntimeService : Service() {
         runtime?.activateSession()
     }
 
-    private fun activateBridgePath(target: String, sessionId: String) {
-        val currentIme = try {
-            ImeBridgeClient.resolveCurrentImePackage(this)
-        } catch (t: Throwable) {
-            Log.w(TAG, "Failed to verify bridge target", t)
-            null
-        }
-        if (resolveClipboardActor(packageName, currentIme, false, null, target) !=
-            SystemClipboardActor.BRIDGE
-        ) {
-            Log.w(TAG, "Ignoring stale bridge activation for $target; current IME=$currentIme")
-            ImeBridgeClipboardSyncService.rejectActivationIfActive(target, sessionId)
-            return
-        }
-        val sameBridgeSession = owner == ClipboardSyncOwner.Bridge(target, sessionId) &&
-            runtime != null
-        if (!sameBridgeSession) {
-            tearDownRuntime()
-            ensureRuntime(activatedBridgeTargetPackage = target)
-        }
-        owner = ClipboardSyncOwner.Bridge(target, sessionId)
-        runtime?.activateSession()
-    }
-
     private fun tearDownRuntime() {
         val existing = runtime
         runtime = null
@@ -314,14 +236,13 @@ class ClipboardSyncRuntimeService : Service() {
         }
     }
 
-    private fun ensureRuntime(activatedBridgeTargetPackage: String? = null) {
+    private fun ensureRuntime() {
         if (runtime != null) return
         val createdSession = DirectClipboardSyncRuntimeSession(
             context = this,
             prefs = prefs,
             scope = serviceScope,
-            initialListener = pendingUiListener,
-            activatedBridgeTargetPackage = activatedBridgeTargetPackage
+            initialListener = pendingUiListener
         )
         lateinit var createdRuntime: ClipboardSyncRuntime
         createdRuntime = ClipboardSyncRuntime(

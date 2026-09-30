@@ -15,17 +15,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import com.brycewg.asrkb.R
-import com.brycewg.asrkb.ime.AsrKeyboardService
-import com.brycewg.asrkb.ime.layout.KeyboardLayoutStore
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.floating.FloatingAsrService
 import com.brycewg.asrkb.ui.floating.FloatingKeepAliveService
 import kotlin.math.roundToInt
-
-internal data class ImeOption(val id: String, val label: String)
 
 internal fun Context.languageOptions(): List<String> = listOf(
     getString(R.string.lang_follow_system),
@@ -58,35 +53,6 @@ internal fun languageIndex(tag: String): Int = when (tag) {
     else -> 0
 }
 
-internal fun Context.buildImeOptions(): List<ImeOption> {
-    val imm = getSystemService(InputMethodManager::class.java)
-    val options = mutableListOf(ImeOption("", getString(R.string.ime_switch_target_previous)))
-    imm?.enabledInputMethodList.orEmpty()
-        .filter { it.packageName != packageName }
-        .forEach { info ->
-            val label = info.loadLabel(packageManager)?.toString()?.trim()
-            options += ImeOption(info.id, if (!label.isNullOrBlank()) label else info.id)
-        }
-    return options
-}
-
-internal fun Context.imeSwitchTargetLabel(prefs: Prefs): String {
-    val options = buildImeOptions()
-    return options.firstOrNull { it.id == prefs.imeSwitchTargetId }?.label
-        ?: options.first().label
-}
-
-internal fun Context.extensionButtonsLabel(prefs: Prefs): String {
-    val bundle = KeyboardLayoutStore.load(prefs)
-    return getString(
-        R.string.keyboard_layout_summary,
-        bundle.main.gridSize.cols,
-        bundle.main.gridSize.rows,
-        bundle.aiEdit.gridSize.cols,
-        bundle.aiEdit.gridSize.rows
-    )
-}
-
 internal fun Context.hapticFeedbackStrengthLabel(level: Int): String {
     val resId = when (level) {
         Prefs.HAPTIC_FEEDBACK_LEVEL_OFF -> R.string.haptic_strength_off
@@ -99,14 +65,6 @@ internal fun Context.hapticFeedbackStrengthLabel(level: Int): String {
         else -> R.string.haptic_strength_system
     }
     return getString(resId)
-}
-
-internal fun Context.sendImeRefreshBroadcast() {
-    sendBroadcast(
-        Intent(AsrKeyboardService.ACTION_REFRESH_IME_UI).apply {
-            setPackage(packageName)
-        }
-    )
 }
 
 internal fun refreshFloatingNotificationLanguages(context: Context, prefs: Prefs) {

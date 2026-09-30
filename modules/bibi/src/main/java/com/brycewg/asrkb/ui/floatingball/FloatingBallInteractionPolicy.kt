@@ -33,12 +33,12 @@ internal fun resolveFloatingBallRecordingTapAction(
 internal fun shouldScheduleFloatingLongHoldMove(
     holdToRecordEnabled: Boolean,
     directMoveEnabled: Boolean
-): Boolean = !holdToRecordEnabled && !directMoveEnabled
+): Boolean = false
 
 internal fun shouldStartFloatingHoldRecordingOnDown(
     holdToRecordEnabled: Boolean,
     isMoveMode: Boolean
-): Boolean = holdToRecordEnabled && !isMoveMode
+): Boolean = false
 
 internal fun resolveFloatingBallHoldPressAction(
     isRecording: Boolean,
@@ -53,13 +53,7 @@ internal fun resolveFloatingBallHoldPressAction(
 
 internal fun resolveFloatingBallHoldMoveAction(
     movementExceeded: Boolean,
-    menuThresholdExceeded: Boolean,
-    movingTowardScreenCenter: Boolean,
-    directMoveEnabled: Boolean
-): FloatingBallHoldMoveAction = when {
-    movingTowardScreenCenter && menuThresholdExceeded -> FloatingBallHoldMoveAction.OpenMenu
-    movingTowardScreenCenter -> FloatingBallHoldMoveAction.None
-    !movementExceeded -> FloatingBallHoldMoveAction.None
-    directMoveEnabled -> FloatingBallHoldMoveAction.MoveBall
-    else -> FloatingBallHoldMoveAction.None
-}
+    @Suppress("UNUSED_PARAMETER") menuThresholdExceeded: Boolean,
+    @Suppress("UNUSED_PARAMETER") movingTowardScreenCenter: Boolean,
+    @Suppress("UNUSED_PARAMETER") directMoveEnabled: Boolean
+): FloatingBallHoldMoveAction = FloatingBallHoldMoveAction.None

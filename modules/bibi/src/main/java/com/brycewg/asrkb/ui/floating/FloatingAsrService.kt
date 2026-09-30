@@ -26,9 +26,6 @@ import com.brycewg.asrkb.asr.AsrVendor
 import com.brycewg.asrkb.asr.BluetoothRouteManager
 import com.brycewg.asrkb.asr.ContinuousCaptureCoordinator
 import com.brycewg.asrkb.asr.ContinuousCaptureOwner
-import com.brycewg.asrkb.imebridge.ImeBridgeClient
-import com.brycewg.asrkb.imebridge.ImeBridgeContract
-import com.brycewg.asrkb.imebridge.ImeBridgeResult
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.store.debug.DebugLogManager
 import com.brycewg.asrkb.ui.floatingball.AsrSessionManager
@@ -71,8 +68,7 @@ class FloatingAsrService : Service() {
         const val ACTION_VOLUME_KEY_STOP = "com.brycewg.asrkb.action.VOLUME_KEY_RECORDING_STOP"
         const val ACTION_VOLUME_KEY_TOGGLE = "com.brycewg.asrkb.action.VOLUME_KEY_RECORDING_TOGGLE"
         const val ACTION_SHAKE_RECORDING_TOGGLE = "com.brycewg.asrkb.action.SHAKE_RECORDING_TOGGLE"
-        const val ACTION_IME_WINDOW_HIDDEN_STOP_RECORDING =
-            "com.brycewg.asrkb.action.IME_WINDOW_HIDDEN_STOP_RECORDING"
+        const val ACTION_WAKE_TRIGGERED = "com.brycewg.asrkb.action.WAKE_WORD_TRIGGERED"
     }
 
     private lateinit var windowManager: WindowManager
@@ -83,6 +79,7 @@ class FloatingAsrService : Service() {
     private lateinit var asrSessionManager: AsrSessionManager
     private lateinit var touchHandler: FloatingBallTouchHandler
     private lateinit var visibilityCoordinator: FloatingVisibilityCoordinator
+    private lateinit var listeningPanel: ListeningPanelHelper
     private lateinit var overlayPermissionGate: OverlayPermissionGate
     private lateinit var notifier: UserNotifier
     private lateinit var interactionController: FloatingAsrInteractionController
@@ -93,7 +90,10 @@ class FloatingAsrService : Service() {
     private val handler = Handler(Looper.getMainLooper())
 
     private var imeVisible: Boolean = false
-    private var bridgeImeVisible: Boolean? = null
+
+    /** IME 移除后不再有输入法可见性来源；恒为 false，仅保留交互控制器签名。 */
+    private fun isEffectiveImeVisible(): Boolean = imeVisible
+
     private var localPreloadTriggered: Boolean = false
     private var recordingForegroundActive: Boolean = false
     private var continuousCaptureForegroundActive: Boolean = false
@@ -107,26 +107,11 @@ class FloatingAsrService : Service() {
             Log.w(TAG, "Failed to remap floating ball position on display change", e)
         }
     }
-    private val imeBridgeClient by lazy { ImeBridgeClient(applicationContext) }
-
     private val hintReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
-                FloatingImeHints.ACTION_HINT_IME_VISIBLE -> {
-                    handleAccessibilityImeVisibilityHint(true, "hint_visible")
-                }
-                FloatingImeHints.ACTION_HINT_IME_HIDDEN -> {
-                    handleAccessibilityImeVisibilityHint(false, "hint_hidden")
-                }
                 ACTION_REFRESH_NOTIFICATION_LANGUAGE -> refreshRecordingNotification()
             }
-        }
-    }
-
-    private val bridgeHintReceiver = object : android.content.BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action != ImeBridgeContract.ACTION_IME_WINDOW_VISIBILITY_CHANGED) return
-            handleBridgeImeVisibilityHint("bridge_hint", intent)
         }
     }
 
@@ -174,6 +159,15 @@ class FloatingAsrService : Service() {
             viewManager.setKeepScreenOn(enabled)
         }
         interactionController.asrSessionManager = asrSessionManager
+
+        listeningPanel = ListeningPanelHelper(
+            appContext = applicationContext,
+            overlayContext = overlayWindowContext,
+            windowManager = windowManager,
+            prefs = prefs
+        )
+        listeningPanel.onStopClicked = { interactionController.onListeningPanelStopClicked() }
+        interactionController.listeningPanel = listeningPanel
         touchHandler =
             FloatingBallTouchHandler(
                 overlayWindowContext,
@@ -191,7 +185,6 @@ class FloatingAsrService : Service() {
             viewManager = viewManager,
             tag = TAG,
             hasOverlayPermission = { overlayPermissionGate.hasPermission() },
-            isImeVisible = { isEffectiveImeVisible() },
             isForceVisibleActive = { interactionController.isForceVisibleActive() },
             showBall = { src -> showBall(src) },
             hideBall = { hideBall() }
@@ -201,8 +194,6 @@ class FloatingAsrService : Service() {
 
         try {
             val filter = android.content.IntentFilter().apply {
-                addAction(FloatingImeHints.ACTION_HINT_IME_VISIBLE)
-                addAction(FloatingImeHints.ACTION_HINT_IME_HIDDEN)
                 addAction(ACTION_REFRESH_NOTIFICATION_LANGUAGE)
             }
             ContextCompat.registerReceiver(
@@ -218,21 +209,6 @@ class FloatingAsrService : Service() {
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to register hint receiver", e)
         }
-        try {
-            val filter = android.content.IntentFilter().apply {
-                addAction(ImeBridgeContract.ACTION_IME_WINDOW_VISIBILITY_CHANGED)
-            }
-            ContextCompat.registerReceiver(
-                this,
-                bridgeHintReceiver,
-                filter,
-                ContextCompat.RECEIVER_EXPORTED
-            )
-        } catch (e: Throwable) {
-            Log.e(TAG, "Failed to register bridge hint receiver", e)
-        }
-
-        refreshBridgeImeVisibility("service_create")
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -254,7 +230,6 @@ class FloatingAsrService : Service() {
                 if (enabled && !overlayPermissionGate.hasPermission()) {
                     overlayPermissionGate.showMissingPermissionToast()
                 }
-                refreshBridgeImeVisibility("start_action_show")
                 visibilityCoordinator.applyVisibility("start_action_show")
             }
             ACTION_HIDE -> hideBall()
@@ -263,7 +238,6 @@ class FloatingAsrService : Service() {
                 viewManager.applyBallTheme()
                 viewManager.applyBallAlpha()
                 viewManager.updateStateVisual(stateMachine.state, force = true)
-                refreshBridgeImeVisibility("refresh_ui")
             }
             ACTION_SCRIPT_START -> interactionController.onScriptStart()
             ACTION_SCRIPT_STOP -> interactionController.onScriptStop()
@@ -271,17 +245,7 @@ class FloatingAsrService : Service() {
             ACTION_VOLUME_KEY_STOP -> interactionController.onVolumeKeyStop()
             ACTION_VOLUME_KEY_TOGGLE -> interactionController.onVolumeKeyToggle()
             ACTION_SHAKE_RECORDING_TOGGLE -> interactionController.onShakeRecordingToggle()
-            ACTION_IME_WINDOW_HIDDEN_STOP_RECORDING ->
-                interactionController.stopRecordingOnImeWindowHidden()
-            FloatingImeHints.ACTION_HINT_IME_VISIBLE -> {
-                handleAccessibilityImeVisibilityHint(true, "start_hint_visible")
-            }
-            FloatingImeHints.ACTION_HINT_IME_HIDDEN -> {
-                handleAccessibilityImeVisibilityHint(false, "start_hint_hidden")
-            }
-            ImeBridgeContract.ACTION_IME_WINDOW_VISIBILITY_CHANGED -> {
-                handleBridgeImeVisibilityHint("start_bridge_hint", intent)
-            }
+            ACTION_WAKE_TRIGGERED -> interactionController.onWakeTriggered()
             else -> visibilityCoordinator.applyVisibility("start_default")
         }
         return START_STICKY
@@ -308,6 +272,11 @@ class FloatingAsrService : Service() {
         stopRecordingForeground(force = true)
 
         hideBall()
+        try {
+            if (::listeningPanel.isInitialized) listeningPanel.hide()
+        } catch (e: Throwable) {
+            Log.w(TAG, "Failed to hide listening panel", e)
+        }
         viewManager.cleanup()
         asrSessionManager.cleanup()
         touchHandler.cleanup()
@@ -321,11 +290,6 @@ class FloatingAsrService : Service() {
             unregisterReceiver(hintReceiver)
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to unregister receiver", e)
-        }
-        try {
-            unregisterReceiver(bridgeHintReceiver)
-        } catch (e: Throwable) {
-            Log.e(TAG, "Failed to unregister bridge hint receiver", e)
         }
     }
 
@@ -534,92 +498,12 @@ class FloatingAsrService : Service() {
         if (hasView) {
             try {
                 viewManager.resetPositionToDefault()
-                if (!prefs.floatingSwitcherOnlyWhenImeVisible && !isEffectiveImeVisible()) {
-                    viewManager.animateHideToEdgePartialIfNeeded()
-                }
             } catch (e: Throwable) {
                 Log.e(TAG, "Failed to apply default position reset on existing view", e)
             }
         } else {
             visibilityCoordinator.applyVisibility("reset_pos_no_view")
         }
-    }
-
-    private fun handleAccessibilityImeVisibilityHint(visible: Boolean, src: String) {
-        imeVisible = visible
-        applyImeVisibilitySideEffects(src)
-    }
-
-    private fun handleBridgeImeVisibilityHint(src: String, intent: Intent?) {
-        val fallbackOnFailure = bridgeHiddenFallbackFrom(intent)
-        refreshBridgeImeVisibility(src, fallbackOnFailure)
-    }
-
-    private fun refreshBridgeImeVisibility(src: String, fallbackOnFailure: Boolean? = null) {
-        if (!isImeBridgeEnabled()) {
-            bridgeImeVisible = null
-            return
-        }
-        serviceScope.launch(Dispatchers.IO) {
-            val result = imeBridgeClient.queryStatus(timeoutMs = 250L)
-            handler.post {
-                applyBridgeImeVisibilityResult(src, result, fallbackOnFailure)
-            }
-        }
-    }
-
-    private fun applyBridgeImeVisibilityResult(
-        src: String,
-        result: ImeBridgeResult,
-        fallbackOnFailure: Boolean?
-    ) {
-        if (!::visibilityCoordinator.isInitialized) return
-        bridgeImeVisible = if (result.isSuccess) {
-            result.isImeWindowVisible
-        } else {
-            fallbackOnFailure
-        }
-        applyImeVisibilitySideEffects(src)
-    }
-
-    private fun bridgeHiddenFallbackFrom(intent: Intent?): Boolean? {
-        if (intent?.hasExtra(ImeBridgeContract.EXTRA_IME_WINDOW_VISIBLE) != true) return null
-        val visible = intent.getBooleanExtra(ImeBridgeContract.EXTRA_IME_WINDOW_VISIBLE, false)
-        return if (visible) null else false
-    }
-
-    private fun applyImeVisibilitySideEffects(src: String) {
-        if (!::visibilityCoordinator.isInitialized) return
-        val visible = isEffectiveImeVisible()
-        if (DebugLogManager.isRecording()) {
-            DebugLogManager.log(
-                "float",
-                "hint",
-                mapOf(
-                    "action" to if (visible) "VISIBLE" else "HIDDEN",
-                    "src" to src,
-                    "a11yVisible" to imeVisible,
-                    "bridgeVisible" to (bridgeImeVisible ?: "")
-                )
-            )
-        }
-        // 停录主路径：a11y TYPE_INPUT_METHOD 窗口边沿 → ACTION_IME_WINDOW_HIDDEN_STOP_RECORDING。
-        // 此处不再备份停录，避免与窗口边沿重复触发。
-        visibilityCoordinator.applyVisibility(src)
-        try {
-            BluetoothRouteManager.setImeActive(this, visible)
-        } catch (t: Throwable) {
-            Log.w(TAG, "BluetoothRouteManager setImeActive($visible)", t)
-        }
-    }
-
-    private fun isEffectiveImeVisible(): Boolean = if (isImeBridgeEnabled()) bridgeImeVisible ?: imeVisible else imeVisible
-
-    private fun isImeBridgeEnabled(): Boolean = try {
-        prefs.floatingImeBridgeEnabled
-    } catch (e: Throwable) {
-        Log.w(TAG, "Failed to read IME bridge preference", e)
-        false
     }
 
     private fun hapticTapIfEnabled(view: View?) {

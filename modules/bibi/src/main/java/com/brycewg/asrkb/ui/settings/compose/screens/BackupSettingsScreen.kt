@@ -29,7 +29,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.clipboard.ClipboardSyncRuntimeService
-import com.brycewg.asrkb.ime.AsrKeyboardService
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.AsrAccessibilityService
 import com.brycewg.asrkb.ui.settings.backup.WebDavBackupHelper
@@ -388,11 +387,6 @@ private fun Context.refreshImeUi() {
         ClipboardSyncRuntimeService.notifyConfigChanged(this)
     } catch (e: Exception) {
         Log.e(TAG, "Failed to notify clipboard sync runtime", e)
-    }
-    try {
-        sendBroadcast(Intent(AsrKeyboardService.ACTION_REFRESH_IME_UI))
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to send refresh broadcast", e)
     }
     // 备份可能改动摇一摇开关；偏好已写入后按当前值同步加速度计注册。
     AsrAccessibilityService.refreshShakeSensor()

@@ -1720,4 +1720,7 @@
     <string name="summary_bibi_bluetooth_mic_permission">Preferred Bluetooth headset microphone (optional)</string>
     <string name="text_bibi_boot_autostart">BIBI autostart on boot</string>
     <string name="summary_bibi_boot_autostart">Start the BIBI floating ball service on boot (optional)</string>
+    <string name="text_bibi_voice_dispatch">Voice dispatch</string>
+    <string name="summary_bibi_voice_dispatch">Configure dispatch rules from recognized voice text to tasks</string>
+    <string name="error_open_voice_dispatch_settings">Failed to open voice dispatch settings</string>
 </resources>

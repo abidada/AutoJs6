@@ -3,6 +3,19 @@ package com.brycewg.asrkb.ui.floatingball
 import com.brycewg.asrkb.BuildConfig
 
 /**
+ * 交互模式层：与 ASR 会话状态（Recording/Processing）正交。
+ *
+ * ROUND          完整圆球（默认）
+ * READY_PILL     胶囊「发起语音」
+ * LISTENING_PILL 胶囊「正在听...」（录音/识别中）
+ */
+enum class FloatingBallInteractionMode {
+    ROUND,
+    READY_PILL,
+    LISTENING_PILL
+}
+
+/**
  * 悬浮球状态机
  * 使用 sealed class 定义所有可能的状态，替代多个布尔标志
  */

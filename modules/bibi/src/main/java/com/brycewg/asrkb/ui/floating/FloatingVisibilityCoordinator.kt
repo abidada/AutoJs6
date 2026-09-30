@@ -13,7 +13,6 @@ internal class FloatingVisibilityCoordinator(
     private val viewManager: FloatingBallViewManager,
     private val tag: String,
     private val hasOverlayPermission: () -> Boolean,
-    private val isImeVisible: () -> Boolean,
     private val isForceVisibleActive: () -> Boolean,
     private val showBall: (String) -> Unit,
     private val hideBall: () -> Unit
@@ -27,49 +26,19 @@ internal class FloatingVisibilityCoordinator(
         } catch (_: Throwable) {
             false
         }
-        val onlyWhenImeVisible = try {
-            prefs.floatingSwitcherOnlyWhenImeVisible
-        } catch (
-            _: Throwable
-        ) {
-            false
-        }
-        val imeVisible = isImeVisible()
         val overlayGranted = hasOverlayPermission()
 
         if (DebugLogManager.isRecording()) {
             logShowAttemptDedup(
                 src = src,
                 enabled = enabledPref,
-                overlayGranted = overlayGranted,
-                imeVisible = imeVisible,
-                onlyWhenImeVisible = onlyWhenImeVisible
+                overlayGranted = overlayGranted
             )
         }
 
         if (!enabledPref || !overlayGranted) {
             if (DebugLogManager.isRecording()) {
                 DebugLogManager.log("float", "show_skip", mapOf("reason" to "pref_or_permission"))
-            }
-            hideBall()
-            return
-        }
-
-        val completionActive = try {
-            viewManager.isCompletionTickActive()
-        } catch (_: Throwable) {
-            false
-        }
-        val forceVisible = isForceVisibleActive()
-        if (onlyWhenImeVisible &&
-            !imeVisible &&
-            !stateMachine.isRecording &&
-            !stateMachine.isProcessing &&
-            !completionActive &&
-            !forceVisible
-        ) {
-            if (DebugLogManager.isRecording()) {
-                DebugLogManager.log("float", "show_skip", mapOf("reason" to "ime_not_visible"))
             }
             hideBall()
             return
@@ -86,29 +55,14 @@ internal class FloatingVisibilityCoordinator(
         }
 
         showBall(src)
-
-        // 常驻模式下：Idle 且无交互保护时，根据 IME 可见性自动恢复“本体/把手”
-        if (!onlyWhenImeVisible && stateMachine.isIdle && !completionActive && !forceVisible) {
-            try {
-                if (imeVisible) {
-                    viewManager.animateRevealFromEdgeIfNeeded()
-                } else {
-                    viewManager.animateHideToEdgePartialIfNeeded()
-                }
-            } catch (e: Throwable) {
-                Log.w(tag, "Failed to apply edge reveal/hide in applyVisibility", e)
-            }
-        }
     }
 
     private fun logShowAttemptDedup(
         src: String,
         enabled: Boolean,
-        overlayGranted: Boolean,
-        imeVisible: Boolean,
-        onlyWhenImeVisible: Boolean
+        overlayGranted: Boolean
     ) {
-        val sig = "$src|$enabled|$overlayGranted|$imeVisible|$onlyWhenImeVisible"
+        val sig = "$src|$enabled|$overlayGranted"
         val now = System.currentTimeMillis()
         if (now - lastShowAttemptAt < 300L && lastShowAttemptSig == sig) return
 
@@ -119,9 +73,7 @@ internal class FloatingVisibilityCoordinator(
                 data = mapOf(
                     "src" to src,
                     "enabled" to enabled,
-                    "overlay" to overlayGranted,
-                    "imeVisible" to imeVisible,
-                    "onlyWhenImeVisible" to onlyWhenImeVisible
+                    "overlay" to overlayGranted
                 )
             )
         } catch (_: Throwable) {

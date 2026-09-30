@@ -14,11 +14,6 @@ import com.brycewg.asrkb.asr.*
 import com.brycewg.asrkb.asr.AsrConnectionWarmer
 import com.brycewg.asrkb.asr.AsrTimeoutCalculator
 import com.brycewg.asrkb.asr.BluetoothRouteManager
-import com.brycewg.asrkb.imebridge.ImeBridgeClient
-import com.brycewg.asrkb.imebridge.ImeBridgeContract
-import com.brycewg.asrkb.imebridge.ImeBridgeResult
-import com.brycewg.asrkb.imebridge.ImeBridgeWarningToast
-import com.brycewg.asrkb.imebridge.imeBridgeWarningMessageRes
 import com.brycewg.asrkb.store.AsrHistoryAudioCapture
 import com.brycewg.asrkb.store.AsrHistoryFailureRecorder
 import com.brycewg.asrkb.store.AsrHistoryStore
@@ -31,8 +26,6 @@ import com.brycewg.asrkb.store.debug.DebugLogManager
 import com.brycewg.asrkb.store.debug.StreamingPreviewDiag
 import com.brycewg.asrkb.store.getAsrRuntimeStatsSnapshotOrNull
 import com.brycewg.asrkb.store.recordPrimaryAsrRuntimeRequestIfSuccessful
-import com.brycewg.asrkb.ui.AsrAccessibilityService.FocusContext
-import com.brycewg.asrkb.ui.AsrAccessibilityService.InsertPath
 import com.brycewg.asrkb.util.TextSanitizer
 import com.brycewg.asrkb.util.TypewriterTextAnimator
 import java.util.UUID
@@ -61,7 +54,7 @@ class AsrSessionManager(
     companion object {
         private const val TAG = "AsrSessionManager"
         private const val LOCAL_MODEL_READY_WAIT_CONSUMED = -1L
-        private const val WARNING_TOAST_RECENT_WINDOW_MS = 5_000L
+
     }
 
     interface AsrSessionListener {
@@ -73,27 +66,12 @@ class AsrSessionManager(
 
     private var asrEngine: StreamingAsrEngine? = null
     private val postproc = LlmPostProcessor()
-    private val imeBridgeClient by lazy { ImeBridgeClient(context.applicationContext) }
     private val directMicrophoneEngineFactory = AsrDirectMicrophoneEngineFactory()
     private val parallelEngineFactory = AsrParallelEngineFactory()
 
-    // 会话上下文
-    private var focusContext: FocusContext? = null
+    // 会话上下文（IME 已移除：识别结果不再写入输入框，仅保留部分文本供统计/历史）
     private var lastPartialForPreview: String? = null
 
-    @Volatile
-    private var useImeBridgeForSession: Boolean = false
-
-    @Volatile
-    private var skipA11ySetTextPreviewForSession: Boolean = false
-
-    @Volatile
-    private var useImeBridgeComposingPreviewForSession: Boolean = false
-
-    @Volatile
-    private var imeBridgeSessionId: String? = null
-    private var markerInserted: Boolean = false
-    private var markerChar: String? = null
     private var aiPostProcessingToken: Long = 0L
     private var aiPostProcessingBaseText: String? = null
     private var aiPostProcessingPreviewText: String? = null
@@ -149,8 +127,6 @@ class AsrSessionManager(
         apply = keepScreenOnApply
     )
     private val sessionTokenCounter = AtomicLong(0L)
-    private val bridgePreviewSequence = AtomicLong(0L)
-    private val bridgeOperationLock = Any()
 
     @Volatile
     private var activeSessionToken: Long = 0L
@@ -205,14 +181,7 @@ class AsrSessionManager(
     }
 
     private fun clearPreviewSessionContext() {
-        focusContext = null
         lastPartialForPreview = null
-        useImeBridgeForSession = false
-        skipA11ySetTextPreviewForSession = false
-        useImeBridgeComposingPreviewForSession = false
-        imeBridgeSessionId = null
-        markerInserted = false
-        markerChar = null
         aiPostProcessingToken = 0L
         aiPostProcessingBaseText = null
         aiPostProcessingPreviewText = null
@@ -353,44 +322,10 @@ class AsrSessionManager(
         processingTimeoutJob = null
         hasCommittedResult = false
 
-        val useImeBridge = isImeBridgeEnabled()
-        useImeBridgeForSession = useImeBridge
-        skipA11ySetTextPreviewForSession = try {
-            prefs.shouldUseA11yAndroid13Api()
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to snapshot Android 13 a11y API preference", e)
-            false
-        }
-        imeBridgeSessionId = null
-        useImeBridgeComposingPreviewForSession = if (useImeBridge) {
-            prepareImeBridgeSession()
-        } else {
-            false
-        }
-        // 写入兼容模式：为命中包名注入占位符（粘贴方式），屏蔽原文本干扰。
-        // Android 13 IME commitText 路径不做 SET_TEXT 预览，兼容标记也不需要。
-        if (!useImeBridge && !skipA11ySetTextPreviewForSession) {
-            tryFixCompatPlaceholderIfNeeded()
-        }
-
         // 构建引擎
         asrEngine = buildEngineForCurrentMode(sessionToken)
         Log.d(TAG, "ASR engine created: ${asrEngine?.javaClass?.simpleName}")
 
-        // Bridge 模式直接通过 IME 的 InputConnection 提交最终文本，不做无障碍预览/整段重写。
-        if (useImeBridge) {
-            focusContext = null
-        } else {
-            // 记录焦点上下文（占位后再取，保持与参考版本一致）
-            focusContext = com.brycewg.asrkb.ui.AsrAccessibilityService.getCurrentFocusContext()
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                try {
-                    focusContext = com.brycewg.asrkb.ui.AsrAccessibilityService.getCurrentFocusContext()
-                } catch (e: Throwable) {
-                    Log.w(TAG, "Failed to refresh focus context", e)
-                }
-            }, 120)
-        }
         lastPartialForPreview = null
 
         // 启动引擎
@@ -492,46 +427,11 @@ class AsrSessionManager(
             hasCommittedResult = true
             listener.onResultCommitted(commitText, success)
         } else {
-            if (useImeBridgeForSession) {
-                clearImeBridgeComposingPreview("cancel_session")
-            } else {
-                rollbackPreviewToSnapshotIfNeeded()
-            }
             sessionStartTotalUptimeMs = 0L
             lastAudioMsForStats = 0L
             lastRequestDurationMs = null
         }
         clearPreviewSessionContext()
-    }
-
-    private fun rollbackPreviewToSnapshotIfNeeded() {
-        if (shouldSkipA11ySetTextPreview()) return
-        if (lastPartialForPreview.isNullOrEmpty() && !markerInserted) return
-        val ctx = focusContext ?: return
-        val currentText = com.brycewg.asrkb.ui.AsrAccessibilityService.getCurrentFocusedText()
-            ?: return
-        val rollbackText = stripMarkersIfAny(ctx.prefix + ctx.suffix)
-        val previewText = lastPartialForPreview?.let { ctx.prefix + it + ctx.suffix }
-        val acceptableCurrentTexts = linkedSetOf(
-            ctx.prefix + ctx.suffix,
-            rollbackText
-        )
-        previewText?.let {
-            acceptableCurrentTexts += it
-            acceptableCurrentTexts += stripMarkersIfAny(it)
-        }
-        if (currentText !in acceptableCurrentTexts) {
-            Log.d(TAG, "Skip preview rollback because focused text diverged")
-            return
-        }
-        val reverted = com.brycewg.asrkb.ui.AsrAccessibilityService.insertTextSilent(rollbackText)
-        if (!reverted) {
-            Log.w(TAG, "Failed to roll back preview text on cancelSession")
-            return
-        }
-        val prefixLenForCursor = stripMarkersIfAny(ctx.prefix).length
-        com.brycewg.asrkb.ui.AsrAccessibilityService.setSelectionSilent(prefixLenForCursor)
-        Log.d(TAG, "Preview text rolled back on cancelSession")
     }
 
     /**
@@ -736,11 +636,6 @@ class AsrSessionManager(
             processingTimeoutJob?.cancel()
         } catch (e: Throwable) {
             Log.w(TAG, "Failed to cancel timeout job", e)
-        }
-        if (useImeBridgeForSession) {
-            clearImeBridgeComposingPreview("cleanup")
-        } else {
-            rollbackPreviewToSnapshotIfNeeded()
         }
         asrEngine = null
         clearPreviewSessionContext()
@@ -952,28 +847,6 @@ class AsrSessionManager(
                 lastPromptSelection = res.promptSelectionStatus
                 finalText = res.text.ifBlank { text }
                 rememberAiPostProcessingResolvedText(sessionToken, finalText)
-                if (typewriter != null &&
-                    aiUsed &&
-                    finalText.isNotEmpty() &&
-                    focusContext != null
-                ) {
-                    // 最终结果到达后：让打字机以最快速度追到最终文本，再进行最终提交
-                    logFloatTypewriterSubmit(typewriter, finalText, rush = true)
-                    typewriter.submit(finalText, rush = true)
-                    val finalLen = finalText.length
-                    val t0 = try {
-                        SystemClock.uptimeMillis()
-                    } catch (_: Throwable) {
-                        0L
-                    }
-                    while (!postprocCommitted &&
-                        isSessionActive(sessionToken) &&
-                        (t0 <= 0L || (SystemClock.uptimeMillis() - t0) < 2_000L) &&
-                        typewriter.currentText().length != finalLen
-                    ) {
-                        delay(20)
-                    }
-                }
                 if (!isSessionActive(sessionToken)) {
                     typewriter?.cancel()
                     return@launch
@@ -1063,7 +936,6 @@ class AsrSessionManager(
                 if (!engineStillRunning) {
                     clearActiveSessionToken(sessionToken)
                 }
-                clearImeBridgeComposingPreview("empty_final")
                 listener.onError(
                     context.getString(com.brycewg.asrkb.R.string.asr_error_empty_result)
                 )
@@ -1152,7 +1024,6 @@ class AsrSessionManager(
             releaseRecordingResources("listener_onError")
             clearActiveSessionToken(sessionToken)
 
-            clearImeBridgeComposingPreview("listener_onError")
             listener.onSessionStateChanged(FloatingBallState.Error(message))
             listener.onError(message)
             clearPreviewSessionContext()
@@ -1352,7 +1223,6 @@ class AsrSessionManager(
             historyAudioCapture = null
             activeHistoryRecordId = null
             clearActiveSessionToken(sessionToken)
-            clearImeBridgeComposingPreview("processing_timeout_empty")
             listener.onSessionStateChanged(FloatingBallState.Idle)
             clearPreviewSessionContext()
             return
@@ -1451,159 +1321,63 @@ class AsrSessionManager(
         clearPreviewSessionContext()
     }
 
+    /**
+     * 结果交付：IME 移除后不再写入输入框；按「仅写入粘贴板」开关把最终文本复制到系统剪贴板。
+     * - 开关开且包名列表为空或含 all → 全局复制；
+     * - 开关开且指定包名 → 无障碍开启时按当前应用前缀匹配复制；
+     * - 开关关 → 不复制（结果仅进面板/历史/控制台/$bibi）。
+     */
     private fun insertTextToFocus(text: String): Boolean {
         val preview = lastPartialForPreview
         val hadPreview = !preview.isNullOrEmpty()
-        if (useImeBridgeForSession) {
-            val bridgeResult = synchronized(bridgeOperationLock) {
-                bridgePreviewSequence.incrementAndGet()
-                imeBridgeClient.insertText(text, sessionId = imeBridgeSessionId)
+        var copied = false
+        try {
+            if (prefs.floatingWriteTextPasteEnabled && shouldCopyResultToClipboard()) {
+                val cm = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE)
+                    as? android.content.ClipboardManager
+                if (cm != null) {
+                    cm.setPrimaryClip(
+                        android.content.ClipData.newPlainText("bibi_asr", text)
+                    )
+                    copied = true
+                    android.widget.Toast.makeText(
+                        context,
+                        com.brycewg.asrkb.R.string.floating_asr_copied,
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
-            logInsertFinal(
-                path = "bridge",
-                text = text,
-                preview = preview,
-                hadPreview = hadPreview,
-                ok = bridgeResult.isSuccess,
-                extra = mapOf(
-                    "code" to bridgeResult.code,
-                    "pkg" to bridgeResult.targetPackage
-                )
-            )
-            if (bridgeResult.isSuccess) {
-                imeBridgeSessionId = null
-                recordAsrUsage(text)
-                return true
-            }
-            Log.w(
-                TAG,
-                "IME bridge insert failed: code=${bridgeResult.code}, target=${bridgeResult.targetPackage}, message=${bridgeResult.message}"
-            )
-            showImeBridgeInsertFailure(bridgeResult)
-            clearImeBridgeComposingPreview("final_commit_failed")
-            return false
+        } catch (t: Throwable) {
+            Log.w(TAG, "Failed to copy result to clipboard", t)
         }
-
-        val ctx =
-            focusContext ?: com.brycewg.asrkb.ui.AsrAccessibilityService.getCurrentFocusContext()
-        val prefix = stripMarkersIfAny(ctx?.prefix ?: "")
-        val suffix = stripMarkersIfAny(ctx?.suffix ?: "")
-        val delta = stripMarkersIfAny(text)
-        Log.d(TAG, "Inserting text: deltaLen=${delta.length} (previewCtx=${ctx != null})")
-
-        val pkg = com.brycewg.asrkb.ui.AsrAccessibilityService.getActiveWindowPackage()
-        val result = com.brycewg.asrkb.ui.AsrAccessibilityService.insertText(
-            context,
-            delta,
-            prefix,
-            suffix
-        )
         logInsertFinal(
-            path = "a11y",
+            path = "clipboard",
             text = text,
             preview = preview,
             hadPreview = hadPreview,
-            ok = result.ok,
+            ok = copied,
             extra = mapOf(
-                "pkg" to pkg,
-                "prefixLen" to prefix.length,
-                "suffixLen" to suffix.length,
-                "deltaLen" to delta.length,
-                "android13Api" to skipA11ySetTextPreviewForSession,
-                "writePath" to result.id
+                "pasteSwitch" to prefs.floatingWriteTextPasteEnabled
             )
         )
-
-        if (result.ok) {
-            recordAsrUsage(text)
-            if (result == InsertPath.SET_TEXT) {
-                // 光标应定位到“前缀 + 新文本”的末尾；占位符已从前缀中移除。
-                // commitText / PASTE 由系统或目标控件自己移动光标，不能按快照前缀重定位。
-                val prefixLenForCursor = stripMarkersIfAny(ctx?.prefix ?: "").length
-                val desiredCursor = (prefixLenForCursor + text.length).coerceAtLeast(0)
-                com.brycewg.asrkb.ui.AsrAccessibilityService.setSelectionSilent(desiredCursor)
-            }
-        }
-
-        return result.ok
+        recordAsrUsage(text)
+        return true
     }
 
-    private fun showImeBridgeInsertFailure(bridgeResult: ImeBridgeResult) {
-        // 仅当桥接警告 toast 本次实际展示过才跳过，避免被冷却期抑制后用户完全无反馈
-        val warningRes = imeBridgeWarningMessageRes(bridgeResult.code, warnOnFailure = true)
-        val warningShown = warningRes != null &&
-            ImeBridgeWarningToast.wasShownWithin(
-                warningRes,
-                SystemClock.elapsedRealtime(),
-                WARNING_TOAST_RECENT_WINDOW_MS
-            )
-        if (warningShown) return
-        val isSensitiveField = bridgeResult.isSensitiveField ||
-            bridgeResult.code == ImeBridgeContract.RESULT_SENSITIVE_FIELD
-        val message = if (isSensitiveField) {
-            context.getString(com.brycewg.asrkb.R.string.floating_ime_bridge_sensitive_field)
-        } else {
-            val detail = bridgeResult.message.ifBlank {
-                ImeBridgeClient.messageForCode(bridgeResult.code)
-            }
-            context.getString(com.brycewg.asrkb.R.string.floating_ime_bridge_insert_failed, detail)
-        }
-        android.os.Handler(android.os.Looper.getMainLooper()).post {
-            android.widget.Toast.makeText(
-                context,
-                message,
-                android.widget.Toast.LENGTH_SHORT
-            ).show()
-        }
+
+    private fun shouldCopyResultToClipboard(): Boolean {
+        val rules = try {
+            prefs.floatingWritePastePackages
+        } catch (e: Throwable) {
+            Log.w(TAG, "Failed to read paste packages", e)
+            ""
+        }.split('\n').map { it.trim() }.filter { it.isNotEmpty() }
+        if (rules.isEmpty() || rules.any { it.equals("all", ignoreCase = true) }) return true
+        val pkg = com.brycewg.asrkb.ui.AsrAccessibilityService.getActiveWindowPackage()
+            ?: return false
+        return rules.any { rule -> pkg == rule || pkg.startsWith("$rule.") }
     }
 
-    private fun prepareImeBridgeSession(): Boolean {
-        val result = try {
-            imeBridgeClient.queryStatus(timeoutMs = 180L)
-        } catch (t: Throwable) {
-            Log.w(TAG, "Failed to query IME bridge session support", t)
-            return false
-        }
-        if (result.isSuccess && result.supportsSessions) {
-            val sessionId = UUID.randomUUID().toString()
-            val beginResult = try {
-                imeBridgeClient.beginSession(sessionId)
-            } catch (t: Throwable) {
-                Log.w(TAG, "Failed to begin IME bridge session", t)
-                null
-            }
-            if (beginResult?.isSuccess == true) {
-                imeBridgeSessionId = sessionId
-                return result.supportsComposingPreview
-            }
-            if (beginResult != null && beginResult.isBridgePresent) {
-                Log.d(
-                    TAG,
-                    "IME bridge session disabled: code=${beginResult.code}, " +
-                        "target=${beginResult.targetPackage}, message=${beginResult.message}"
-                )
-            }
-            return false
-        }
-
-        val enabled = result.isSuccess && result.supportsComposingPreview
-        if (!enabled && result.isBridgePresent) {
-            Log.d(
-                TAG,
-                "IME bridge composing preview disabled: code=${result.code}, " +
-                    "supportsPreview=${result.supportsComposingPreview}, " +
-                    "supportsSessions=${result.supportsSessions}, target=${result.targetPackage}"
-            )
-        }
-        return enabled
-    }
-
-    private fun isImeBridgeEnabled(): Boolean = try {
-        prefs.floatingImeBridgeEnabled
-    } catch (e: Throwable) {
-        Log.w(TAG, "Failed to get IME bridge preference", e)
-        false
-    }
 
     private fun recordAsrUsage(text: String) {
         try {
@@ -1615,156 +1389,12 @@ class AsrSessionManager(
         }
     }
 
-    private fun shouldSkipA11ySetTextPreview(): Boolean = skipA11ySetTextPreviewForSession
-
-    private fun tryFixCompatPlaceholderIfNeeded() {
-        markerInserted = false
-        markerChar = null
-        if (shouldSkipA11ySetTextPreview()) return
-        val pkg = com.brycewg.asrkb.ui.AsrAccessibilityService.getActiveWindowPackage() ?: return
-        val compat = try {
-            prefs.floatingWriteTextCompatEnabled
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to get write compat preference", e)
-            true
-        }
-        if (!compat || !isPackageInCompatTargets(pkg)) return
-
-        val candidates = listOf("\u2060", "\u200B")
-        for (m in candidates) {
-            val ok = com.brycewg.asrkb.ui.AsrAccessibilityService.pasteTextSilent(m)
-            if (ok) {
-                markerInserted = true
-                markerChar = m
-                Log.d(TAG, "Compat fix: injected marker ${Integer.toHexString(m.codePointAt(0))}")
-                break
-            }
-        }
-    }
-
-    private fun stripMarkersIfAny(s: String): String {
-        var out = s
-        markerChar?.let { if (it.isNotEmpty()) out = out.replace(it, "") }
-        out = out.replace("\u2060", "")
-        out = out.replace("\u200B", "")
-        return out
-    }
-
+    /** 仅记录部分文本（供统计/历史 rawText）；IME 移除后不再向输入框做流式预览。 */
     private fun updatePreviewText(text: String) {
         if (text.isEmpty() || lastPartialForPreview == text) return
-        val prev = lastPartialForPreview
-        StreamingPreviewDiag.logVerbose(
-            category = "float",
-            event = "preview_write",
-            prev = prev,
-            next = text,
-            extra = mapOf(
-                "bridge" to useImeBridgeForSession,
-                "composing" to useImeBridgeComposingPreviewForSession,
-                "prefixLen" to (focusContext?.prefix?.length ?: -1),
-                "suffixLen" to (focusContext?.suffix?.length ?: -1)
-            )
-        )
-        if (useImeBridgeForSession) {
-            lastPartialForPreview = text
-            if (useImeBridgeComposingPreviewForSession) {
-                updateImeBridgeComposingPreview(text)
-            }
-            return
-        }
-        if (shouldSkipA11ySetTextPreview()) {
-            lastPartialForPreview = text
-            return
-        }
-        val ctx = focusContext ?: return
         lastPartialForPreview = text
-        val toWrite = ctx.prefix + text + ctx.suffix
-        Log.d(TAG, "preview update: $text")
-
-        serviceScope.launch {
-            com.brycewg.asrkb.ui.AsrAccessibilityService.insertTextSilent(toWrite)
-            val prefixLenForCursor = stripMarkersIfAny(ctx.prefix).length
-            val desiredCursor = (prefixLenForCursor + text.length).coerceAtLeast(0)
-            com.brycewg.asrkb.ui.AsrAccessibilityService.setSelectionSilent(desiredCursor)
-        }
     }
 
-    private fun updateImeBridgeComposingPreview(text: String) {
-        val previewSequence = bridgePreviewSequence.incrementAndGet()
-        serviceScope.launch(Dispatchers.IO) {
-            val result = synchronized(bridgeOperationLock) {
-                if (previewSequence != bridgePreviewSequence.get() ||
-                    !useImeBridgeForSession ||
-                    !useImeBridgeComposingPreviewForSession
-                ) {
-                    null
-                } else {
-                    imeBridgeClient.setComposingText(text, sessionId = imeBridgeSessionId)
-                }
-            }
-            if (result != null) {
-                try {
-                    DebugLogManager.log(
-                        category = "float",
-                        event = "bridge_composing",
-                        data = mapOf(
-                            "ok" to result.isSuccess,
-                            "code" to result.code,
-                            "pkg" to result.targetPackage,
-                            "fp" to StreamingPreviewDiag.fingerprint(text),
-                            "seq" to previewSequence
-                        )
-                    )
-                } catch (_: Throwable) { }
-            }
-            if (result != null && !result.isSuccess && result.isBridgePresent) {
-                Log.d(
-                    TAG,
-                    "IME bridge composing preview failed: code=${result.code}, target=${result.targetPackage}, message=${result.message}"
-                )
-            }
-        }
-    }
-
-    private fun clearImeBridgeComposingPreview(reason: String) {
-        if (!useImeBridgeForSession) {
-            return
-        }
-        val sessionIdSnapshot = imeBridgeSessionId
-        if (!sessionIdSnapshot.isNullOrEmpty()) {
-            imeBridgeSessionId = null
-        }
-        val hadComposingPreview = useImeBridgeComposingPreviewForSession &&
-            !lastPartialForPreview.isNullOrEmpty()
-        val clearSequence = bridgePreviewSequence.incrementAndGet()
-        serviceScope.launch(Dispatchers.IO) {
-            val result = synchronized(bridgeOperationLock) {
-                if (clearSequence != bridgePreviewSequence.get()) {
-                    null
-                } else {
-                    if (!sessionIdSnapshot.isNullOrEmpty()) {
-                        imeBridgeClient.cancelSession(sessionIdSnapshot)
-                    } else if (hadComposingPreview) {
-                        val clearResult = imeBridgeClient.setComposingText("")
-                        if (clearResult.isSuccess) {
-                            imeBridgeClient.finishComposingText()
-                        } else {
-                            clearResult
-                        }
-                    } else {
-                        null
-                    }
-                }
-            } ?: return@launch
-            if (!result.isSuccess && result.isBridgePresent) {
-                Log.d(
-                    TAG,
-                    "IME bridge clear composing preview failed: reason=$reason, " +
-                        "code=${result.code}, message=${result.message}"
-                )
-            }
-        }
-    }
 
     private fun isPackageInCompatTargets(pkg: String): Boolean {
         val raw = try {

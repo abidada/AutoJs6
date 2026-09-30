@@ -172,14 +172,8 @@ private fun SettingsRouteContent(
             uiMode = uiState.uiMode,
             themeMode = uiState.themeMode,
             onBack = { onPopRoute() },
-            onOpenKeyboardLayout = { onPushRoute(BibiSettingsRoute.KeyboardLayout) },
             onSetUiMode = onSetUiMode,
             onSetThemeMode = onSetThemeMode
-        )
-
-        BibiSettingsRoute.KeyboardLayout -> KeyboardLayoutEditorScreen(
-            uiMode = uiState.uiMode,
-            onBack = { onPopRoute() }
         )
 
         BibiSettingsRoute.RecordingTest -> RecordingTestScreen(
@@ -222,6 +216,11 @@ private fun SettingsRouteContent(
             uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             actions = actions
+        )
+
+        BibiSettingsRoute.VoiceDispatch -> VoiceDispatchRoute(
+            uiMode = uiState.uiMode,
+            onBack = { onPopRoute() }
         )
 
         BibiSettingsRoute.Search -> SettingsSearchScreen(

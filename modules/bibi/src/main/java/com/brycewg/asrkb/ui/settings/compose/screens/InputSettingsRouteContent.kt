@@ -87,8 +87,7 @@ internal fun InputSettingsRouteContent(
     onApplyExplainedSwitch: InputExplainedSwitchHandler
 ) {
     val context = LocalContext.current
-    val imeOptions = context.buildImeOptions()
-    val behaviorItemCount = if (uiState.trimTrailingPunct) 11 else 10
+    val behaviorItemCount = if (uiState.trimTrailingPunct) 5 else 4
     val behaviorTrimThresholdOffset = if (uiState.trimTrailingPunct) 1 else 0
 
     SettingsLazyColumn(
@@ -165,44 +164,6 @@ internal fun InputSettingsRouteContent(
                     )
                 }
                 InputExplainedSwitch(
-                    id = "mic_tap_toggle",
-                    titleRes = R.string.label_mic_tap_toggle,
-                    checked = uiState.micTapToggle,
-                    onToggle = { target ->
-                        onApplyExplainedSwitch(
-                            uiState.micTapToggle,
-                            target,
-                            R.string.label_mic_tap_toggle,
-                            R.string.feature_mic_tap_toggle_off_desc,
-                            R.string.feature_mic_tap_toggle_on_desc,
-                            "mic_tap_toggle_explained",
-                            null,
-                            null
-                        ) { prefs.micTapToggleEnabled = it }
-                    },
-                    index = 1 + behaviorTrimThresholdOffset,
-                    count = behaviorItemCount
-                )
-                InputExplainedSwitch(
-                    id = "auto_start_recording_on_show",
-                    titleRes = R.string.label_auto_start_recording_on_show,
-                    checked = uiState.autoStartRecordingOnShow,
-                    onToggle = { target ->
-                        onApplyExplainedSwitch(
-                            uiState.autoStartRecordingOnShow,
-                            target,
-                            R.string.label_auto_start_recording_on_show,
-                            R.string.feature_auto_start_recording_on_show_off_desc,
-                            R.string.feature_auto_start_recording_on_show_on_desc,
-                            "auto_start_recording_on_show_explained",
-                            null,
-                            null
-                        ) { prefs.autoStartRecordingOnShow = it }
-                    },
-                    index = 2 + behaviorTrimThresholdOffset,
-                    count = behaviorItemCount
-                )
-                InputExplainedSwitch(
                     id = "continuous_capture",
                     titleRes = R.string.label_continuous_capture,
                     checked = uiState.continuousCapture,
@@ -218,7 +179,7 @@ internal fun InputSettingsRouteContent(
                             null
                         ) { prefs.continuousCaptureEnabled = it }
                     },
-                    index = 3 + behaviorTrimThresholdOffset,
+                    index = 1 + behaviorTrimThresholdOffset,
                     count = behaviorItemCount
                 )
                 InputExplainedSwitch(
@@ -237,99 +198,7 @@ internal fun InputSettingsRouteContent(
                             null
                         ) { prefs.keepScreenOnWhileRecording = it }
                     },
-                    index = 4 + behaviorTrimThresholdOffset,
-                    count = behaviorItemCount
-                )
-                InputExplainedSwitch(
-                    id = "auto_enter_after_asr",
-                    titleRes = R.string.label_auto_enter_after_asr,
-                    checked = uiState.autoEnterAfterAsr,
-                    onToggle = { target ->
-                        onApplyExplainedSwitch(
-                            uiState.autoEnterAfterAsr,
-                            target,
-                            R.string.label_auto_enter_after_asr,
-                            R.string.feature_auto_enter_after_asr_off_desc,
-                            R.string.feature_auto_enter_after_asr_on_desc,
-                            "auto_enter_after_asr_explained",
-                            null,
-                            null
-                        ) { prefs.autoEnterAfterAsrEnabled = it }
-                    },
-                    index = 5 + behaviorTrimThresholdOffset,
-                    count = behaviorItemCount
-                )
-                InputExplainedSwitch(
-                    id = "auto_switch_ime_after_asr",
-                    titleRes = R.string.label_auto_switch_ime_after_asr,
-                    checked = uiState.autoSwitchImeAfterAsr,
-                    onToggle = { target ->
-                        onApplyExplainedSwitch(
-                            uiState.autoSwitchImeAfterAsr,
-                            target,
-                            R.string.label_auto_switch_ime_after_asr,
-                            R.string.feature_auto_switch_ime_after_asr_off_desc,
-                            R.string.feature_auto_switch_ime_after_asr_on_desc,
-                            "auto_switch_ime_after_asr_explained",
-                            null,
-                            null
-                        ) { prefs.autoSwitchImeAfterAsrEnabled = it }
-                    },
-                    index = 6 + behaviorTrimThresholdOffset,
-                    count = behaviorItemCount
-                )
-                InputExplainedSwitch(
-                    id = "fcitx5_return_on_switcher",
-                    titleRes = R.string.label_fcitx5_return_on_switcher,
-                    checked = uiState.fcitx5ReturnOnSwitcher,
-                    onToggle = { target ->
-                        onApplyExplainedSwitch(
-                            uiState.fcitx5ReturnOnSwitcher,
-                            target,
-                            R.string.label_fcitx5_return_on_switcher,
-                            R.string.feature_fcitx5_return_on_switcher_off_desc,
-                            R.string.feature_fcitx5_return_on_switcher_on_desc,
-                            "fcitx5_return_on_switcher_explained",
-                            null,
-                            null
-                        ) { prefs.fcitx5ReturnOnImeSwitch = it }
-                    },
-                    index = 7 + behaviorTrimThresholdOffset,
-                    count = behaviorItemCount
-                )
-                InputExplainedSwitch(
-                    id = "return_prev_ime_on_hide",
-                    titleRes = R.string.label_return_prev_ime_on_hide,
-                    checked = uiState.returnPrevImeOnHide,
-                    onToggle = { target ->
-                        onApplyExplainedSwitch(
-                            uiState.returnPrevImeOnHide,
-                            target,
-                            R.string.label_return_prev_ime_on_hide,
-                            R.string.feature_return_prev_ime_on_hide_off_desc,
-                            R.string.feature_return_prev_ime_on_hide_on_desc,
-                            "return_prev_ime_on_hide_explained",
-                            null,
-                            null
-                        ) { prefs.returnPrevImeOnHide = it }
-                    },
-                    index = 8 + behaviorTrimThresholdOffset,
-                    count = behaviorItemCount
-                )
-                SettingsPreference(
-                    entry = SettingsEntry.Dropdown(
-                        id = "ime_switch_target",
-                        titleRes = R.string.label_ime_switch_target,
-                        options = imeOptions.map { DropdownOption(it.id, it.label) },
-                        selectedOptionId = prefs.imeSwitchTargetId.takeIf { targetId ->
-                            imeOptions.any { it.id == targetId }
-                        }.orEmpty(),
-                        onSelectedOptionChange = { id ->
-                            prefs.imeSwitchTargetId = id
-                            onRefreshState()
-                        }
-                    ),
-                    index = 9 + behaviorTrimThresholdOffset,
+                    index = 2 + behaviorTrimThresholdOffset,
                     count = behaviorItemCount
                 )
             }
@@ -484,6 +353,52 @@ internal fun InputSettingsRouteContent(
 }
 
 @Composable
+internal fun InputHapticUiSettingsSection(
+    uiMode: BibiUiMode,
+    prefs: Prefs,
+    uiState: InputSettingsUiState,
+    onUiStateChange: (InputSettingsUiState) -> Unit,
+    onRefreshState: () -> Unit
+) {
+    val context = LocalContext.current
+    InputSection(uiMode = uiMode, titleRes = R.string.section_haptic_feedback) {
+        InputSliderPreference(
+            titleRes = R.string.label_haptic_feedback_strength,
+            valueLabel = { value ->
+                context.hapticFeedbackStrengthLabel(
+                    value.toInt().coerceIn(
+                        Prefs.HAPTIC_FEEDBACK_LEVEL_OFF,
+                        Prefs.HAPTIC_FEEDBACK_LEVEL_HEAVY
+                    )
+                )
+            },
+            value = uiState.hapticFeedbackLevel.toFloat(),
+            valueRange = Prefs.HAPTIC_FEEDBACK_LEVEL_OFF.toFloat()..Prefs.HAPTIC_FEEDBACK_LEVEL_HEAVY.toFloat(),
+            steps = 5,
+            uiMode = uiMode,
+            highlightId = "haptic_feedback_strength",
+            index = 0,
+            count = 1,
+            onValueChange = { value ->
+                val level = value.toInt().coerceIn(
+                    Prefs.HAPTIC_FEEDBACK_LEVEL_OFF,
+                    Prefs.HAPTIC_FEEDBACK_LEVEL_HEAVY
+                )
+                onUiStateChange(uiState.withHapticFeedbackLevel(context, level))
+            },
+            onValueChangeFinished = { value ->
+                val level = value.toInt().coerceIn(
+                    Prefs.HAPTIC_FEEDBACK_LEVEL_OFF,
+                    Prefs.HAPTIC_FEEDBACK_LEVEL_HEAVY
+                )
+                prefs.hapticFeedbackLevel = level
+                onRefreshState()
+            }
+        )
+    }
+}
+
+@Composable
 internal fun InputMainUiSettingsSection(
     uiMode: BibiUiMode,
     prefs: Prefs,
@@ -529,7 +444,7 @@ internal fun InputMainUiSettingsSection(
                 }
             ),
             index = 0,
-            count = 4
+            count = 5
         )
         SettingsPreference(
             entry = SettingsEntry.Dropdown(
@@ -541,7 +456,7 @@ internal fun InputMainUiSettingsSection(
                 onSelectedOptionChange = { onSetUiMode(BibiUiMode.fromId(it)) }
             ),
             index = 1,
-            count = 4
+            count = 5
         )
         SettingsPreference(
             entry = SettingsEntry.Dropdown(
@@ -552,7 +467,25 @@ internal fun InputMainUiSettingsSection(
                 onSelectedOptionChange = onSetThemeMode
             ),
             index = 2,
-            count = 4
+            count = 5
+        )
+        InputSliderPreference(
+            titleRes = R.string.label_voice_ready_collapse,
+            valueLabel = { value ->
+                context.getString(R.string.voice_time_seconds_value, value.toInt())
+            },
+            value = prefs.voiceReadyCollapseSeconds.toFloat(),
+            valueRange = 5f..60f,
+            steps = 54,
+            uiMode = uiMode,
+            highlightId = "voice_ready_collapse",
+            index = 3,
+            count = 5,
+            onValueChange = { },
+            onValueChangeFinished = { value ->
+                prefs.voiceReadyCollapseSeconds = value.toInt().coerceIn(5, 60)
+                onRefreshState()
+            }
         )
         InputExplainedSwitch(
             id = "hide_recent_task_card",
@@ -570,121 +503,9 @@ internal fun InputMainUiSettingsSection(
                     { applyExcludeFromRecents(context, it) }
                 ) { prefs.hideRecentTaskCard = it }
             },
-            index = 3,
-            count = 4
+            index = 4,
+            count = 5
         )
     }
 }
 
-@Composable
-internal fun InputKeyboardUiSettingsSection(
-    uiMode: BibiUiMode,
-    prefs: Prefs,
-    uiState: InputSettingsUiState,
-    onUiStateChange: (InputSettingsUiState) -> Unit,
-    onRefreshState: () -> Unit,
-    onShowExtensionButtonsPicker: () -> Unit,
-    onApplyExplainedSwitch: InputExplainedSwitchHandler
-) {
-    val context = LocalContext.current
-    InputSection(uiMode = uiMode, titleRes = R.string.section_keyboard_ui) {
-        InputKeyboardHeightControl(
-            selectedTier = uiState.keyboardHeightTier,
-            uiMode = uiMode,
-            index = 0,
-            count = 5,
-            onSelected = { tier ->
-                prefs.keyboardHeightTier = tier
-                onUiStateChange(uiState.copy(keyboardHeightTier = prefs.keyboardHeightTier))
-                context.sendImeRefreshBroadcast()
-            }
-        )
-        InputExplainedSwitch(
-            id = "ime_tablet_floating_keyboard",
-            titleRes = R.string.label_ime_tablet_floating_keyboard,
-            checked = uiState.imeTabletFloatingKeyboard,
-            onToggle = { target ->
-                onApplyExplainedSwitch(
-                    uiState.imeTabletFloatingKeyboard,
-                    target,
-                    R.string.label_ime_tablet_floating_keyboard,
-                    R.string.feature_ime_tablet_floating_keyboard_off_desc,
-                    R.string.feature_ime_tablet_floating_keyboard_on_desc,
-                    "ime_tablet_floating_keyboard_explained",
-                    null,
-                    { context.sendImeRefreshBroadcast() }
-                ) { prefs.imeTabletFloatingKeyboardEnabled = it }
-            },
-            index = 1,
-            count = 5
-        )
-        InputSliderPreference(
-            titleRes = R.string.label_haptic_feedback_strength,
-            valueLabel = { value ->
-                context.hapticFeedbackStrengthLabel(
-                    value.toInt().coerceIn(
-                        Prefs.HAPTIC_FEEDBACK_LEVEL_OFF,
-                        Prefs.HAPTIC_FEEDBACK_LEVEL_HEAVY
-                    )
-                )
-            },
-            value = uiState.hapticFeedbackLevel.toFloat(),
-            valueRange = Prefs.HAPTIC_FEEDBACK_LEVEL_OFF.toFloat()..Prefs.HAPTIC_FEEDBACK_LEVEL_HEAVY.toFloat(),
-            steps = 5,
-            uiMode = uiMode,
-            highlightId = "haptic_feedback_strength",
-            index = 2,
-            count = 5,
-            onValueChange = { value ->
-                val level = value.toInt().coerceIn(
-                    Prefs.HAPTIC_FEEDBACK_LEVEL_OFF,
-                    Prefs.HAPTIC_FEEDBACK_LEVEL_HEAVY
-                )
-                onUiStateChange(uiState.withHapticFeedbackLevel(context, level))
-            },
-            onValueChangeFinished = { value ->
-                val level = value.toInt().coerceIn(
-                    Prefs.HAPTIC_FEEDBACK_LEVEL_OFF,
-                    Prefs.HAPTIC_FEEDBACK_LEVEL_HEAVY
-                )
-                prefs.hapticFeedbackLevel = level
-                onRefreshState()
-            }
-        )
-        InputSliderPreference(
-            titleRes = R.string.label_keyboard_bottom_padding,
-            valueLabel = { value ->
-                context.getString(
-                    R.string.keyboard_bottom_padding_value,
-                    value.roundToStep(step = 5).toInt().coerceIn(0, 100)
-                )
-            },
-            value = uiState.keyboardBottomPaddingDp.toFloat(),
-            valueRange = 0f..100f,
-            steps = 19,
-            uiMode = uiMode,
-            highlightId = "keyboard_bottom_padding",
-            index = 3,
-            count = 5,
-            onValueChange = { value ->
-                val next = value.roundToStep(step = 5).toInt().coerceIn(0, 100)
-                onUiStateChange(uiState.copy(keyboardBottomPaddingDp = next))
-            },
-            onValueChangeFinished = { value ->
-                val next = value.roundToStep(step = 5).toInt().coerceIn(0, 100)
-                prefs.keyboardBottomPaddingDp = next
-                context.sendImeRefreshBroadcast()
-                onRefreshState()
-            }
-        )
-        InputValuePreference(
-            titleRes = R.string.label_extension_buttons,
-            value = uiState.extensionButtonsLabel,
-            uiMode = uiMode,
-            highlightId = "extension_buttons",
-            index = 4,
-            count = 5,
-            onClick = onShowExtensionButtonsPicker
-        )
-    }
-}

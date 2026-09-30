@@ -20,10 +20,6 @@ sealed interface BibiSettingsRoute {
         override val id: String = "ui_settings"
     }
 
-    data object KeyboardLayout : BibiSettingsRoute {
-        override val id: String = "keyboard_layout"
-    }
-
     data object RecordingTest : BibiSettingsRoute {
         override val id: String = "recording_test"
     }
@@ -47,6 +43,11 @@ sealed interface BibiSettingsRoute {
 
     data object PromptSelectionPreview : BibiSettingsRoute {
         override val id: String = "prompt_selection_preview"
+    }
+
+    /** 语音分发规则管理页（宿主侧边栏「文字分发」入口直达）。 */
+    data object VoiceDispatch : BibiSettingsRoute {
+        override val id: String = "voice_dispatch"
     }
 
     data object Backup : BibiSettingsRoute {
@@ -86,13 +87,13 @@ sealed interface BibiSettingsRoute {
             Home.id -> Home
             Input.id -> Input
             UiSettings.id -> UiSettings
-            KeyboardLayout.id -> KeyboardLayout
             RecordingTest.id -> RecordingTest
             Floating.id -> Floating
             Asr.id -> Asr
             Ai.id -> Ai
             PromptSelection.id -> PromptSelection
             PromptSelectionPreview.id -> PromptSelectionPreview
+            VoiceDispatch.id -> VoiceDispatch
             Backup.id -> Backup
             Other.id -> Other
             About.id -> About

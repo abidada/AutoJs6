@@ -8,7 +8,6 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.analytics.AnalyticsManager
@@ -16,7 +15,6 @@ import com.brycewg.asrkb.asr.AsrErrorMessageMapper
 import com.brycewg.asrkb.asr.AsrVendor
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.store.debug.DebugLogManager
-import com.brycewg.asrkb.ui.AsrAccessibilityService
 import com.brycewg.asrkb.ui.AsrVendorUi
 import com.brycewg.asrkb.ui.SettingsActivity
 import com.brycewg.asrkb.ui.floatingball.AsrSessionManager
@@ -24,6 +22,7 @@ import com.brycewg.asrkb.ui.floatingball.FloatingBallHoldAccessibilityPromptTrac
 import com.brycewg.asrkb.ui.floatingball.FloatingBallHoldPressAction
 import com.brycewg.asrkb.ui.floatingball.FloatingBallHoldRecordingTracker
 import com.brycewg.asrkb.ui.floatingball.FloatingBallRecordingTapAction
+import com.brycewg.asrkb.ui.floatingball.FloatingBallInteractionMode
 import com.brycewg.asrkb.ui.floatingball.FloatingBallState
 import com.brycewg.asrkb.ui.floatingball.FloatingBallStateMachine
 import com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler
@@ -53,11 +52,12 @@ internal class FloatingAsrInteractionController(
     FloatingBallTouchHandler.TouchEventListener {
     private enum class RecordingStartFromBallResult {
         Started,
-        MissingAccessibility,
         Failed
     }
 
     companion object {
+        private const val CONTINUOUS_LISTENING_RESTART_DELAY_MS = 500L
+        private const val CONTINUOUS_LISTENING_MAX_DURATION_MS = 10 * 60 * 1000L
         private const val EDGE_HANDLE_AUTO_HIDE_DELAY_MS = 2500L
         private const val AMPLITUDE_DISPATCH_INTERVAL_MS = 32L
         private const val SHAKE_START_TONE_MS = 200
@@ -67,12 +67,177 @@ internal class FloatingAsrInteractionController(
     lateinit var asrSessionManager: AsrSessionManager
     lateinit var applyVisibility: (String) -> Unit
 
+    /** 监听面板（由 FloatingAsrService 注入）；进入/退出 LISTENING 时显隐。 */
+    var listeningPanel: ListeningPanelHelper? = null
+
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private var touchActiveGuard: Boolean = false
 
-    private var edgeHandleAutoHideRunnable: Runnable? = null
-    private var postCommitPartialHideRunnable: Runnable? = null
-    private var postErrorPartialHideRunnable: Runnable? = null
+    /** 交互模式层：ROUND 圆球 → READY_PILL「发起语音」→ LISTENING_PILL「正在听...」。 */
+    private var interactionMode: FloatingBallInteractionMode = FloatingBallInteractionMode.ROUND
+
+    /** 连续监听循环：分发总开关 ON 时为 true；用户主动停止/出错/超时置回 false。 */
+    @Volatile
+    private var continuousListeningActive: Boolean = false
+
+    private var continuousListeningStartedAt: Long = 0L
+
+    /** 「发起语音」无操作收缩计时（默认 15 秒，见界面设置）。 */
+    private var readyCollapseRunnable: Runnable? = null
+
+    private fun transitionInteractionMode(mode: FloatingBallInteractionMode) {
+        if (interactionMode == mode) return
+        interactionMode = mode
+        try {
+            viewManager.setBallVisualMode(mode)
+        } catch (e: Throwable) {
+            Log.w(tag, "Failed to transition interaction mode to $mode", e)
+        }
+        val panel = listeningPanel
+        if (mode == FloatingBallInteractionMode.LISTENING_PILL) {
+            panel?.show()
+            cancelReadyCollapseTimer()
+            if (isVoiceDispatchEnabled()) {
+                continuousListeningActive = true
+                continuousListeningStartedAt = android.os.SystemClock.elapsedRealtime()
+            }
+        } else {
+            continuousListeningActive = false
+            panel?.hide()
+            if (mode == FloatingBallInteractionMode.READY_PILL) {
+                scheduleReadyCollapseTimer()
+            } else {
+                cancelReadyCollapseTimer()
+            }
+        }
+    }
+
+    /** 「发起语音」停留超时后收缩回完整圆球；菜单/拖动等前台交互期间顺延。 */
+    private fun scheduleReadyCollapseTimer() {
+        cancelReadyCollapseTimer()
+        val runnable = Runnable {
+            if (interactionMode != FloatingBallInteractionMode.READY_PILL) return@Runnable
+            if (isForceVisibleActive()) {
+                // 菜单/移动中：稍后再查
+                scheduleReadyCollapseTimer()
+                return@Runnable
+            }
+            Log.d(tag, "Ready pill idle timeout; collapsing to round ball")
+            transitionInteractionMode(FloatingBallInteractionMode.ROUND)
+        }
+        readyCollapseRunnable = runnable
+        try {
+            val seconds = try {
+                prefs.voiceReadyCollapseSeconds
+            } catch (e: Throwable) {
+                15
+            }
+            handler.postDelayed(runnable, seconds * 1000L)
+        } catch (e: Throwable) {
+            readyCollapseRunnable = null
+            Log.w(tag, "Failed to schedule ready collapse", e)
+        }
+    }
+
+    private fun cancelReadyCollapseTimer() {
+        readyCollapseRunnable?.let { handler.removeCallbacks(it) }
+        readyCollapseRunnable = null
+    }
+
+    private fun isVoiceDispatchEnabled(): Boolean = try {
+        prefs.voiceDispatchEnabled
+    } catch (e: Throwable) {
+        Log.w(tag, "Failed to read voice dispatch preference", e)
+        false
+    }
+
+    private fun getDispatcher(): com.brycewg.asrkb.host.VoiceCommandDispatcher? = try {
+        com.brycewg.asrkb.host.VoiceCommandDispatcher.getInstance(context)
+    } catch (e: Throwable) {
+        Log.w(tag, "Failed to get voice dispatcher", e)
+        null
+    }
+
+    private fun wireDispatcherFeedback() {
+        val dispatcher = getDispatcher() ?: return
+        dispatcher.onHit = { ruleName ->
+            handler.post {
+                if (isVoiceDispatchEnabled()) {
+                    listeningPanel?.showFeedback(
+                        context.getString(R.string.voice_dispatch_feedback_hit, ruleName)
+                    )
+                }
+            }
+        }
+        dispatcher.onMiss = {
+            handler.post {
+                if (isVoiceDispatchEnabled()) {
+                    listeningPanel?.showFeedback(
+                        context.getString(R.string.voice_dispatch_feedback_miss)
+                    )
+                }
+            }
+        }
+    }
+
+    private fun stopContinuousListening() {
+        continuousListeningActive = false
+    }
+
+    /**
+     * 语音分发 + 连续监听循环（方案 §7A.4）：
+     * 总开关 ON 时每句最终文本直接进规则匹配；面板反馈后约 500ms 自动重新录音；
+     * 10 分钟无操作超时自动回 READY；用户单击胶囊/出错退出循环。
+     */
+    private fun maybeDispatchAndContinueListening(text: String) {
+        if (!isVoiceDispatchEnabled() || !continuousListeningActive) return
+        if (text.isBlank()) return
+
+        wireDispatcherFeedback()
+        val dispatcher = getDispatcher() ?: return
+        dispatcher.maybeDispatch(text)
+
+        val elapsed = android.os.SystemClock.elapsedRealtime() - continuousListeningStartedAt
+        if (elapsed >= CONTINUOUS_LISTENING_MAX_DURATION_MS) {
+            Log.d(tag, "Continuous listening timeout; back to READY")
+            stopContinuousListening()
+            handler.post { transitionInteractionMode(FloatingBallInteractionMode.READY_PILL) }
+            return
+        }
+
+        handler.postDelayed({
+            if (continuousListeningActive &&
+                interactionMode == FloatingBallInteractionMode.LISTENING_PILL &&
+                !stateMachine.isRecording &&
+                !stateMachine.isProcessing
+            ) {
+                Log.d(tag, "Continuous listening: restarting recording")
+                startRecording()
+            }
+        }, CONTINUOUS_LISTENING_RESTART_DELAY_MS)
+    }
+
+    /**
+     * 唤醒词命中：跳过 READY，直接进入 LISTENING 并开始识别（等价触发悬浮球单击后的聆听）。
+     */
+    fun onWakeTriggered() {
+        if (stateMachine.isRecording || stateMachine.isProcessing) return
+        if (startRecordingFromBall() == RecordingStartFromBallResult.Started) {
+            transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+        }
+    }
+
+    /** 监听面板停止按钮：与单击「正在听...」胶囊等价。 */
+    fun onListeningPanelStopClicked() {
+        if (stateMachine.isRecording) {
+            stopRecording()
+        } else if (stateMachine.isProcessing) {
+            cancelCurrentSession()
+        } else {
+            transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+        }
+    }
+
     private var postErrorResetStateRunnable: Runnable? = null
     private var volumeKeySessionActive: Boolean = false
     private var shakeSessionActive: Boolean = false
@@ -90,15 +255,11 @@ internal class FloatingAsrInteractionController(
         touchActiveGuard
 
     fun cleanup() {
-        cancelEdgeHandleAutoHide()
-        cancelPostCommitPartialHide()
-        cancelPostErrorPartialHide()
+        cancelReadyCollapseTimer()
         cancelPostErrorResetState()
         cancelAmplitudeDispatch()
         cancelShakeFeedbackStartRecording()
         cancelShakeFeedbackTone()
-        holdRecordingTracker.clear()
-        holdAccessibilityPromptTracker.clear()
         stopRecordingForeground()
         try {
             menuController.hideAll()
@@ -163,34 +324,11 @@ internal class FloatingAsrInteractionController(
         }
     }
 
-    fun stopRecordingOnImeWindowHidden() {
-        if (!stateMachine.isRecording) return
-        // 主路径：TYPE_INPUT_METHOD 窗口 true→false；两开关分开判断。
-        val stopVolume = volumeKeySessionActive && prefs.volumeKeyStopOnImeHidden
-        val stopShake = shakeSessionActive && prefs.shakeRecordingStopOnImeHidden
-        DebugLogManager.logBase(
-            category = "float",
-            event = "stop_on_ime_window_hidden",
-            data = mapOf(
-                "volumeSession" to volumeKeySessionActive,
-                "shakeSession" to shakeSessionActive,
-                "volumePref" to prefs.volumeKeyStopOnImeHidden,
-                "shakePref" to prefs.shakeRecordingStopOnImeHidden,
-                "willStop" to (stopVolume || stopShake)
-            )
-        )
-        if (!stopVolume && !stopShake) return
-        val playShakeFeedback = stopShake
-        stopRecording()
-        if (playShakeFeedback) playShakeRecordingFeedback(starting = false)
-    }
-
     private fun startRecording(
         fromVolumeKey: Boolean = false,
         fromShake: Boolean = false
     ): Boolean {
         Log.d(tag, "startRecording called")
-        cancelEdgeHandleAutoHide()
 
         if (!canStartRecording()) return false
 
@@ -290,7 +428,7 @@ internal class FloatingAsrInteractionController(
 
     private fun stopRecording() {
         Log.d(tag, "stopRecording called")
-        cancelEdgeHandleAutoHide()
+        stopContinuousListening()
         volumeKeySessionActive = false
         shakeSessionActive = false
         asrSessionManager.stopRecording()
@@ -495,7 +633,7 @@ internal class FloatingAsrInteractionController(
 
     private fun cancelCurrentSession() {
         Log.d(tag, "cancelCurrentSession called")
-        cancelEdgeHandleAutoHide()
+        stopContinuousListening()
         cancelShakeFeedbackStartRecording()
         volumeKeySessionActive = false
         shakeSessionActive = false
@@ -514,21 +652,6 @@ internal class FloatingAsrInteractionController(
             Log.w(tag, "Failed to cancel $label runnable", e)
         }
         return null
-    }
-
-    private fun cancelEdgeHandleAutoHide() {
-        edgeHandleAutoHideRunnable =
-            cancelDelayedRunnable(edgeHandleAutoHideRunnable, "edge-handle auto hide")
-    }
-
-    private fun cancelPostCommitPartialHide() {
-        postCommitPartialHideRunnable =
-            cancelDelayedRunnable(postCommitPartialHideRunnable, "post-commit partial hide")
-    }
-
-    private fun cancelPostErrorPartialHide() {
-        postErrorPartialHideRunnable =
-            cancelDelayedRunnable(postErrorPartialHideRunnable, "post-error partial hide")
     }
 
     private fun cancelPostErrorResetState() {
@@ -567,47 +690,6 @@ internal class FloatingAsrInteractionController(
         }
     }
 
-    private fun schedulePostCommitPartialHide() {
-        cancelPostCommitPartialHide()
-        val runnable = Runnable {
-            if (stateMachine.isIdle &&
-                !prefs.floatingSwitcherOnlyWhenImeVisible &&
-                !isImeVisible()
-            ) {
-                try {
-                    viewManager.animateHideToEdgePartialIfNeeded()
-                } catch (e: Throwable) {
-                    Log.w(tag, "Failed to partial hide after commit", e)
-                }
-            }
-        }
-        postCommitPartialHideRunnable = runnable
-        try {
-            handler.postDelayed(runnable, 3000L)
-        } catch (e: Throwable) {
-            Log.w(tag, "Failed to schedule post-commit partial hide", e)
-        }
-    }
-
-    private fun schedulePostErrorPartialHide() {
-        cancelPostErrorPartialHide()
-        val runnable = Runnable {
-            if (!prefs.floatingSwitcherOnlyWhenImeVisible && !isImeVisible()) {
-                try {
-                    viewManager.animateHideToEdgePartialIfNeeded()
-                } catch (e: Throwable) {
-                    Log.w(tag, "Failed to partial hide after error", e)
-                }
-            }
-        }
-        postErrorPartialHideRunnable = runnable
-        try {
-            handler.postDelayed(runnable, 3000L)
-        } catch (e: Throwable) {
-            Log.w(tag, "Failed to schedule partial hide after error", e)
-        }
-    }
-
     private fun schedulePostErrorResetState() {
         cancelPostErrorResetState()
         val runnable = Runnable {
@@ -628,71 +710,41 @@ internal class FloatingAsrInteractionController(
         }
     }
 
-    private fun scheduleEdgeHandleAutoHide() {
-        cancelEdgeHandleAutoHide()
-        if (try {
-                prefs.floatingSwitcherOnlyWhenImeVisible
-            } catch (_: Throwable) {
-                false
-            }
-        ) {
-            return
-        }
-
-        val runnable = Runnable {
-            try {
-                val completionActive = try {
-                    viewManager.isCompletionTickActive()
-                } catch (
-                    _: Throwable
-                ) {
-                    false
-                }
-                val imeVisible = isImeVisible()
-                val forceVisible = isForceVisibleActive()
-                if (!imeVisible &&
-                    stateMachine.isIdle &&
-                    !stateMachine.isRecording &&
-                    !stateMachine.isProcessing &&
-                    !completionActive &&
-                    !forceVisible &&
-                    !viewManager.isEdgeHandleVisible()
-                ) {
-                    viewManager.animateHideToEdgePartialIfNeeded()
-                }
-            } catch (e: Throwable) {
-                Log.w(tag, "Failed to auto hide after edge-handle reveal", e)
-            }
-        }
-        edgeHandleAutoHideRunnable = runnable
-        try {
-            handler.postDelayed(runnable, EDGE_HANDLE_AUTO_HIDE_DELAY_MS)
-        } catch (e: Throwable) {
-            Log.w(tag, "Failed to schedule edge-handle auto hide", e)
-        }
-    }
-
     // ==================== AsrSessionManager.AsrSessionListener ====================
 
     override fun onSessionStateChanged(state: FloatingBallState) {
         stateMachine.transitionTo(state)
         val recordingActive = isRecordingCaptureActive()
-        holdRecordingTracker.onRecordingActivityChanged(recordingActive)
         if (state !is FloatingBallState.Recording && !recordingActive) {
             cancelAmplitudeDispatch()
             stopRecordingForeground()
         }
         handler.post {
             viewManager.updateStateVisual(state)
-            // 录音/处理态：保证浮现；Idle 半隐/显隐策略统一交由 visibilityCoordinator 处理
-            try {
-                when (state) {
-                    is FloatingBallState.Recording, is FloatingBallState.Processing ->
-                        viewManager.animateRevealFromEdgeIfNeeded()
-                    else -> Unit
+            // 旁路启动（音量键/摇一摇/JS）时同步交互模式为 LISTENING；
+            // 识别完成/出错回 READY（S5 将在连续监听模式下改写此分支）。
+            when (state) {
+                is FloatingBallState.Recording, is FloatingBallState.Processing ->
+                    transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+
+                is FloatingBallState.Idle -> {
+                    // 连续监听循环中：保持 LISTENING，等待自动续录
+                    if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL &&
+                        !continuousListeningActive
+                    ) {
+                        transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+                    }
                 }
-            } catch (e: Throwable) {
-                Log.w(tag, "Failed to apply edge reveal on state change", e)
+
+                is FloatingBallState.Error -> {
+                    // 出错退出连续监听，避免死循环（方案 §7A.4）
+                    stopContinuousListening()
+                    if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL) {
+                        transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+                    }
+                }
+
+                else -> Unit
             }
             updateVisibilityByPref("session_state_changed")
         }
@@ -711,9 +763,8 @@ internal class FloatingAsrInteractionController(
             if (text.isNotBlank() || success) {
                 persistFloatingCommit(text)
             }
-            if (success) {
-                schedulePostCommitPartialHide()
-            }
+            // 语音分发 + 连续监听循环（总开关 OFF 时为单次识别，Idle 回 READY）
+            maybeDispatchAndContinueListening(text)
         }
     }
 
@@ -845,7 +896,6 @@ internal class FloatingAsrInteractionController(
                 showToast(context.getString(R.string.floating_asr_error, message))
             }
 
-            schedulePostErrorPartialHide()
             schedulePostErrorResetState()
         }
     }
@@ -863,65 +913,45 @@ internal class FloatingAsrInteractionController(
     // ==================== FloatingBallTouchHandler.TouchEventListener ====================
 
     override fun onSingleTap() {
-        cancelEdgeHandleAutoHide()
-        val imeVisible = isImeVisible()
-
         if (stateMachine.isMoveMode) {
+            // 移动模式单击：退出移动模式，停在哪算哪
             stateMachine.transitionTo(FloatingBallState.Idle)
             viewManager.getBallView()?.let {
-                try {
-                    viewManager.animateSnapToEdge(it) {
-                        try {
-                            if (!prefs.floatingSwitcherOnlyWhenImeVisible && !imeVisible) {
-                                viewManager.animateHideToEdgePartialIfNeeded()
-                            }
-                        } catch (e: Throwable) {
-                            Log.w(tag, "Failed to partial hide after exit move mode", e)
-                        }
-                    }
-                } catch (e: Throwable) {
-                    Log.e(tag, "Failed to animate snap, falling back", e)
-                    viewManager.snapToEdge(it)
-                    try {
-                        if (!prefs.floatingSwitcherOnlyWhenImeVisible && !imeVisible) {
-                            viewManager.animateHideToEdgePartialIfNeeded()
-                        }
-                    } catch (ex: Throwable) {
-                        Log.w(tag, "Failed to partial hide after fallback snap", ex)
-                    }
-                }
+                viewManager.persistBallPosition()
             }
             hideRadialMenu()
             hideVendorMenu()
             return
         }
 
-        if (stateMachine.isRecording) {
-            if (resolveFloatingBallRecordingTapAction(
-                    isRecording = true,
-                    holdToRecordEnabled = isHoldToRecordEnabled()
-                ) == FloatingBallRecordingTapAction.StopRecording
-            ) {
-                stopRecording()
+        when (interactionMode) {
+            FloatingBallInteractionMode.ROUND -> {
+                // 单击圆球 → 「发起语音」胶囊（不启动录音）
+                transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
             }
-            return
-        }
 
-        if (stateMachine.isProcessing) {
-            cancelCurrentSession()
-            return
-        }
+            FloatingBallInteractionMode.READY_PILL -> {
+                // 单击「发起语音」→ 开始录音 + 「正在听...」
+                if (stateMachine.isRecording || stateMachine.isProcessing) {
+                    // 旁路已启动录音：仅同步视觉
+                    transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+                    return
+                }
+                if (startRecordingFromBall() == RecordingStartFromBallResult.Started) {
+                    transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+                }
+            }
 
-        if (revealEdgeHandleIfNeeded()) return
-        when (
-            resolveFloatingBallRecordingTapAction(
-                isRecording = false,
-                holdToRecordEnabled = isHoldToRecordEnabled()
-            )
-        ) {
-            FloatingBallRecordingTapAction.StartRecording -> startRecordingFromBall()
-            FloatingBallRecordingTapAction.StopRecording,
-            FloatingBallRecordingTapAction.None -> Unit
+            FloatingBallInteractionMode.LISTENING_PILL -> {
+                // 单击「正在听...」→ 停止并回「发起语音」
+                if (stateMachine.isRecording) {
+                    stopRecording()
+                } else if (stateMachine.isProcessing) {
+                    cancelCurrentSession()
+                } else {
+                    transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+                }
+            }
         }
     }
 
@@ -932,60 +962,27 @@ internal class FloatingAsrInteractionController(
         false
     }
 
-    private fun isImeBridgeEnabled(): Boolean = try {
-        prefs.floatingImeBridgeEnabled
-    } catch (e: Throwable) {
-        Log.w(tag, "Failed to read IME bridge preference", e)
-        false
-    }
-
     override fun onLongPress() {
-        cancelEdgeHandleAutoHide()
+        if (stateMachine.isMoveMode) return
+        // 交互重做：长按直接弹出设置菜单（不再按住录音）
         holdAccessibilityPromptTracker.clear()
         touchActiveGuard = true
         updateVisibilityByPref("long_press")
-        if (!isHoldToRecordEnabled()) return
-        if (stateMachine.isMoveMode) return
-        when (
-            resolveFloatingBallHoldPressAction(
-                isRecording = stateMachine.isRecording,
-                isProcessing = stateMachine.isProcessing,
-                isEdgeHandleVisible = viewManager.isEdgeHandleVisible()
-            )
-        ) {
-            FloatingBallHoldPressAction.StartRecording -> {
-                when (startRecordingFromBall(openAccessibilitySettingsOnMissing = false)) {
-                    RecordingStartFromBallResult.Started -> {
-                        holdRecordingTracker.markStartResult(
-                            started = true,
-                            isRecordingActive = isRecordingCaptureActive()
-                        )
-                    }
-                    RecordingStartFromBallResult.MissingAccessibility ->
-                        holdAccessibilityPromptTracker.markPending()
-                    RecordingStartFromBallResult.Failed -> Unit
-                }
-            }
-            FloatingBallHoldPressAction.StopRecording -> stopRecording()
-            FloatingBallHoldPressAction.CancelProcessing -> cancelCurrentSession()
-            FloatingBallHoldPressAction.RevealEdge -> revealEdgeHandleIfNeeded()
-            FloatingBallHoldPressAction.None -> Unit
+        val center = viewManager.getBallCenterSnapshot()
+        val alpha = getMenuAlphaOrDefault()
+        menuController.showRadialMenu(center, alpha, buildRadialMenuItems()) {
+            touchActiveGuard = false
+            updateVisibilityByPref("radial_menu_dismiss")
         }
     }
 
     override fun onLongPressRelease() {
-        val shouldStop = holdRecordingTracker.consumeStopOnRelease(isRecordingCaptureActive())
-        if (shouldStop) {
-            stopRecording()
-        }
-        if (holdAccessibilityPromptTracker.consumeOnRelease()) {
-            openAccessibilitySettings()
-        }
         touchActiveGuard = false
         updateVisibilityByPref("long_press_release")
     }
 
     override fun onLongPressGestureMovedBeyondSlop() {
+        // 长按后拖动不再移球/收菜单（用户决策）；仅清理按住提示状态
         holdAccessibilityPromptTracker.clear()
     }
 
@@ -996,55 +993,25 @@ internal class FloatingAsrInteractionController(
     }
 
     override fun onLongPressDragStart(initialRawX: Float, initialRawY: Float) {
-        cancelHoldRecordingForGesture()
-        touchActiveGuard = true
-        cancelEdgeHandleAutoHide()
-        try {
-            viewManager.animateRevealFromEdgeIfNeeded()
-        } catch (e: Throwable) {
-            Log.w(tag, "Failed to reveal on long-press drag start", e)
-        }
-
-        if (menuController.isDragSessionActive()) return
-
-        val center = viewManager.getBallCenterSnapshot()
-        val alpha = getMenuAlphaOrDefault()
-        val items = buildRadialMenuItems()
-
-        menuController.showRadialMenuForDrag(center, alpha, items) {
-            touchActiveGuard = false
-            updateVisibilityByPref("radial_drag_dismiss")
-        }
-        updateVisibilityByPref("radial_drag_show")
-        menuController.updateDragHover(initialRawX, initialRawY)
+        // 交互重做后不再使用拖拽展开菜单；长按后拖动由 onMoveStarted 处理
     }
 
     override fun onLongPressDragMove(rawX: Float, rawY: Float) {
-        menuController.updateDragHover(rawX, rawY)
+        // no-op
     }
 
     override fun onLongPressDragRelease(rawX: Float, rawY: Float) {
-        menuController.performDragSelectionAt(rawX, rawY)
+        // no-op
     }
 
     override fun onMoveStarted() {
         cancelHoldRecordingForGesture()
         touchActiveGuard = true
-        cancelEdgeHandleAutoHide()
-        if (!viewManager.isEdgeHandleVisible()) {
-            try {
-                viewManager.animateRevealFromEdgeIfNeeded()
-            } catch (e: Throwable) {
-                Log.w(tag, "Failed to reveal on move start", e)
-            }
-        }
         updateVisibilityByPref("move_started")
     }
 
     override fun onMoveEnded() {
         touchActiveGuard = false
-        val imeVisible = isImeVisible()
-
         if (stateMachine.isMoveMode) {
             stateMachine.transitionTo(FloatingBallState.Idle)
             try {
@@ -1052,19 +1019,6 @@ internal class FloatingAsrInteractionController(
             } catch (e: Throwable) {
                 Log.w(tag, "Failed to update state visual after move end", e)
             }
-        }
-
-        try {
-            if (!stateMachine.isMoveMode &&
-                !stateMachine.isRecording &&
-                !stateMachine.isProcessing &&
-                !prefs.floatingSwitcherOnlyWhenImeVisible &&
-                !imeVisible
-            ) {
-                viewManager.animateHideToEdgePartialIfNeeded()
-            }
-        } catch (e: Throwable) {
-            Log.w(tag, "Failed to partial hide after move end", e)
         }
         updateVisibilityByPref("move_ended")
     }
@@ -1075,51 +1029,13 @@ internal class FloatingAsrInteractionController(
         updateVisibilityByPref("drag_cancelled")
     }
 
-    private fun startRecordingFromBall(
-        openAccessibilitySettingsOnMissing: Boolean = true
-    ): RecordingStartFromBallResult {
-        if (!AsrAccessibilityService.isEnabled() && !isImeBridgeEnabled()) {
-            Log.w(tag, "Accessibility service not enabled")
-            showToast(context.getString(R.string.toast_need_accessibility_perm))
-            if (openAccessibilitySettingsOnMissing) {
-                openAccessibilitySettings()
-            }
-            return RecordingStartFromBallResult.MissingAccessibility
-        }
-
-        try {
-            viewManager.animateRevealFromEdgeIfNeeded()
-        } catch (e: Throwable) {
-            Log.w(tag, "Failed to reveal before recording", e)
-        }
-
+    private fun startRecordingFromBall(): RecordingStartFromBallResult {
+        // 识别不再依赖无障碍（IME 已移除，结果不写输入框；历史/控制台/$bibi/面板照常）
         return if (startRecording()) {
             RecordingStartFromBallResult.Started
         } else {
             RecordingStartFromBallResult.Failed
         }
-    }
-
-    private fun openAccessibilitySettings() {
-        try {
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(intent)
-        } catch (e: Throwable) {
-            Log.e(tag, "Failed to open accessibility settings", e)
-        }
-    }
-
-    private fun revealEdgeHandleIfNeeded(): Boolean {
-        if (!viewManager.isEdgeHandleVisible()) return false
-        try {
-            viewManager.animateRevealFromEdgeIfNeeded()
-        } catch (e: Throwable) {
-            Log.w(tag, "Failed to reveal from edge handle", e)
-        }
-        scheduleEdgeHandleAutoHide()
-        return true
     }
 
     private fun cancelHoldRecordingForGesture() {
@@ -1323,11 +1239,6 @@ internal class FloatingAsrInteractionController(
         }
     }
 
-    private fun invokeImePickerFromMenu() {
-        hideVendorMenu()
-        invokeImePicker()
-    }
-
     private fun enableMoveModeFromMenu() {
         stateMachine.transitionTo(FloatingBallState.MoveMode)
         hideVendorMenu()
@@ -1510,13 +1421,6 @@ internal class FloatingAsrInteractionController(
         )
         add(
             FloatingMenuHelper.MenuItem(
-                R.drawable.keyboard,
-                context.getString(R.string.label_radial_switch_ime),
-                context.getString(R.string.label_radial_switch_ime)
-            ) { invokeImePickerFromMenu() }
-        )
-        add(
-            FloatingMenuHelper.MenuItem(
                 R.drawable.arrows_out_cardinal,
                 context.getString(R.string.label_radial_move),
                 context.getString(R.string.label_radial_move)
@@ -1594,56 +1498,6 @@ internal class FloatingAsrInteractionController(
     }
 
     // ==================== 辅助方法 ====================
-
-    private fun invokeImePicker() {
-        try {
-            val imm = context.getSystemService(InputMethodManager::class.java)
-            if (!isOurImeEnabled(imm)) {
-                val intent = Intent(Settings.ACTION_INPUT_METHOD_SETTINGS).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(intent)
-                return
-            }
-            val intent = Intent(context, SettingsActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                putExtra(SettingsActivity.EXTRA_AUTO_SHOW_IME_PICKER, true)
-            }
-            context.startActivity(intent)
-        } catch (e: Throwable) {
-            Log.e(tag, "Failed to invoke IME picker", e)
-            try {
-                val intent = Intent(Settings.ACTION_INPUT_METHOD_SETTINGS).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(intent)
-            } catch (e2: Throwable) {
-                Log.e(tag, "Failed to open IME settings", e2)
-            }
-        }
-    }
-
-    private fun isOurImeEnabled(imm: InputMethodManager?): Boolean {
-        val list = try {
-            imm?.enabledInputMethodList
-        } catch (e: Throwable) {
-            Log.e(tag, "Failed to get enabled IME list", e)
-            null
-        }
-        if (list?.any { it.packageName == context.packageName } == true) return true
-        return try {
-            val enabled = Settings.Secure.getString(
-                context.contentResolver,
-                Settings.Secure.ENABLED_INPUT_METHODS
-            )
-            val id = "${context.packageName}/.ime.AsrKeyboardService"
-            enabled?.contains(id) == true ||
-                (enabled?.split(':')?.any { it.startsWith(context.packageName) } == true)
-        } catch (e: Throwable) {
-            Log.e(tag, "Failed to check IME enabled via settings", e)
-            false
-        }
-    }
 
     private fun showToast(message: String) {
         try {

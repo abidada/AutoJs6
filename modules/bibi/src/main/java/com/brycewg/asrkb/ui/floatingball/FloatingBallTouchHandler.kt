@@ -225,68 +225,9 @@ class FloatingBallTouchHandler(
         }
 
         if (!isDragging) {
-            // 非移动模式：处理长按后的拖拽选中逻辑
+            // 长按已弹出菜单；长按后拖动不做任何动作（用户决策：移球只走直接拖动/移动模式）
             if (longActionFired) {
-                if (dragSelecting) {
-                    listener.onLongPressDragMove(e.rawX, e.rawY)
-                    return true
-                }
-
-                val shouldOpenMenu = if (holdToRecordEnabled) {
-                    shouldStartFloatingBallMenuTowardCenter(
-                        dx = dx,
-                        dy = dy,
-                        slop = gestureSlops.menuSelectionPx,
-                        downX = downX,
-                        downY = downY,
-                        screenWidth = dragScreenW,
-                        screenHeight = dragScreenH
-                    )
-                } else {
-                    shouldStartFloatingBallMenuSelection(
-                        dx = dx,
-                        dy = dy,
-                        slop = gestureSlops.menuSelectionPx
-                    )
-                }
-                val movingTowardScreenCenter = holdToRecordEnabled &&
-                    isFloatingBallMovementTowardCenter(
-                        dx = dx,
-                        dy = dy,
-                        downX = downX,
-                        downY = downY,
-                        screenWidth = dragScreenW,
-                        screenHeight = dragScreenH
-                    )
-                val holdMoveAction = if (holdToRecordEnabled) {
-                    resolveFloatingBallHoldMoveAction(
-                        movementExceeded = movementExceeded,
-                        menuThresholdExceeded = shouldOpenMenu,
-                        movingTowardScreenCenter = movingTowardScreenCenter,
-                        directMoveEnabled = directMoveEnabled
-                    )
-                } else if (shouldOpenMenu) {
-                    FloatingBallHoldMoveAction.OpenMenu
-                } else {
-                    FloatingBallHoldMoveAction.None
-                }
-
-                when (holdMoveAction) {
-                    FloatingBallHoldMoveAction.OpenMenu -> {
-                        dragSelecting = true
-                        cancelLongHoldMove()
-                        listener.onLongPressDragStart(e.rawX, e.rawY)
-                    }
-                    FloatingBallHoldMoveAction.MoveBall -> {
-                        isDragging = true
-                        moveStarted = true
-                        cancelLongPress()
-                        cancelLongHoldMove()
-                        listener.onMoveStarted()
-                    }
-                    FloatingBallHoldMoveAction.None -> Unit
-                }
-                if (!isDragging) return true
+                return true
             } else {
                 // 移动超过阈值，取消未触发的长按
                 if (moved) {
@@ -337,16 +278,9 @@ class FloatingBallTouchHandler(
             // 拖拽选择释放
             listener.onLongPressDragRelease(e.rawX, e.rawY)
         } else if (isDragging) {
-            val targetView = viewManager.getBallView() ?: v
-            try {
-                viewManager.animateSnapToEdge(targetView) {
-                    listener.onMoveEnded()
-                }
-            } catch (ex: Throwable) {
-                Log.e(TAG, "Failed to animate snap to edge, falling back to instant snap", ex)
-                viewManager.snapToEdge(targetView)
-                listener.onMoveEnded()
-            }
+            // 交互重做：拖哪停哪，不再吸附边缘
+            viewManager.persistBallPosition()
+            listener.onMoveEnded()
         } else if (longActionFired) {
             listener.onLongPressRelease()
         } else if (!moved) {

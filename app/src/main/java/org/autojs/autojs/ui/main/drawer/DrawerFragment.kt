@@ -141,6 +141,7 @@ open class DrawerFragment : Fragment() {
     private lateinit var mBibiAccessibilityItem: DrawerMenuToggleableItem
     private lateinit var mBibiBluetoothMicItem: DrawerMenuToggleableItem
     private lateinit var mBibiBootAutostartItem: DrawerMenuToggleableItem
+    private lateinit var mBibiVoiceDispatchItem: DrawerMenuShortcutItem
     private lateinit var mNightModeItem: DrawerMenuToggleableItem
     private lateinit var mAutoNightModeItem: DrawerMenuToggleableItem
     private lateinit var mKeepScreenOnWhenInForegroundItem: DrawerMenuToggleableItem
@@ -549,6 +550,30 @@ open class DrawerFragment : Fragment() {
             descriptionRes = R.string.summary_bibi_boot_autostart,
         )
 
+        mBibiVoiceDispatchItem = DrawerMenuShortcutItem(
+            icon = R.drawable.ic_script,
+            title = R.string.text_bibi_voice_dispatch,
+        ).apply {
+            setAction {
+                try {
+                    mContext.startActivity(
+                        Intent(mContext, com.brycewg.asrkb.ui.SettingsActivity::class.java)
+                            .putExtra(
+                                com.brycewg.asrkb.ui.SettingsActivity.EXTRA_INITIAL_ROUTE,
+                                com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute.VoiceDispatch.id
+                            )
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(
+                        mContext,
+                        R.string.error_open_voice_dispatch_settings,
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
         mAutoNightModeItem = DrawerMenuToggleableItem(
             helper = object : DrawerMenuItemCustomHelper(mContext) {
                 override fun toggle(): Boolean = runCatching {
@@ -924,6 +949,7 @@ open class DrawerFragment : Fragment() {
             mBibiAccessibilityItem,
             mBibiBluetoothMicItem,
             mBibiBootAutostartItem,
+            mBibiVoiceDispatchItem,
             DrawerMenuGroup(R.string.text_appearance),
             mAutoNightModeItem,
             mNightModeItem,

@@ -30,7 +30,6 @@ import com.brycewg.asrkb.R
 import com.brycewg.asrkb.clipboard.ClipboardSyncReceiveMode
 import com.brycewg.asrkb.clipboard.ClipboardSyncRuntimeService
 import com.brycewg.asrkb.clipboard.isSyncClipboardDownloadDirectory
-import com.brycewg.asrkb.ime.AsrKeyboardService
 import com.brycewg.asrkb.store.AsrHistoryAudioStore
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.floating.FloatingServiceManager
@@ -505,8 +504,5 @@ fun OtherSettingsScreen(
 
 private fun notifySyncClipboardConfigChanged(context: Context, prefs: Prefs) {
     val appContext = context.applicationContext
-    appContext.sendBroadcast(
-        Intent(AsrKeyboardService.ACTION_REFRESH_IME_UI).setPackage(appContext.packageName)
-    )
     ClipboardSyncRuntimeService.notifyConfigChanged(appContext)
 }

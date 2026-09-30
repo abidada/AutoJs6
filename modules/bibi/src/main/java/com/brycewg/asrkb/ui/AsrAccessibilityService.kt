@@ -24,7 +24,6 @@ import com.brycewg.asrkb.LocaleHelper
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.store.debug.DebugLogManager
 import com.brycewg.asrkb.ui.floating.FloatingAsrService
-import com.brycewg.asrkb.ui.floating.FloatingImeHints
 
 /**
  * 无障碍服务,用于悬浮球语音识别后将文本插入到当前焦点的输入框中
@@ -468,7 +467,6 @@ class AsrAccessibilityService :
                 "winVisible" to false
             )
         )
-        dispatchRecordingAction(FloatingAsrService.ACTION_IME_WINDOW_HIDDEN_STOP_RECORDING)
     }
 
     private fun maybeEmitA11yAgg() {
@@ -573,19 +571,10 @@ class AsrAccessibilityService :
 
     /**
      * 通知悬浮服务输入法可见性变化。
+     * IME 移除后悬浮球常显，无需再发送可见性提示。
      */
     private fun notifyFloatingServices(visible: Boolean) {
-        try {
-            val action = if (visible) FloatingImeHints.ACTION_HINT_IME_VISIBLE else FloatingImeHints.ACTION_HINT_IME_HIDDEN
-            try {
-                val i = Intent(this, FloatingAsrService::class.java).apply { this.action = action }
-                startService(i)
-            } catch (e: Throwable) {
-                Log.e(TAG, "Error notifying FloatingAsrService", e)
-            }
-        } catch (e: Throwable) {
-            Log.e(TAG, "Error notifying floating services", e)
-        }
+        // no-op
     }
 
     private fun isImeSceneActiveForRecordingTrigger(): Boolean {

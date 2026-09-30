@@ -6,7 +6,6 @@
 package com.brycewg.asrkb.ui.setup
 
 import android.Manifest
-import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -16,7 +15,6 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
-import android.view.inputmethod.InputMethodManager
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
@@ -29,7 +27,6 @@ import com.brycewg.asrkb.host.PermissionRouter
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.analytics.AnalyticsManager
 import com.brycewg.asrkb.asr.AsrVendor
-import com.brycewg.asrkb.ime.AsrKeyboardService
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.BaseActivity
 import com.brycewg.asrkb.ui.DownloadSourceOption
@@ -54,9 +51,6 @@ class OnboardingGuideActivity : BaseActivity() {
 
     companion object {
         private const val TAG = "OnboardingGuideActivity"
-        private const val IME_PICKER_REFRESH_DELAY_MS = 200L
-        private const val IME_PICKER_POLL_INTERVAL_MS = 300L
-        private const val IME_PICKER_POLL_TIMEOUT_MS = 4000L
     }
 
     private lateinit var prefs: Prefs
@@ -70,10 +64,6 @@ class OnboardingGuideActivity : BaseActivity() {
     private var messageDialogState = mutableStateOf<SettingsMessageDialogState?>(null)
     private var messageDismissAction: (() -> Unit)? = null
     private var isCompletingOnboarding: Boolean = false
-    private var imePickerShown = false
-    private var imePickerLostFocusOnce = false
-    private var imePickerPollingStartedAt = 0L
-    private var imePickerPollingRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,13 +123,7 @@ class OnboardingGuideActivity : BaseActivity() {
         refreshPermissionPage()
     }
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        handleImePickerFocusChanged(hasFocus)
-    }
-
     override fun onDestroy() {
-        stopImePickerPolling()
         handler.removeCallbacksAndMessages(null)
         super.onDestroy()
     }
@@ -149,28 +133,11 @@ class OnboardingGuideActivity : BaseActivity() {
         val a11yRequired = floatingInputNeedsAccessibility(
             floatingEnabled = floatingEnabled,
             volumeKeyEnabled = prefs.volumeKeyRecordingEnabled,
-            imeBridgeEnabled = prefs.floatingImeBridgeEnabled,
             shakeRecordingEnabled = prefs.shakeRecordingEnabled
         )
         val overlayGranted = hasOverlayPermission()
         val a11yGranted = hasAccessibilityPermission()
         val requiredItems = buildList {
-            add(
-                OnboardingPermissionItem(
-                    titleRes = R.string.onboarding_permission_ime_enable_title,
-                    descriptionRes = R.string.onboarding_permission_ime_enable_desc,
-                    granted = isOurImeEnabled(),
-                    onRequest = ::requestEnableIme
-                )
-            )
-            add(
-                OnboardingPermissionItem(
-                    titleRes = R.string.onboarding_permission_ime_switch_title,
-                    descriptionRes = R.string.onboarding_permission_ime_switch_desc,
-                    granted = isOurImeCurrent(),
-                    onRequest = ::requestSwitchIme
-                )
-            )
             add(
                 OnboardingPermissionItem(
                     titleRes = R.string.onboarding_permission_mic_title,
@@ -304,88 +271,6 @@ class OnboardingGuideActivity : BaseActivity() {
         PermissionRouter.route(this, BibiPermissionType.NOTIFICATIONS)
     }
 
-    private fun requestEnableIme() {
-        try {
-            startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to open input method settings", e)
-        }
-    }
-
-    private fun requestSwitchIme() {
-        try {
-            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            imePickerShown = true
-            imePickerLostFocusOnce = false
-            imm.showInputMethodPicker()
-            startImePickerPolling()
-        } catch (e: Exception) {
-            imePickerShown = false
-            imePickerLostFocusOnce = false
-            stopImePickerPolling()
-            Log.e(TAG, "Failed to show input method picker", e)
-        }
-    }
-
-    private fun handleImePickerFocusChanged(hasFocus: Boolean) {
-        if (!imePickerShown) return
-
-        if (!hasFocus) {
-            imePickerLostFocusOnce = true
-            Log.d(TAG, "Onboarding IME picker shown, activity lost focus")
-            return
-        }
-
-        if (imePickerLostFocusOnce) {
-            Log.d(TAG, "Onboarding IME picker closed, refreshing permissions")
-            handler.postDelayed({
-                if (!isFinishing && !isDestroyed) {
-                    refreshPermissionPage()
-                }
-            }, IME_PICKER_REFRESH_DELAY_MS)
-            imePickerShown = false
-            imePickerLostFocusOnce = false
-        }
-    }
-
-    private fun startImePickerPolling() {
-        stopImePickerPolling()
-        imePickerPollingStartedAt = System.currentTimeMillis()
-
-        val runnable = object : Runnable {
-            override fun run() {
-                if (isFinishing || isDestroyed) {
-                    stopImePickerPolling()
-                    return
-                }
-
-                if (isOurImeCurrent()) {
-                    refreshPermissionPage()
-                    imePickerShown = false
-                    imePickerLostFocusOnce = false
-                    stopImePickerPolling()
-                    return
-                }
-
-                val elapsed = System.currentTimeMillis() - imePickerPollingStartedAt
-                if (elapsed >= IME_PICKER_POLL_TIMEOUT_MS) {
-                    stopImePickerPolling()
-                    return
-                }
-
-                handler.postDelayed(this, IME_PICKER_POLL_INTERVAL_MS)
-            }
-        }
-
-        imePickerPollingRunnable = runnable
-        handler.postDelayed(runnable, IME_PICKER_POLL_INTERVAL_MS)
-    }
-
-    private fun stopImePickerPolling() {
-        imePickerPollingRunnable?.let { handler.removeCallbacks(it) }
-        imePickerPollingRunnable = null
-    }
-
     private fun openUrl(url: String) {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
@@ -515,58 +400,5 @@ class OnboardingGuideActivity : BaseActivity() {
     } catch (e: Exception) {
         Log.e(TAG, "Failed to check accessibility service state", e)
         false
-    }
-
-    private fun isOurImeEnabled(): Boolean {
-        val imm = try {
-            getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to get InputMethodManager", e)
-            return false
-        }
-
-        val enabledList = try {
-            imm.enabledInputMethodList
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to get enabled IME list", e)
-            null
-        }
-
-        if (enabledList?.any { it.packageName == packageName } == true) {
-            return true
-        }
-
-        return try {
-            val enabled = Settings.Secure.getString(
-                contentResolver,
-                Settings.Secure.ENABLED_INPUT_METHODS
-            )
-            val ids = getOurImeIdCandidates()
-            ids.any { enabled?.contains(it) == true } ||
-                (enabled?.split(':')?.any { it.startsWith(packageName) } == true)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to check IME enabled via Settings", e)
-            false
-        }
-    }
-
-    private fun isOurImeCurrent(): Boolean = try {
-        val current = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.DEFAULT_INPUT_METHOD
-        )
-        val ids = getOurImeIdCandidates()
-        current != null && ids.contains(current)
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to check current IME", e)
-        false
-    }
-
-    private fun getOurImeIdCandidates(): Set<String> {
-        val component = ComponentName(this, AsrKeyboardService::class.java)
-        return setOf(
-            component.flattenToShortString(),
-            component.flattenToString()
-        )
     }
 }

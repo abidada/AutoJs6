@@ -43,10 +43,6 @@ class SettingsActionController(
         activity.showTestInputFromCompose()
     }
 
-    fun showImePicker() {
-        activity.showImePickerFromCompose()
-    }
-
     fun openOnboardingGuide() {
         activity.startActivity(Intent(activity, OnboardingGuideActivity::class.java))
     }

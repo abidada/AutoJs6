@@ -188,14 +188,8 @@ internal fun InputSettingsUiState.withHapticFeedbackLevel(
 internal data class InputSettingsUiState(
     val trimTrailingPunct: Boolean,
     val trimTrailingPunctThreshold: Int,
-    val micTapToggle: Boolean,
-    val autoStartRecordingOnShow: Boolean,
-    val autoEnterAfterAsr: Boolean,
-    val autoSwitchImeAfterAsr: Boolean,
     val continuousCapture: Boolean,
     val keepScreenOnWhileRecording: Boolean,
-    val fcitx5ReturnOnSwitcher: Boolean,
-    val returnPrevImeOnHide: Boolean,
     val hideRecentTasks: Boolean,
     val duckMediaOnRecord: Boolean,
     val offlineDenoise: Boolean,
@@ -204,28 +198,17 @@ internal data class InputSettingsUiState(
     val uploadAudioCompression: Boolean,
     val headsetMicPriority: Boolean,
     val externalAidl: Boolean,
-    val keyboardHeightTier: Int,
-    val imeTabletFloatingKeyboard: Boolean,
     val hapticFeedbackLevel: Int,
     val hapticFeedbackLabel: String,
-    val keyboardBottomPaddingDp: Int,
     val waveformSensitivity: Int,
     val languageLabel: String,
-    val imeSwitchTargetLabel: String,
-    val extensionButtonsLabel: String
 ) {
     companion object {
         fun fromPrefs(context: Context, prefs: Prefs): InputSettingsUiState = InputSettingsUiState(
             trimTrailingPunct = prefs.trimFinalTrailingPunct,
             trimTrailingPunctThreshold = prefs.trimFinalTrailingPunctThreshold,
-            micTapToggle = prefs.micTapToggleEnabled,
-            autoStartRecordingOnShow = prefs.autoStartRecordingOnShow,
-            autoEnterAfterAsr = prefs.autoEnterAfterAsrEnabled,
-            autoSwitchImeAfterAsr = prefs.autoSwitchImeAfterAsrEnabled,
             continuousCapture = prefs.continuousCaptureEnabled,
             keepScreenOnWhileRecording = prefs.keepScreenOnWhileRecording,
-            fcitx5ReturnOnSwitcher = prefs.fcitx5ReturnOnImeSwitch,
-            returnPrevImeOnHide = prefs.returnPrevImeOnHide,
             hideRecentTasks = prefs.hideRecentTaskCard,
             duckMediaOnRecord = prefs.duckMediaOnRecordEnabled,
             offlineDenoise = prefs.offlineDenoiseEnabled,
@@ -234,15 +217,10 @@ internal data class InputSettingsUiState(
             uploadAudioCompression = prefs.uploadAudioCompressionEnabled,
             headsetMicPriority = prefs.headsetMicPriorityEnabled,
             externalAidl = prefs.externalAidlEnabled,
-            keyboardHeightTier = prefs.keyboardHeightTier,
-            imeTabletFloatingKeyboard = prefs.imeTabletFloatingKeyboardEnabled,
             hapticFeedbackLevel = prefs.hapticFeedbackLevel,
             hapticFeedbackLabel = context.hapticFeedbackStrengthLabel(prefs.hapticFeedbackLevel),
-            keyboardBottomPaddingDp = prefs.keyboardBottomPaddingDp,
             waveformSensitivity = prefs.waveformSensitivity,
-            languageLabel = context.languageLabel(prefs.appLanguageTag),
-            imeSwitchTargetLabel = context.imeSwitchTargetLabel(prefs),
-            extensionButtonsLabel = context.extensionButtonsLabel(prefs)
+            languageLabel = context.languageLabel(prefs.appLanguageTag)
         )
     }
 }

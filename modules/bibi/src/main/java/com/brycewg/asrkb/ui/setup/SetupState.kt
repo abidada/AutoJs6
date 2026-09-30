@@ -4,10 +4,8 @@ package com.brycewg.asrkb.ui.setup
  * 一键设置流程的状态机定义
  *
  * 流程顺序：
- * 1. NotStarted -> EnablingIme: 用户未启用输入法，需要前往系统设置启用
- * 2. EnablingIme -> SelectingIme: 输入法已启用，但未选择为当前输入法
- * 3. SelectingIme -> RequestingPermissions: 输入法已选择，开始请求权限
- * 4. RequestingPermissions -> Completed: 所有必需权限已授予，设置完成
+ * 1. NotStarted -> RequestingPermissions: 请求所需权限
+ * 2. RequestingPermissions -> Completed: 所有必需权限已授予，设置完成
  *
  * 每个状态对应一个具体的操作，状态转换通过 advance() 方法触发
  */
@@ -16,19 +14,6 @@ sealed class SetupState {
      * 初始状态：未开始设置流程
      */
     data object NotStarted : SetupState()
-
-    /**
-     * 等待用户启用输入法
-     * @property askedOnce 是否已经提示过用户（避免重复跳转）
-     */
-    data class EnablingIme(val askedOnce: Boolean = false) : SetupState()
-
-    /**
-     * 等待用户选择输入法为当前输入法
-     * @property askedOnce 是否已经唤起过选择器
-     * @property waitingSince 开始等待的时间戳（用于超时检测）
-     */
-    data class SelectingIme(val askedOnce: Boolean = false, val waitingSince: Long = 0L) : SetupState()
 
     /**
      * 请求权限阶段（麦克风、悬浮窗、通知、无障碍）

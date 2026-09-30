@@ -31,8 +31,7 @@ internal class DirectClipboardSyncRuntimeSession(
             scope = scope
         )
     },
-    initialManager: SyncClipboardManager? = null,
-    private val activatedBridgeTargetPackage: String? = null
+    initialManager: SyncClipboardManager? = null
 ) : ClipboardSyncRuntimeSession {
     companion object {
         private const val TAG = "ClipboardSyncRuntime"
@@ -214,11 +213,7 @@ internal class DirectClipboardSyncRuntimeSession(
             scope = scope,
             listener = listenerHolder,
             clipboardStore = clipboardStore,
-            clipboardPort = SystemClipboardPortFactory.create(
-                context,
-                prefs,
-                activatedBridgeTargetPackage = activatedBridgeTargetPackage
-            )
+            clipboardPort = SystemClipboardPortFactory.create(context, prefs)
         )
         manager = created
         return created

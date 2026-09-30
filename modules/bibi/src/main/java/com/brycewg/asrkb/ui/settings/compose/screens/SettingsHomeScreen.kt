@@ -8,12 +8,10 @@
 package com.brycewg.asrkb.ui.settings.compose.screens
 
 import android.Manifest
-import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
-import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -66,7 +64,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.brycewg.asrkb.R
-import com.brycewg.asrkb.ime.AsrKeyboardService
 import com.brycewg.asrkb.store.ApiLogStore
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.AsrVendorUi
@@ -525,11 +522,9 @@ private data class SettingsHomeSnapshot(
             val floatingEnabled = prefs.floatingAsrEnabled
             val volumeKeyEnabled = prefs.volumeKeyRecordingEnabled
             val shakeRecordingEnabled = prefs.shakeRecordingEnabled
-            val imeBridgeEnabled = prefs.floatingImeBridgeEnabled
             val accessibilityMissing = floatingInputNeedsAccessibility(
                 floatingEnabled = floatingEnabled,
                 volumeKeyEnabled = volumeKeyEnabled,
-                imeBridgeEnabled = imeBridgeEnabled,
                 shakeRecordingEnabled = shakeRecordingEnabled
             ) &&
                 !isAccessibilityServiceEnabled(context)
@@ -618,10 +613,7 @@ private fun oneClickSetupSummary(context: Context, prefs: Prefs): String {
     val floatingEnabled = prefs.floatingAsrEnabled
     val volumeKeyEnabled = prefs.volumeKeyRecordingEnabled
     val shakeRecordingEnabled = prefs.shakeRecordingEnabled
-    val imeBridgeEnabled = prefs.floatingImeBridgeEnabled
     val checks = buildList {
-        add(isOurImeEnabled(context))
-        add(isOurImeCurrent(context))
         add(hasMicrophonePermission(context))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             add(hasNotificationPermission(context))
@@ -632,7 +624,6 @@ private fun oneClickSetupSummary(context: Context, prefs: Prefs): String {
         if (floatingInputNeedsAccessibility(
                 floatingEnabled = floatingEnabled,
                 volumeKeyEnabled = volumeKeyEnabled,
-                imeBridgeEnabled = imeBridgeEnabled,
                 shakeRecordingEnabled = shakeRecordingEnabled
             )
         ) {
@@ -660,42 +651,3 @@ private fun hasNotificationPermission(context: Context): Boolean = if (Build.VER
     true
 }
 
-private fun isOurImeEnabled(context: Context): Boolean {
-    val imm = try {
-        context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    } catch (_: Exception) {
-        return false
-    }
-    val enabledList = try {
-        imm.enabledInputMethodList
-    } catch (_: Exception) {
-        null
-    }
-    if (enabledList?.any { it.packageName == context.packageName } == true) return true
-    return try {
-        val enabled = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.ENABLED_INPUT_METHODS
-        )
-        val ids = ourImeIdCandidates(context)
-        ids.any { enabled?.contains(it) == true } ||
-            (enabled?.split(':')?.any { it.startsWith(context.packageName) } == true)
-    } catch (_: Exception) {
-        false
-    }
-}
-
-private fun isOurImeCurrent(context: Context): Boolean = try {
-    val current = Settings.Secure.getString(
-        context.contentResolver,
-        Settings.Secure.DEFAULT_INPUT_METHOD
-    )
-    current != null && ourImeIdCandidates(context).contains(current)
-} catch (_: Exception) {
-    false
-}
-
-private fun ourImeIdCandidates(context: Context): Set<String> {
-    val component = ComponentName(context, AsrKeyboardService::class.java)
-    return setOf(component.flattenToShortString(), component.flattenToString())
-}

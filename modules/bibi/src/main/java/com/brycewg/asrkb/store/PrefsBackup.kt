@@ -162,11 +162,11 @@ internal object PrefsBackup {
         o.put(KEY_PUNCT_2, punct2)
         o.put(KEY_PUNCT_3, punct3)
         o.put(KEY_PUNCT_4, punct4)
-        // 自定义扩展按钮
-        o.put(KEY_EXT_BTN_1, extBtn1.id)
-        o.put(KEY_EXT_BTN_2, extBtn2.id)
-        o.put(KEY_EXT_BTN_3, extBtn3.id)
-        o.put(KEY_EXT_BTN_4, extBtn4.id)
+        // 自定义扩展按钮（IME 移除后为原始字符串）
+        o.put(KEY_EXT_BTN_1, extBtn1)
+        o.put(KEY_EXT_BTN_2, extBtn2)
+        o.put(KEY_EXT_BTN_3, extBtn3)
+        o.put(KEY_EXT_BTN_4, extBtn4)
         o.put(KEY_CUSTOM_KEYBOARD_LAYOUTS_JSON, customKeyboardLayoutsJson)
         // 统计信息
         o.put(KEY_TOTAL_ASR_CHARS, totalAsrChars)
@@ -547,23 +547,11 @@ internal object PrefsBackup {
             optString(KEY_PUNCT_2)?.let { punct2 = it }
             optString(KEY_PUNCT_3)?.let { punct3 = it }
             optString(KEY_PUNCT_4)?.let { punct4 = it }
-            // 自定义扩展按钮（可选）
-            optString(KEY_EXT_BTN_1)?.let {
-                extBtn1 =
-                    com.brycewg.asrkb.ime.ExtensionButtonAction.fromId(it)
-            }
-            optString(KEY_EXT_BTN_2)?.let {
-                extBtn2 =
-                    com.brycewg.asrkb.ime.ExtensionButtonAction.fromId(it)
-            }
-            optString(KEY_EXT_BTN_3)?.let {
-                extBtn3 =
-                    com.brycewg.asrkb.ime.ExtensionButtonAction.fromId(it)
-            }
-            optString(KEY_EXT_BTN_4)?.let {
-                extBtn4 =
-                    com.brycewg.asrkb.ime.ExtensionButtonAction.fromId(it)
-            }
+            // 自定义扩展按钮（可选；IME 移除后仅保留字符串存储）
+            optString(KEY_EXT_BTN_1)?.let { extBtn1 = it }
+            optString(KEY_EXT_BTN_2)?.let { extBtn2 = it }
+            optString(KEY_EXT_BTN_3)?.let { extBtn3 = it }
+            optString(KEY_EXT_BTN_4)?.let { extBtn4 = it }
             optString(KEY_CUSTOM_KEYBOARD_LAYOUTS_JSON)?.let { customKeyboardLayoutsJson = it }
             // 统计信息（可选）
             if (o.has(KEY_TOTAL_ASR_CHARS)) {

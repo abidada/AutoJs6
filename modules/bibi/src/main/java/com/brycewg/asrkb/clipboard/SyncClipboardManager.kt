@@ -233,16 +233,7 @@ class SyncClipboardManager(
     }
 
     private fun ensureObserverRenewLoop() {
-        if (clipboardPort.actor != SystemClipboardActor.BRIDGE || observerRenewJob?.isActive == true) {
-            return
-        }
-        observerRenewJob = scope.launch(ioDispatcher) {
-            while (isActive && prefs.syncClipboardEnabled) {
-                delay(BRIDGE_OBSERVER_RENEW_INTERVAL_MS)
-                if (!isActive || !prefs.syncClipboardEnabled) break
-                ensureObserver(force = true)
-            }
-        }
+        // IME 桥接移除后恒为 Direct 观察者，无需续期循环
     }
 
     private fun stopPullLoop() {

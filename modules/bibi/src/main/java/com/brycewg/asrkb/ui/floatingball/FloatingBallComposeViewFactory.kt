@@ -7,10 +7,14 @@ package com.brycewg.asrkb.ui.floatingball
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.BibiViewThemes
@@ -24,6 +28,7 @@ internal object FloatingBallComposeViewFactory {
         )
         val ballSizePx = dp(context, readBallSizeDp(prefs))
         addView(createBallContainer(context, ballSizePx))
+        addView(createPillContainer(context, ballSizePx))
         applyTheme(this, prefs)
     }
 
@@ -34,7 +39,65 @@ internal object FloatingBallComposeViewFactory {
             ColorStateList.valueOf(theme.floatingIcon)
         root.findViewById<ImageView>(R.id.ballIcon)?.imageTintList =
             ColorStateList.valueOf(theme.floatingIcon)
+        root.findViewById<View>(R.id.pillContainer)?.apply {
+            background = roundedPillBackground(
+                color = theme.primary,
+                radiusPx = dp(context, readBallSizeDp(prefs)) / 2f
+            )
+        }
+        root.findViewById<ImageView>(R.id.pillIcon)?.imageTintList =
+            ColorStateList.valueOf(Color.WHITE)
+        root.findViewById<TextView>(R.id.pillText)?.setTextColor(Color.WHITE)
     }
+
+    /** 胶囊容器：麦克风小图标 + 文本；默认 GONE，由 ViewManager 按交互模式切换。 */
+    private fun createPillContainer(context: Context, ballSizePx: Int): View =
+        LinearLayout(context).apply {
+            id = R.id.pillContainer
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            visibility = View.GONE
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            val hPad = dp(context, 14)
+            setPadding(hPad, 0, hPad, 0)
+            addView(
+                ImageView(context).apply {
+                    id = R.id.pillIcon
+                    setImageResource(R.drawable.microphone_floatingball)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    layoutParams = LinearLayout.LayoutParams(dp(context, 22), dp(context, 22)).apply {
+                        gravity = Gravity.CENTER_VERTICAL
+                        marginEnd = dp(context, 8)
+                    }
+                }
+            )
+            addView(
+                TextView(context).apply {
+                    id = R.id.pillText
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    textSize = 15f
+                    maxWidth = dp(context, 180)
+                    maxLines = 1
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply { gravity = Gravity.CENTER_VERTICAL }
+                }
+            )
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                ballSizePx,
+                Gravity.CENTER
+            )
+        }
+
+    private fun roundedPillBackground(color: Int, radiusPx: Float): GradientDrawable =
+        GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = radiusPx
+            setColor(color)
+        }
 
     private fun createBallContainer(context: Context, ballSizePx: Int): View = FrameLayout(context).apply {
         id = R.id.ballContainer

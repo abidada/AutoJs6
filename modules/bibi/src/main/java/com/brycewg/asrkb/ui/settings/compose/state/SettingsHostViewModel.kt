@@ -8,7 +8,6 @@ package com.brycewg.asrkb.ui.settings.compose.state
 import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
-import com.brycewg.asrkb.ime.AsrKeyboardService
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.floating.FloatingAsrService
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute
@@ -124,7 +123,6 @@ class SettingsHostViewModel(
     private fun BibiSettingsRoute.homeTabIndex(): Int = when (this) {
         BibiSettingsRoute.Input,
         BibiSettingsRoute.UiSettings,
-        BibiSettingsRoute.KeyboardLayout,
         BibiSettingsRoute.RecordingTest,
         BibiSettingsRoute.Floating -> 0
 
@@ -135,6 +133,7 @@ class SettingsHostViewModel(
         BibiSettingsRoute.History,
         BibiSettingsRoute.ApiLog -> 1
 
+        BibiSettingsRoute.VoiceDispatch,
         BibiSettingsRoute.Backup,
         BibiSettingsRoute.Other,
         BibiSettingsRoute.About,
@@ -146,9 +145,6 @@ class SettingsHostViewModel(
 
     private fun refreshInputSurfaces() {
         val app = getApplication<Application>()
-        app.sendBroadcast(
-            Intent(AsrKeyboardService.ACTION_REFRESH_IME_UI).setPackage(app.packageName)
-        )
         if (prefs.floatingAsrEnabled) {
             app.startService(
                 Intent(app, FloatingAsrService::class.java).apply {

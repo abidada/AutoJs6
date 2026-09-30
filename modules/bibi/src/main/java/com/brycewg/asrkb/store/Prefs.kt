@@ -21,7 +21,6 @@ import com.brycewg.asrkb.asr.LlmReasoningThreshold
 import com.brycewg.asrkb.asr.LlmVendor
 import com.brycewg.asrkb.asr.VolcAsrModelCatalog
 import com.brycewg.asrkb.clipboard.ClipboardSyncReceiveMode
-import com.brycewg.asrkb.imebridge.ImeBridgeRuntimeShutdown
 import kotlin.reflect.KProperty
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -687,16 +686,41 @@ class Prefs(context: Context) {
 
     fun shouldUseA11yAndroid13Api(): Boolean = floatingA11yAndroid13ApiEnabled && Build.VERSION.SDK_INT >= 33
 
-    // 输入法 Hook 模块总开关：可见性 / 文字插入 / PCM / 剪贴板 Actor，默认关闭
+    // ==================== 悬浮球交互时间配置 ====================
+
+    // 「发起语音」无操作收缩成圆球时长（秒，5~60，默认 15）
+    var voiceReadyCollapseSeconds: Int
+        get() = sp.getInt(KEY_VOICE_READY_COLLAPSE_SECONDS, 15).coerceIn(5, 120)
+        set(value) = sp.edit { putInt(KEY_VOICE_READY_COLLAPSE_SECONDS, value.coerceIn(5, 120)) }
+
+    // ==================== 语音分发（文字分发） ====================
+
+    // 分发总开关：开启时每句识别结果直接进规则匹配并连续监听；关闭=单次识别
+    var voiceDispatchEnabled: Boolean
+        get() = sp.getBoolean(KEY_VOICE_DISPATCH_ENABLED, false)
+        set(value) = sp.edit { putBoolean(KEY_VOICE_DISPATCH_ENABLED, value) }
+
+    // ==================== 语音唤醒（OpenWakeWord） ====================
+
+    // 唤醒词总开关（默认关闭；开启后由 WakeWordService 常驻低功耗监听）
+    var wakeWordEnabled: Boolean
+        get() = sp.getBoolean(KEY_WAKE_WORD_ENABLED, false)
+        set(value) = sp.edit { putBoolean(KEY_WAKE_WORD_ENABLED, value) }
+
+    // 仅充电时启用唤醒监听（省电，默认关闭）
+    var wakeWordOnlyWhileCharging: Boolean
+        get() = sp.getBoolean(KEY_WAKE_WORD_ONLY_CHARGING, false)
+        set(value) = sp.edit { putBoolean(KEY_WAKE_WORD_ONLY_CHARGING, value) }
+
+    // 唤醒阈值（百分比 50~95，对应概率 0.50~0.95，默认 0.80）
+    var wakeWordThresholdPercent: Int
+        get() = sp.getInt(KEY_WAKE_WORD_THRESHOLD, 80)
+        set(value) = sp.edit { putInt(KEY_WAKE_WORD_THRESHOLD, value.coerceIn(50, 95)) }
+
+    // 兼容旧备份键：原输入法 Hook 模块总开关（IME 桥接已移除，仅保留存储能力）
     var floatingImeBridgeEnabled: Boolean
         get() = sp.getBoolean(KEY_FLOATING_IME_BRIDGE_ENABLED, false)
-        set(value) {
-            val previous = sp.getBoolean(KEY_FLOATING_IME_BRIDGE_ENABLED, false)
-            sp.edit { putBoolean(KEY_FLOATING_IME_BRIDGE_ENABLED, value) }
-            if (previous && !value) {
-                ImeBridgeRuntimeShutdown.onMasterEnabledChanged(false)
-            }
-        }
+        set(value) = sp.edit { putBoolean(KEY_FLOATING_IME_BRIDGE_ENABLED, value) }
 
     // 兼容旧备份键：自 v4.1.1 起曾作为独立 PCM 子开关；现由总开关统一门控
     var imeBridgePcmRecordingEnabled: Boolean
@@ -1975,51 +1999,23 @@ class Prefs(context: Context) {
         get() = (sp.getString(KEY_PUNCT_4, DEFAULT_PUNCT_4) ?: DEFAULT_PUNCT_4).trim()
         set(value) = sp.edit { putString(KEY_PUNCT_4, value.trim()) }
 
-    // 自定义扩展按钮（4个位置，存储动作类型ID）
-    // 默认值（从左到右）：撤销、全选、复制、收起键盘
-    var extBtn1: com.brycewg.asrkb.ime.ExtensionButtonAction
-        get() {
-            val stored = sp.getString(KEY_EXT_BTN_1, null)
-            return if (stored == null) {
-                com.brycewg.asrkb.ime.ExtensionButtonAction.getDefaults()[0]
-            } else {
-                com.brycewg.asrkb.ime.ExtensionButtonAction.fromId(stored)
-            }
-        }
-        set(value) = sp.edit { putString(KEY_EXT_BTN_1, value.id) }
+    // 兼容旧备份键：自定义扩展按钮（4个位置，存储动作类型ID）
+    // IME 移除后无消费方，仅保留原始字符串存储能力
+    var extBtn1: String
+        get() = sp.getString(KEY_EXT_BTN_1, "") ?: ""
+        set(value) = sp.edit { putString(KEY_EXT_BTN_1, value) }
 
-    var extBtn2: com.brycewg.asrkb.ime.ExtensionButtonAction
-        get() {
-            val stored = sp.getString(KEY_EXT_BTN_2, null)
-            return if (stored == null) {
-                com.brycewg.asrkb.ime.ExtensionButtonAction.getDefaults()[1]
-            } else {
-                com.brycewg.asrkb.ime.ExtensionButtonAction.fromId(stored)
-            }
-        }
-        set(value) = sp.edit { putString(KEY_EXT_BTN_2, value.id) }
+    var extBtn2: String
+        get() = sp.getString(KEY_EXT_BTN_2, "") ?: ""
+        set(value) = sp.edit { putString(KEY_EXT_BTN_2, value) }
 
-    var extBtn3: com.brycewg.asrkb.ime.ExtensionButtonAction
-        get() {
-            val stored = sp.getString(KEY_EXT_BTN_3, null)
-            return if (stored == null) {
-                com.brycewg.asrkb.ime.ExtensionButtonAction.getDefaults()[2]
-            } else {
-                com.brycewg.asrkb.ime.ExtensionButtonAction.fromId(stored)
-            }
-        }
-        set(value) = sp.edit { putString(KEY_EXT_BTN_3, value.id) }
+    var extBtn3: String
+        get() = sp.getString(KEY_EXT_BTN_3, "") ?: ""
+        set(value) = sp.edit { putString(KEY_EXT_BTN_3, value) }
 
-    var extBtn4: com.brycewg.asrkb.ime.ExtensionButtonAction
-        get() {
-            val stored = sp.getString(KEY_EXT_BTN_4, null)
-            return if (stored == null) {
-                com.brycewg.asrkb.ime.ExtensionButtonAction.getDefaults()[3]
-            } else {
-                com.brycewg.asrkb.ime.ExtensionButtonAction.fromId(stored)
-            }
-        }
-        set(value) = sp.edit { putString(KEY_EXT_BTN_4, value.id) }
+    var extBtn4: String
+        get() = sp.getString(KEY_EXT_BTN_4, "") ?: ""
+        set(value) = sp.edit { putString(KEY_EXT_BTN_4, value) }
 
     var customKeyboardLayoutsJson: String
         get() = sp.getString(KEY_CUSTOM_KEYBOARD_LAYOUTS_JSON, "") ?: ""

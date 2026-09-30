@@ -5,19 +5,12 @@
  */
 package com.brycewg.asrkb.ui.floating
 
-internal fun floatingAsrNeedsAccessibility(
-    floatingEnabled: Boolean,
-    imeBridgeEnabled: Boolean
-): Boolean = floatingEnabled && !imeBridgeEnabled
+internal fun floatingAsrNeedsAccessibility(floatingEnabled: Boolean): Boolean = floatingEnabled
 
 internal fun floatingInputNeedsAccessibility(
     floatingEnabled: Boolean,
     volumeKeyEnabled: Boolean,
-    imeBridgeEnabled: Boolean,
     shakeRecordingEnabled: Boolean = false
 ): Boolean = volumeKeyEnabled ||
     shakeRecordingEnabled ||
-    floatingAsrNeedsAccessibility(
-        floatingEnabled = floatingEnabled,
-        imeBridgeEnabled = imeBridgeEnabled
-    )
+    floatingAsrNeedsAccessibility(floatingEnabled = floatingEnabled)
