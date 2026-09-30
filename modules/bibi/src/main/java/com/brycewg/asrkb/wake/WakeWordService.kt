@@ -1,8 +1,8 @@
 /**
- * 语音唤醒前台服务（microphone 类型）：常驻低优先级通知 + AudioRecord 循环喂 OwwWakeEngine。
+ * 语音唤醒前台服务（microphone 类型）：常驻低优先级通知 + AudioRecord 循环喂 KwsWakeEngine。
  *
- * - 命中唤醒词 → 拉起 FloatingAsrService(ACTION_WAKE_TRIGGERED)，由悬浮球交互层直接进入 LISTENING；
- * - 与识别互斥：AsrRecordingState.active 时释放自身 AudioRecord，识别结束后重开并重置引擎；
+ * - 命中唤醒词 → 拉起 FloatingAsrService(ACTION_WAKE_TRIGGERED)，悬浮球直接进入「正在听」；
+ * - 与识别互斥：AsrRecordingState.active 时释放自身 AudioRecord 并重建流，识别结束后恢复；
  * - 「仅充电时启用」按偏好在循环内门控；
  * - Android 14+ 不允许从 BOOT_COMPLETED 拉起麦克风前台服务，开机自启失败时静默忽略（需手动开启）。
  *
@@ -29,8 +29,6 @@ import com.brycewg.asrkb.LocaleHelper
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.AsrRecordingState
 import com.brycewg.asrkb.store.Prefs
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 internal class WakeWordService : Service() {
 
@@ -38,8 +36,9 @@ internal class WakeWordService : Service() {
         private const val TAG = "WakeWordService"
         private const val CHANNEL_ID = "wake_word"
         private const val NOTIFICATION_ID = 4103
-        private const val HIT_DEBOUNCE_MS = 4_000L
+        private const val HIT_DEBOUNCE_MS = 2_500L
         private const val RECORD_SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION
+        private const val CHUNK_SAMPLES = 1600 // 100ms @16kHz
 
         const val ACTION_START = "com.brycewg.asrkb.action.WAKE_WORD_START"
         const val ACTION_STOP = "com.brycewg.asrkb.action.WAKE_WORD_STOP"
@@ -76,7 +75,7 @@ internal class WakeWordService : Service() {
     }
 
     private lateinit var prefs: Prefs
-    private var engine: OwwWakeEngine? = null
+    private var engine: KwsWakeEngine? = null
     private var audioRecord: AudioRecord? = null
     private var loopThread: Thread? = null
 
@@ -93,6 +92,7 @@ internal class WakeWordService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.d(TAG, "service onCreate")
         prefs = Prefs(this)
         ensureChannel()
         try {
@@ -111,6 +111,7 @@ internal class WakeWordService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "onStartCommand action=" + (intent?.action ?: "null"))
         when (intent?.action) {
             ACTION_STOP -> {
                 running = false
@@ -120,6 +121,7 @@ internal class WakeWordService : Service() {
 
             else -> {
                 if (!prefs.wakeWordEnabled) {
+                    Log.d(TAG, "wake disabled by prefs; stopping")
                     running = false
                     stopSelf()
                     return START_NOT_STICKY
@@ -150,6 +152,7 @@ internal class WakeWordService : Service() {
 
     private fun startLoop() {
         if (running) return
+        Log.d(TAG, "wake loop starting")
         running = true
         val thread = Thread({ loop() }, "wake-word-loop")
         thread.priority = Thread.MIN_PRIORITY
@@ -175,24 +178,18 @@ internal class WakeWordService : Service() {
             stopSelf()
             return
         }
+        Log.d(TAG, "wake engine created OK; opening AudioRecord")
 
-        val chunk = ShortArray(OwwWakeEngine.CHUNK_SAMPLES)
+        val chunk = ShortArray(CHUNK_SAMPLES)
         var record: AudioRecord? = null
 
         while (running && prefs.wakeWordEnabled) {
             try {
-                if (prefs.wakeWordOnlyWhileCharging && !isCharging()) {
-                    releaseAudio()
-                    record = null
-                    Thread.sleep(2_000)
-                    continue
-                }
-
                 if (AsrRecordingState.active) {
-                    // 识别会话进行中：让出麦克风，结束后重置引擎恢复监听
+                    // 识别会话进行中：让出麦克风，结束后重建流恢复监听
                     releaseAudio()
                     record = null
-                    engine?.reset()
+                    engine?.recreateStream()
                     Thread.sleep(300)
                     continue
                 }
@@ -200,20 +197,24 @@ internal class WakeWordService : Service() {
                 if (record == null) {
                     record = openAudioRecord()
                     if (record == null) {
+                        Log.w(TAG, "AudioRecord open failed; retry in 1s")
                         Thread.sleep(1_000)
                         continue
                     }
+                    Log.d(TAG, "AudioRecord opened; listening")
                 }
 
                 val n = record.read(chunk, 0, chunk.size, AudioRecord.READ_BLOCKING)
-                if (n < chunk.size) continue
+                if (n <= 0) continue
 
-                val probability = engine?.process(chunk) ?: 0f
-                if (probability >= prefs.wakeWordThresholdPercent / 100f &&
+                val samples = FloatArray(n) { chunk[it] / 32768.0f }
+                engine?.acceptWaveform(samples)
+                val keyword = engine?.pollKeyword()
+                if (keyword != null &&
                     SystemClock.elapsedRealtime() - lastHitElapsedMs > HIT_DEBOUNCE_MS
                 ) {
                     lastHitElapsedMs = SystemClock.elapsedRealtime()
-                    Log.d(TAG, "Wake word hit (p=$probability)")
+                    Log.d(TAG, "Wake word hit: $keyword")
                     triggerWakeRecognition()
                 }
             } catch (_: InterruptedException) {
@@ -251,14 +252,14 @@ internal class WakeWordService : Service() {
     private fun openAudioRecord(): AudioRecord? {
         return try {
             val minBuf = AudioRecord.getMinBufferSize(
-                OwwWakeEngine.SAMPLE_RATE,
+                KwsWakeEngine.SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT
             )
-            val bufferSize = maxOf(minBuf, OwwWakeEngine.CHUNK_SAMPLES * 8)
+            val bufferSize = maxOf(minBuf, CHUNK_SAMPLES * 8)
             val record = AudioRecord(
                 RECORD_SOURCE,
-                OwwWakeEngine.SAMPLE_RATE,
+                KwsWakeEngine.SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
                 bufferSize
@@ -288,34 +289,16 @@ internal class WakeWordService : Service() {
         }
     }
 
-    private fun isCharging(): Boolean {
-        val bm = getSystemService(Context.BATTERY_SERVICE) as? android.os.BatteryManager ?: return false
-        val status = bm.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_STATUS)
-        return status == android.os.BatteryManager.BATTERY_STATUS_CHARGING ||
-            status == android.os.BatteryManager.BATTERY_STATUS_FULL
-    }
-
     // ==================== 引擎装配 ====================
 
-    private fun createEngine(): OwwWakeEngine {
-        fun load(assetPath: String): ByteBuffer =
-            assets.openFd(assetPath).use { afd ->
-                java.io.FileInputStream(afd.fileDescriptor).channel.map(
-                    java.nio.channels.FileChannel.MapMode.READ_ONLY,
-                    afd.startOffset,
-                    afd.declaredLength
-                ).order(ByteOrder.nativeOrder())
-            }
-        val wakeModel = try {
-            load("openwakeword/userwake.tflite")
-        } catch (_: Throwable) {
-            load("openwakeword/hey_mycroft_v0.1.tflite")
+    private fun createEngine(): KwsWakeEngine {
+        val selected = try {
+            prefs.wakeWordSelected
+        } catch (e: Throwable) {
+            ""
         }
-        return OwwWakeEngine(
-            melspecModel = load("openwakeword/melspectrogram.tflite"),
-            embeddingModel = load("openwakeword/embedding_model.tflite"),
-            wakeModel = wakeModel
-        )
+        val keywords = com.brycewg.asrkb.wake.WakeWordStore.buildActiveKeywords(this, selected)
+        return KwsWakeEngine(assets, keywords)
     }
 
     // ==================== 通知 ====================

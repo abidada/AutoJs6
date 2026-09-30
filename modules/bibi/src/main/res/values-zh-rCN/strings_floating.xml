@@ -184,14 +184,6 @@
     <string name="listening_panel_share">分享</string>
     <string name="listening_panel_copied">已复制</string>
     <string name="listening_panel_error_prefix">识别出错：%1$s</string>
-    <string name="notif_channel_wake_word">语音唤醒</string>
-    <string name="notif_channel_wake_word_desc">保持后台唤醒词监听</string>
-    <string name="notif_wake_word_title">语音唤醒监听中</string>
-    <string name="notif_wake_word_desc">说出唤醒词即可开始语音识别</string>
-    <string name="section_wake_word">语音唤醒</string>
-    <string name="label_wake_word_enabled">启用语音唤醒（说 \"Hey Mycroft\"）</string>
-    <string name="label_wake_word_only_charging">仅充电时监听</string>
-    <string name="label_wake_word_threshold">唤醒灵敏度阈值</string>
     <string name="title_voice_dispatch">语音分发</string>
     <string name="title_voice_dispatch_new">新建规则</string>
     <string name="title_voice_dispatch_edit">编辑规则</string>
@@ -233,4 +225,19 @@
     <string name="voice_dispatch_feedback_miss">没有匹配到相关任务</string>
     <string name="label_voice_ready_collapse">发起语音停留收缩</string>
     <string name="voice_time_seconds_value">%1$d 秒</string>
+    <string name="section_wake_word">语音唤醒</string>
+    <string name="label_wake_word_enabled">启用语音唤醒</string>
+    <string name="label_wake_word_selected">唤醒词</string>
+    <string name="wake_word_all">全部（任一预置词）</string>
+    <string name="notif_channel_wake_word">语音唤醒</string>
+    <string name="notif_channel_wake_word_desc">保持后台唤醒词监听</string>
+    <string name="notif_wake_word_title">语音唤醒监听中</string>
+    <string name="notif_wake_word_desc">说出唤醒词即可开始语音识别</string>
+    <string name="title_wake_word_manager">唤醒词</string>
+    <string name="btn_wake_word_add">添加</string>
+    <string name="title_wake_word_edit">编辑唤醒词</string>
+    <string name="wake_word_input_hint">请输入 2~5 个汉字</string>
+    <string name="wake_word_invalid">包含模型不支持的读音，请换一个词</string>
+    <string name="wake_word_exists">唤醒词已存在</string>
+    <string name="wake_word_custom_tag">自定义</string>
 </resources>

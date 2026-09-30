@@ -151,6 +151,16 @@ internal class FloatingAsrInteractionController(
         false
     }
 
+    /**
+     * 唤醒词命中：跳过 READY，直接进入 LISTENING 并开始识别（等价触发悬浮球单击后的聆听）。
+     */
+    fun onWakeTriggered() {
+        if (stateMachine.isRecording || stateMachine.isProcessing) return
+        if (startRecordingFromBall() == RecordingStartFromBallResult.Started) {
+            transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+        }
+    }
+
     private fun getDispatcher(): com.brycewg.asrkb.host.VoiceCommandDispatcher? = try {
         com.brycewg.asrkb.host.VoiceCommandDispatcher.getInstance(context)
     } catch (e: Throwable) {
@@ -215,16 +225,6 @@ internal class FloatingAsrInteractionController(
                 startRecording()
             }
         }, CONTINUOUS_LISTENING_RESTART_DELAY_MS)
-    }
-
-    /**
-     * 唤醒词命中：跳过 READY，直接进入 LISTENING 并开始识别（等价触发悬浮球单击后的聆听）。
-     */
-    fun onWakeTriggered() {
-        if (stateMachine.isRecording || stateMachine.isProcessing) return
-        if (startRecordingFromBall() == RecordingStartFromBallResult.Started) {
-            transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
-        }
     }
 
     /** 监听面板停止按钮：与单击「正在听...」胶囊等价。 */

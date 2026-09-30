@@ -182,7 +182,7 @@ private fun SettingsRouteContent(
             onOpenAsrSettings = { onPushRoute(BibiSettingsRoute.Asr) }
         )
 
-        BibiSettingsRoute.Floating -> FloatingSettingsScreen(
+        BibiSettingsRoute.Floating -> FloatingSettingsRoute(
             uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             actions = actions

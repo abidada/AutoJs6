@@ -184,14 +184,6 @@
     <string name="listening_panel_share">Share</string>
     <string name="listening_panel_copied">Copied</string>
     <string name="listening_panel_error_prefix">Recognition error: %1$s</string>
-    <string name="notif_channel_wake_word">Wake word</string>
-    <string name="notif_channel_wake_word_desc">Keeps wake-word listening alive in the background</string>
-    <string name="notif_wake_word_title">Wake word listening</string>
-    <string name="notif_wake_word_desc">Say the wake word to start voice recognition</string>
-    <string name="section_wake_word">Voice Wake-up</string>
-    <string name="label_wake_word_enabled">Enable voice wake-up (say \"Hey Mycroft\")</string>
-    <string name="label_wake_word_only_charging">Listen only while charging</string>
-    <string name="label_wake_word_threshold">Wake sensitivity threshold</string>
     <string name="title_voice_dispatch">Voice Dispatch</string>
     <string name="title_voice_dispatch_new">New Rule</string>
     <string name="title_voice_dispatch_edit">Edit Rule</string>
@@ -233,4 +225,19 @@
     <string name="voice_dispatch_feedback_miss">No matching task</string>
     <string name="label_voice_ready_collapse">Voice pill collapse delay</string>
     <string name="voice_time_seconds_value">%1$d s</string>
+    <string name="section_wake_word">Voice Wake-up</string>
+    <string name="label_wake_word_enabled">Enable voice wake-up</string>
+    <string name="label_wake_word_selected">Wake word</string>
+    <string name="wake_word_all">All (any preset word)</string>
+    <string name="notif_channel_wake_word">Wake word</string>
+    <string name="notif_channel_wake_word_desc">Keeps wake-word listening alive in the background</string>
+    <string name="notif_wake_word_title">Wake word listening</string>
+    <string name="notif_wake_word_desc">Say the wake word to start voice recognition</string>
+    <string name="title_wake_word_manager">Wake word</string>
+    <string name="btn_wake_word_add">Add</string>
+    <string name="title_wake_word_edit">Edit wake word</string>
+    <string name="wake_word_input_hint">Enter 2–5 Chinese characters</string>
+    <string name="wake_word_invalid">Contains unsupported pronunciation</string>
+    <string name="wake_word_exists">Wake word already exists</string>
+    <string name="wake_word_custom_tag">Custom</string>
 </resources>

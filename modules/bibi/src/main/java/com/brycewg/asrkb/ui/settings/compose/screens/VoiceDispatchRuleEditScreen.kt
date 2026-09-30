@@ -39,6 +39,7 @@ import com.brycewg.asrkb.host.voice.VoiceDispatchType
 import com.brycewg.asrkb.host.voice.VoiceMatchType
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import kotlinx.coroutines.Dispatchers
@@ -153,7 +154,7 @@ internal fun VoiceDispatchRuleEditScreen(
             }
 
             // 优先级滑杆
-            Text(
+            SettingsThemedText(
                 text = stringResource(R.string.label_voice_dispatch_priority, priority.toInt()),
                 style = MaterialTheme.typography.titleSmall
             )
@@ -165,7 +166,7 @@ internal fun VoiceDispatchRuleEditScreen(
             )
 
             // 触发方式（单选胶囊）
-            Text(
+            SettingsThemedText(
                 text = stringResource(R.string.label_voice_dispatch_match_type),
                 style = MaterialTheme.typography.titleSmall
             )
@@ -219,7 +220,7 @@ internal fun VoiceDispatchRuleEditScreen(
             )
 
             // 分发类型（单选胶囊）
-            Text(
+            SettingsThemedText(
                 text = stringResource(R.string.label_voice_dispatch_type),
                 style = MaterialTheme.typography.titleSmall
             )

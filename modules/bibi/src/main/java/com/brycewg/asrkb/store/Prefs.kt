@@ -693,29 +693,29 @@ class Prefs(context: Context) {
         get() = sp.getInt(KEY_VOICE_READY_COLLAPSE_SECONDS, 15).coerceIn(5, 120)
         set(value) = sp.edit { putInt(KEY_VOICE_READY_COLLAPSE_SECONDS, value.coerceIn(5, 120)) }
 
+    // ==================== 语音唤醒（sherpa-onnx KWS） ====================
+
+    // 唤醒词总开关（默认关闭；开启后由 WakeWordService 常驻监听）
+    var wakeWordEnabled: Boolean
+        get() = sp.getBoolean(KEY_WAKE_WORD_ENABLED, false)
+        set(value) = sp.edit { putBoolean(KEY_WAKE_WORD_ENABLED, value) }
+
+    // 选中的唤醒词显示名（如「小爱同学」）；空 = 全部预置词生效
+    var wakeWordSelected: String
+        get() = sp.getString(KEY_WAKE_WORD_SELECTED, "") ?: ""
+        set(value) = sp.edit { putString(KEY_WAKE_WORD_SELECTED, value) }
+
+    // 自定义唤醒词列表（JSON：[{name, tokens}]）
+    var wakeWordCustomJson: String
+        get() = sp.getString(KEY_WAKE_WORD_CUSTOM_JSON, "[]") ?: "[]"
+        set(value) = sp.edit { putString(KEY_WAKE_WORD_CUSTOM_JSON, value) }
+
     // ==================== 语音分发（文字分发） ====================
 
     // 分发总开关：开启时每句识别结果直接进规则匹配并连续监听；关闭=单次识别
     var voiceDispatchEnabled: Boolean
         get() = sp.getBoolean(KEY_VOICE_DISPATCH_ENABLED, false)
         set(value) = sp.edit { putBoolean(KEY_VOICE_DISPATCH_ENABLED, value) }
-
-    // ==================== 语音唤醒（OpenWakeWord） ====================
-
-    // 唤醒词总开关（默认关闭；开启后由 WakeWordService 常驻低功耗监听）
-    var wakeWordEnabled: Boolean
-        get() = sp.getBoolean(KEY_WAKE_WORD_ENABLED, false)
-        set(value) = sp.edit { putBoolean(KEY_WAKE_WORD_ENABLED, value) }
-
-    // 仅充电时启用唤醒监听（省电，默认关闭）
-    var wakeWordOnlyWhileCharging: Boolean
-        get() = sp.getBoolean(KEY_WAKE_WORD_ONLY_CHARGING, false)
-        set(value) = sp.edit { putBoolean(KEY_WAKE_WORD_ONLY_CHARGING, value) }
-
-    // 唤醒阈值（百分比 50~95，对应概率 0.50~0.95，默认 0.80）
-    var wakeWordThresholdPercent: Int
-        get() = sp.getInt(KEY_WAKE_WORD_THRESHOLD, 80)
-        set(value) = sp.edit { putInt(KEY_WAKE_WORD_THRESHOLD, value.coerceIn(50, 95)) }
 
     // 兼容旧备份键：原输入法 Hook 模块总开关（IME 桥接已移除，仅保留存储能力）
     var floatingImeBridgeEnabled: Boolean

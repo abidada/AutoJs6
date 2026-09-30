@@ -60,6 +60,28 @@ private data class FloatingPackageEdits(
     val pasteChanged: Boolean
 )
 
+/**
+ * 悬浮球设置路由包装：内部承载「唤醒词管理」二级页。
+ */
+@Composable
+internal fun FloatingSettingsRoute(
+    uiMode: BibiUiMode,
+    onBack: () -> Unit,
+    actions: SettingsActionController
+) {
+    var showWakeManager by remember { mutableStateOf(false) }
+    if (showWakeManager) {
+        WakeWordManagerScreen(uiMode = uiMode, onBack = { showWakeManager = false })
+    } else {
+        FloatingSettingsScreen(
+            uiMode = uiMode,
+            onBack = onBack,
+            onOpenWakeManager = { showWakeManager = true },
+            actions = actions
+        )
+    }
+}
+
 private class FloatingPackagePersistState {
     var paste: String? = null
 }
@@ -68,6 +90,7 @@ private class FloatingPackagePersistState {
 fun FloatingSettingsScreen(
     uiMode: BibiUiMode,
     onBack: () -> Unit,
+    onOpenWakeManager: () -> Unit,
     actions: SettingsActionController
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -678,35 +701,20 @@ fun FloatingSettingsScreen(
                             }
                         },
                         index = 0,
-                        count = 3
+                        count = 2
                     )
                     if (uiState.wakeWordEnabled) {
-                        FloatingExplainedSwitch(
-                            id = "wake_word_only_charging",
-                            titleRes = R.string.label_wake_word_only_charging,
-                            checked = prefs.wakeWordOnlyWhileCharging,
-                            onToggle = { target ->
-                                prefs.wakeWordOnlyWhileCharging = target
-                                refreshState()
+                        FloatingValuePreference(
+                            titleRes = R.string.label_wake_word_selected,
+                            value = if (prefs.wakeWordSelected.isBlank()) {
+                                stringResource(R.string.wake_word_all)
+                            } else {
+                                prefs.wakeWordSelected
                             },
-                            index = 1,
-                            count = 3
-                        )
-                        FloatingSliderPreference(
-                            titleRes = R.string.label_wake_word_threshold,
-                            valueLabel = { "${it.roundFloatingToStep(5).toInt()}%" },
-                            value = prefs.wakeWordThresholdPercent.toFloat(),
-                            valueRange = 50f..95f,
-                            step = 5,
                             uiMode = uiMode,
-                            index = 2,
-                            count = 3,
-                            onValueChange = { },
-                            onValueChangeFinished = { value ->
-                                prefs.wakeWordThresholdPercent =
-                                    value.roundFloatingToStep(5).toInt().coerceIn(50, 95)
-                                refreshState()
-                            }
+                            index = 1,
+                            count = 2,
+                            onClick = onOpenWakeManager
                         )
                     }
                 }

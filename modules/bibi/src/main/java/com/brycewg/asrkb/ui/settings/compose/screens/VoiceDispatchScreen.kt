@@ -35,6 +35,7 @@ import com.brycewg.asrkb.host.VoiceCommandDispatcher
 import com.brycewg.asrkb.host.voice.VoiceDispatchRule
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreference
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
@@ -119,7 +120,7 @@ internal fun VoiceDispatchScreen(
 
             item("test") {
                 Column {
-                    Text(
+                    SettingsThemedText(
                         text = stringResource(R.string.label_voice_dispatch_test),
                         style = MaterialTheme.typography.titleSmall
                     )
@@ -151,7 +152,7 @@ internal fun VoiceDispatchScreen(
                             Text(stringResource(R.string.btn_voice_dispatch_test))
                         }
                         Spacer(Modifier.padding(start = 12.dp))
-                        Text(
+                        SettingsThemedText(
                             text = testResult,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.weight(1f)
@@ -161,7 +162,7 @@ internal fun VoiceDispatchScreen(
             }
 
             item("rules_header") {
-                Text(
+                SettingsThemedText(
                     text = stringResource(R.string.label_voice_dispatch_rules, rules.size),
                     style = MaterialTheme.typography.titleSmall
                 )
@@ -169,7 +170,7 @@ internal fun VoiceDispatchScreen(
 
             if (rules.isEmpty()) {
                 item("rules_empty") {
-                    Text(
+                    SettingsThemedText(
                         text = stringResource(R.string.summary_voice_dispatch_empty),
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -245,15 +246,15 @@ private fun VoiceDispatchRuleCard(
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                SettingsThemedText(
                     text = "${rule.name} · ${rule.priority}",
                     style = MaterialTheme.typography.titleSmall
                 )
-                Text(
+                SettingsThemedText(
                     text = summary,
                     style = MaterialTheme.typography.bodySmall
                 )
-                Text(
+                SettingsThemedText(
                     text = timeText,
                     style = MaterialTheme.typography.bodySmall
                 )
