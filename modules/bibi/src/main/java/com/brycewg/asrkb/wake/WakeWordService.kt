@@ -84,6 +84,10 @@ internal class WakeWordService : Service() {
 
     private var lastHitElapsedMs = 0L
 
+    /** 当前选中的唤醒词名;null = 全部预置词(不过滤)。sherpa KWS 的 createStream(keywords) 会把默认词表合并进来,故单选时在命中处过滤 */
+    @Volatile
+    private var activeKeywordName: String? = null
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun attachBaseContext(newBase: Context?) {
@@ -213,9 +217,14 @@ internal class WakeWordService : Service() {
                 if (keyword != null &&
                     SystemClock.elapsedRealtime() - lastHitElapsedMs > HIT_DEBOUNCE_MS
                 ) {
-                    lastHitElapsedMs = SystemClock.elapsedRealtime()
-                    Log.d(TAG, "Wake word hit: $keyword")
-                    triggerWakeRecognition()
+                    val filter = activeKeywordName
+                    if (filter != null && keyword != filter) {
+                        Log.d(TAG, "Wake word hit ignored: $keyword (active=$filter)")
+                    } else {
+                        lastHitElapsedMs = SystemClock.elapsedRealtime()
+                        Log.d(TAG, "Wake word hit: $keyword")
+                        triggerWakeRecognition()
+                    }
                 }
             } catch (_: InterruptedException) {
                 break
@@ -298,6 +307,8 @@ internal class WakeWordService : Service() {
             ""
         }
         val keywords = com.brycewg.asrkb.wake.WakeWordStore.buildActiveKeywords(this, selected)
+        // keywords 为 null = 全部预置词(或选中名已失效),不过滤;非 null 才按选中名过滤
+        activeKeywordName = if (keywords != null) selected.trim() else null
         return KwsWakeEngine(assets, keywords)
     }
 

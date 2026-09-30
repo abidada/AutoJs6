@@ -3,7 +3,8 @@
  *
  * - 模型 int8 三件套 + tokens/keywords 由 assets 直装（约 5MB）；
  * - 预置 8 个中文唤醒词（小爱同学/你好问问/小艺小艺/小米小米/你好军哥/蛋哥蛋哥/林美丽/你好西西），
- *   也可通过 [keywords] 传入 keywords.txt 行子集实现运行时自定义；
+ *   [keywords] 传入行会与默认词表合并（sherpa CreateStream 行为，非替换）；单选某词时由
+ *   WakeWordService 在命中处按词名过滤；
  * - 喂流方式与官方 SherpaOnnxKws 示例一致：100ms 块 acceptWaveform → isReady→decode→getResult→reset。
  *
  * 归属模块：wake
