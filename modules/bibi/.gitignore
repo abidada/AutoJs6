@@ -1,0 +1,36 @@
+# ============================================================
+# :modules:bibi — Android library module
+# BiBi (说点啥) voice input library, ported 2026-09-30.
+# 必须入库: src/**, build.gradle.kts, consumer-rules.pro, LICENSE, NOTICE
+# (assets/vad + assets/denoiser 的 onnx 模型是运行时必需, 不要忽略)
+# ============================================================
+
+# Gradle 构建产物
+/build/
+
+# Gradle 在模块目录内的缓存 (防御性; 正常只有根目录会出现)
+.gradle/
+
+# NDK/CMake 本机构建中间产物 (防御性; 本模块自身无原生代码)
+.externalNativeBuild/
+.cxx/
+captures/
+
+# 本机环境配置 (SDK 路径等, 绝不入库)
+local.properties
+
+# IDE / OS 垃圾文件
+*.iml
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# JVM 运行时转储与日志
+*.hprof
+*.log
+
+# 补丁/备份残留
+*.orig
+*.rej
+*.patch

@@ -2,6 +2,19 @@
 <PreferenceScreen
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- BIBI (说点啥) settings entry, placed at the very top by decision D5. -->
+    <org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory
+        app:layout="@layout/preference_category_custom"
+        app:title="@string/text_bibi_settings">
+
+        <org.autojs.autojs.ui.settings.BibiSettingsPreference
+            app:layout="@layout/preference_custom"
+            app:title="@string/text_bibi_settings"
+            app:summary="@string/summary_bibi_settings"
+            app:icon="@drawable/ic_bibi_voice" />
+
+    </org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory>
+
     <org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory
         app:layout="@layout/preference_category_custom"
         app:title="@string/text_appearance">

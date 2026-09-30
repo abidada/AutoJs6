@@ -93,6 +93,7 @@ import org.autojs.autojs.runtime.api.augment.toast.Toast
 import org.autojs.autojs.runtime.api.augment.ui.UI
 import org.autojs.autojs.runtime.api.augment.util.Util
 import org.autojs.autojs.runtime.api.augment.util.VersionCodesInfo
+import org.autojs.autojs.runtime.api.augment.voice.Bibi
 import org.autojs.autojs.runtime.api.augment.web.Web
 import org.autojs.autojs.runtime.api.augment.web.WebSocket
 import org.autojs.autojs.runtime.api.augment.web.WebSocketFields
@@ -605,6 +606,9 @@ class ScriptRuntime private constructor(builder: Builder) {
         //  # ignoresException({ AccessibilityService.clearAccessibilityEventCallback() })
         ignoresException { automator.removeAllEventsForThisRuntime() }
 
+        // Clean up $bibi callback registrations for the exiting script runtime.
+        ignoresException { Bibi.onScriptRuntimeExit(this) }
+
         ignoresException { RootUtils.resetRuntimeOverriddenRootModeState() }
 
         // Recycle all recorded ImageWrapper instances.
@@ -815,6 +819,8 @@ class ScriptRuntime private constructor(builder: Builder) {
         Pinyin.augmentWithRuntime(target, this, true)
         Pinyin4j.augmentWithRuntime(target, this, true)
         Mediainfo(this).augment(target, true)
+        // BIBI (说点啥) voice recognition API → `bibi` / `$bibi` in JS.
+        Bibi(this).augment(target, true)
 
         augmentedApp.defineProp(Autojs::class.java.simpleName.lowercase(), augmentedAutojs)
     }

@@ -26,6 +26,10 @@ import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.core.pref.PrefRx
 import org.autojs.autojs.external.foreground.AppForegroundService
 import org.autojs.autojs.permission.AllFilesAccessPermission
+import org.autojs.autojs.permission.BibiAccessibilityPermission
+import org.autojs.autojs.permission.BibiBluetoothMicPermission
+import org.autojs.autojs.permission.BibiBootAutostartPermission
+import org.autojs.autojs.permission.BibiMicrophonePermission
 import org.autojs.autojs.permission.DisplayOverOtherAppsPermission
 import org.autojs.autojs.permission.IgnoreBatteryOptimizationsPermission
 import org.autojs.autojs.permission.MediaProjectionPermission
@@ -59,6 +63,7 @@ import org.autojs.autojs.ui.storage.VersionHistoryActivity
 import org.autojs.autojs.util.DisplayUtils
 import org.autojs.autojs.util.IntentUtils.App.exit
 import org.autojs.autojs.util.IntentUtils.App.restart
+import org.autojs.autojs.util.IntentUtils.launchAppDetailsSettings
 import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.NetworkUtils
 import org.autojs.autojs.util.NotificationUtils
@@ -132,6 +137,10 @@ open class DrawerFragment : Fragment() {
     private lateinit var mWriteSecuritySettingsItem: DrawerMenuToggleableItem
     private lateinit var mProjectMediaAccessItem: DrawerMenuToggleableItem
     private lateinit var mShizukuAccessItem: DrawerMenuToggleableItem
+    private lateinit var mBibiMicItem: DrawerMenuToggleableItem
+    private lateinit var mBibiAccessibilityItem: DrawerMenuToggleableItem
+    private lateinit var mBibiBluetoothMicItem: DrawerMenuToggleableItem
+    private lateinit var mBibiBootAutostartItem: DrawerMenuToggleableItem
     private lateinit var mNightModeItem: DrawerMenuToggleableItem
     private lateinit var mAutoNightModeItem: DrawerMenuToggleableItem
     private lateinit var mKeepScreenOnWhenInForegroundItem: DrawerMenuToggleableItem
@@ -498,6 +507,47 @@ open class DrawerFragment : Fragment() {
                 }
             }
         }
+
+        mBibiMicItem = DrawerMenuToggleableItem(
+            helper = BibiMicrophonePermission(mContext),
+            icon = R.drawable.ic_mic_black_48dp,
+            title = R.string.text_bibi_microphone_permission,
+            descriptionRes = R.string.summary_bibi_microphone_permission,
+        ).also { item ->
+            item.setOnLaunchSettingsListener {
+                launchAppDetailsSettings(mContext)
+            }
+        }
+
+        mBibiAccessibilityItem = DrawerMenuToggleableItem(
+            helper = BibiAccessibilityPermission(mContext),
+            icon = R.drawable.ic_accessibility_black_48dp,
+            title = R.string.text_bibi_accessibility_permission,
+            descriptionRes = R.string.summary_bibi_accessibility_permission,
+        ).also { item ->
+            item.setOnLaunchSettingsListener {
+                val helper = item.getHelper() as BibiAccessibilityPermission
+                helper.config()
+            }
+        }
+
+        mBibiBluetoothMicItem = DrawerMenuToggleableItem(
+            helper = BibiBluetoothMicPermission(mContext),
+            icon = R.drawable.ic_headset_mic_black_48dp,
+            title = R.string.text_bibi_bluetooth_mic_permission,
+            descriptionRes = R.string.summary_bibi_bluetooth_mic_permission,
+        ).also { item ->
+            item.setOnLaunchSettingsListener {
+                launchAppDetailsSettings(mContext)
+            }
+        }
+
+        mBibiBootAutostartItem = DrawerMenuToggleableItem(
+            helper = BibiBootAutostartPermission(mContext),
+            icon = R.drawable.ic_power_switch,
+            title = R.string.text_bibi_boot_autostart,
+            descriptionRes = R.string.summary_bibi_boot_autostart,
+        )
 
         mAutoNightModeItem = DrawerMenuToggleableItem(
             helper = object : DrawerMenuItemCustomHelper(mContext) {
@@ -869,6 +919,11 @@ open class DrawerFragment : Fragment() {
             mWriteSecuritySettingsItem,
             mProjectMediaAccessItem,
             mShizukuAccessItem,
+            DrawerMenuGroup(R.string.text_bibi_permissions),
+            mBibiMicItem,
+            mBibiAccessibilityItem,
+            mBibiBluetoothMicItem,
+            mBibiBootAutostartItem,
             DrawerMenuGroup(R.string.text_appearance),
             mAutoNightModeItem,
             mNightModeItem,
@@ -921,6 +976,10 @@ open class DrawerFragment : Fragment() {
         mWriteSecuritySettingsItem,
         mProjectMediaAccessItem,
         mShizukuAccessItem,
+        mBibiMicItem,
+        mBibiAccessibilityItem,
+        mBibiBluetoothMicItem,
+        mBibiBootAutostartItem,
         mKeepScreenOnWhenInForegroundItem,
     ).forEach { it.sync() }
 

@@ -16,6 +16,7 @@ private val modules = listOf(
     "expandable-layout",
     "expandable-recyclerview",
     "recyclerview-flexibledivider",
+    "bibi",
 )
 
 private val libs = listOf(
@@ -38,6 +39,8 @@ private val libs = listOf(
     "markwon-syntax-highlight-4_6_2",
 
     "root-shell-1_6",
+
+    "sherpa-onnx-1_13_4",
 )
 
 private val pluginApi = listOf(
@@ -411,6 +414,10 @@ pluginManagement {
         val libs = listOf(
             Classpath(id = "com.android.tools.build:gradle", version = overriddenAgpVersion ?: "auto:agp"),
             Classpath(id = "org.jetbrains.kotlin:kotlin-gradle-plugin", version = overriddenKotlinVersion ?: "auto:kotlin"),
+            // Kotlin sub-plugins for the :modules:bibi library (Compose UI + kotlinx-serialization).
+            // Versions must stay in lockstep with the Kotlin Gradle Plugin (same "auto:kotlin" resolution).
+            Classpath(id = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version = overriddenKotlinVersion ?: "auto:kotlin"),
+            Classpath(id = "org.jetbrains.kotlin:kotlin-serialization", version = overriddenKotlinVersion ?: "auto:kotlin"),
             Classpath(id = "org.apache.commons:commons-compress", version = "toml:commons-compress"),
             Classpath(id = "org.tukaani:xz", version = "toml:xz"),
             Plugin(id = "com.google.devtools.ksp", version = overriddenKspVersion ?: "auto:ksp", share = true),

@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import androidx.multidex.MultiDexApplication
+import com.brycewg.asrkb.host.BibiLibrary
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
@@ -18,6 +19,7 @@ import com.google.mlkit.common.sdkinternal.MlKitContext
 import com.hjq.toast.Toaster
 import io.reactivex.android.schedulers.AndroidSchedulers
 import org.autojs.autojs.app.GlobalAppContext
+import org.autojs.autojs.permission.BibiHostPermissionRouterImpl
 import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.inrt.Pref as InrtPref
 import org.autojs.autojs.inrt.InrtShortcuts
@@ -86,6 +88,14 @@ class App : MultiDexApplication() {
                 HistoryCleanupScheduler.schedulePeriodicCleanup(this)
                 TmpScriptFilesCleanupScheduler.scheduleStartupCleanup(this)
                 TmpScriptFilesCleanupScheduler.schedulePeriodicCleanup(this)
+
+                // BIBI (说点啥) library bootstrap (floating ball, logs, Shizuku keep-alive, etc.).
+                // BiBi pages route their permission request actions to the host drawer entries.
+                // Recognition results print into the global console in real time.
+                BibiLibrary.consolePrinter = { line ->
+                    runCatching { AutoJs.instance.globalConsole.println(Log.INFO, line) }
+                }
+                BibiLibrary.init(this, BibiHostPermissionRouterImpl)
             }
         }
     }

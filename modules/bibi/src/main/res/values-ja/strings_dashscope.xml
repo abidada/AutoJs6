@@ -1,0 +1,65 @@
+<resources>
+    <!-- DashScope (阿里千问) ASR 設定文字列 -->
+    <string name="dash_section_title">Alibaba Qianwen ASRパラメータ</string>
+    <string name="vendor_dashscope">Alibaba Qianwen</string>
+
+    <!-- DashScope configuration -->
+    <string name="label_dash_api_key">DashScope APIキー（Bearer）</string>
+    <string name="label_dash_model">認識モデル</string>
+    <string name="dash_model_fun_flash">Fun-ASR-Flash（非ストリーミング）</string>
+    <string name="dash_model_qwen_audio_31_flash">Qwen-Audio-3.1-ASR-Flash（非ストリーミング）</string>
+    <string name="dash_model_qwen_audio_flash">Qwen-Audio-3.0-ASR-Flash（非ストリーミング）</string>
+    <string name="dash_model_qwen3_flash">Qwen3-ASR-Flash（非ストリーミング）</string>
+    <string name="dash_model_qwen35_omni_flash">Qwen3.5-Omni-Flash（非ストリーミング）</string>
+    <string name="dash_model_qwen38_omni_flash">Qwen3.8-Omni-Flash（非ストリーミング）</string>
+    <string name="dash_model_qwen35_omni_plus">Qwen3.5-Omni-Plus（非ストリーミング）</string>
+    <string name="dash_model_fun_realtime">Fun-ASR-Realtime（ストリーミング）</string>
+    <string name="dash_model_qwen_audio_31_message">Qwen-Audio-3.1-ASR-Flash-Message（ストリーミング）</string>
+    <string name="dash_model_qwen_audio_31_realtime">Qwen-Audio-3.1-ASR-Flash-Streaming（ストリーミング）</string>
+    <string name="dash_model_qwen_audio_realtime">Qwen-Audio-3.0-ASR-Flash-Streaming（ストリーミング）</string>
+    <string name="dash_model_qwen3_realtime">Qwen3-ASR-Flash-Realtime（ストリーミング）</string>
+    <string name="label_dash_prompt">カスタムプロンプト/コンテキスト（オプション）</string>
+    <string name="label_dash_language">認識言語</string>
+    <string name="label_dash_keep_dialect">方言表現を残す</string>
+    <string name="label_dash_auto_polish">自動整形</string>
+    <string name="dash_language_max_4">最大4言語まで選択できます</string>
+    <string name="label_dash_streaming">ストリーミング認識</string>
+    <string name="label_dash_fun_asr">Fun-ASR モデルを使用（fun-asr-realtime）</string>
+    <string name="dash_lang_auto">自動識別）</string>
+    <string name="label_dash_region">エンドポイント</string>
+    <string name="dash_region_cn">中国本土（maas.qianwenaiapi.com）</string>
+    <string name="dash_region_intl">国際（maas.qwencloudapi.com）</string>
+
+    <!-- DashScope language options -->
+    <string name="dash_lang_zh">中国語（zh）</string>
+    <string name="dash_lang_en">英語（en）</string>
+    <string name="dash_lang_ja">日本語（ja）</string>
+    <string name="dash_lang_de">ドイツ語（de）</string>
+    <string name="dash_lang_ko">韓国語（ko）</string>
+    <string name="dash_lang_ru">ロシア語（ru）</string>
+    <string name="dash_lang_fr">フランス語（fr）</string>
+    <string name="dash_lang_pt">ポルトガル語（pt）</string>
+    <string name="dash_lang_ar">アラビア語（ar）</string>
+    <string name="dash_lang_it">イタリア語（it）</string>
+    <string name="dash_lang_es">スペイン語（es）</string>
+
+    <!-- ============================================== -->
+    <!-- DashScope設定 - 機能説明 -->
+    <!-- ============================================== -->
+
+    <!-- 通義千問 - ストリーミング -->
+    <string name="feature_dash_streaming_off_desc">非ストリーミング認識を使用します。録音終了後に処理が開始されるため、遅延が発生する可能性があります。Qwen-Audio-3.0-ASR-Flash、Fun-ASR-Flash、Qwen3.5/3.8-Omni 系列で利用できます。</string>
+    <string name="feature_dash_streaming_on_desc">ストリーミング認識を使用します。話しながら文字起こし結果がリアルタイムで表示されます。既定はQwen-Audio-3.0-ASR-Flash-Streamingで、下でFun-ASR-Realtimeに切り替えできます。</string>
+
+    <!-- Fun-ASR モデル（ストリーミングのみ） -->
+    <string name="feature_dash_fun_asr_off_desc">ストリーミングは Qwen-Audio-3.0-ASR-Flash-Streaming（既定）を使用します。</string>
+    <string name="feature_dash_fun_asr_on_desc">ストリーミングは Fun-ASR-Realtime を使用します。</string>
+
+    <!-- Qwen-Audio 3.1 方言保持 -->
+    <string name="feature_dash_keep_dialect_off_desc">方言を標準中国語に書き起こします。</string>
+    <string name="feature_dash_keep_dialect_on_desc">書き起こし結果に方言表現を残します。</string>
+
+    <!-- Qwen-Audio 3.1 flash / message 自動整形 -->
+    <string name="feature_dash_auto_polish_off_desc">フィラーや言い淀みを含む、そのままの口語書き起こしを残します。</string>
+    <string name="feature_dash_auto_polish_on_desc">フィラーや言い淀みの繰り返しを除き、口語表現を整えます。</string>
+</resources>

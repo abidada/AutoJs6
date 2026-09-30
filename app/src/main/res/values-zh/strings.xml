@@ -1429,4 +1429,17 @@
     <string name="text_xiaomi_background_popup_permission">后台弹出界面</string>
     <string name="warn_continue_operation_without_saving_settings">设置尚未保存, 确定要继续操作吗</string>
     <string name="warn_exit_without_saving_settings">设置尚未保存, 确定要退出吗</string>
+
+    <!-- BIBI (说点啥) 语音输入库入口, 由 bibi 移植于 Sep 30, 2026 添加. -->
+    <string name="text_bibi_settings">BIBI设置</string>
+    <string name="summary_bibi_settings">说点啥语音输入 · 悬浮球 · 语音识别</string>
+    <string name="text_bibi_permissions">BIBI 权限</string>
+    <string name="text_bibi_microphone_permission">BIBI 麦克风权限</string>
+    <string name="summary_bibi_microphone_permission">BIBI 语音识别所必需</string>
+    <string name="text_bibi_accessibility_permission">BIBI 无障碍服务</string>
+    <string name="summary_bibi_accessibility_permission">BIBI 悬浮球文字插入所必需</string>
+    <string name="text_bibi_bluetooth_mic_permission">BIBI 蓝牙麦克风</string>
+    <string name="summary_bibi_bluetooth_mic_permission">蓝牙耳机麦克风优先(可选)</string>
+    <string name="text_bibi_boot_autostart">BIBI 开机自启</string>
+    <string name="summary_bibi_boot_autostart">开机后自动启动 BIBI 悬浮球服务(可选)</string>
 </resources>

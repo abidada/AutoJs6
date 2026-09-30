@@ -49,6 +49,9 @@ dependencies /* Unclassified */ {
     // Kotlin reflect
     implementation(kotlin("reflect"))
 
+    // BIBI (说点啥) voice input library (settings UI + floating ball + IME + ASR stack)
+    implementation(project(":modules:bibi"))
+
     // AndroidX Core
     implementation(libs.core.ktx)
 
@@ -533,8 +536,6 @@ android {
 
             // @Reference to kkevsekk1/AutoX (https://github.com/kkevsekk1/AutoX) by SuperMonster003 on Nov 16, 2023.
             //  ! https://github.com/kkevsekk1/AutoX/blob/a6d482189291b460c3be60970b74c5321d26e457/inrt/build.gradle.kts#L93
-            // noinspection ChromeOsAbiSupport
-            ndk.abiFilters += ""
         }
 
         androidResources {
@@ -645,6 +646,14 @@ android {
             // @Reference to kkevsekk1/AutoX (https://github.com/kkevsekk1/AutoX) by SuperMonster003 on Nov 16, 2023.
             //  ! https://github.com/kkevsekk1/AutoX/blob/a6d482189291b460c3be60970b74c5321d26e457/inrt/build.gradle.kts#L91
             excludes += "*"
+            // @Hint for :modules:bibi (sherpa-onnx AAR bundles unused JNI variants).
+            //  ! Note: "excludes += \"*\"" above is an ineffective pattern (Ant rules do not cross directories),
+            //  ! the explicit patterns below are the effective ones.
+            excludes += listOf(
+                "**/libonnxruntime4j_jni.so",
+                "**/libsherpa-onnx-c-api.so",
+                "**/libsherpa-onnx-cxx-api.so",
+            )
             useLegacyPackaging = true
         }
     }
