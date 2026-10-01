@@ -184,6 +184,7 @@
     <string name="listening_panel_copied">تم النسخ</string>
     <string name="listening_panel_error_prefix">خطأ في التعرف: %1$s</string>
     <string name="title_voice_dispatch">توزيع الصوت</string>
+    <string name="title_voice_dispatch_rules">قواعد توزيع الصوت</string>
     <string name="voice_dispatch_feedback_miss">لا توجد مهمة مطابقة</string>
     <string name="voice_dispatch_feedback_hit">تم التوزيع：%1$s</string>
     <string name="label_voice_ready_collapse">زمن انكماش كبسولة الصوت</string>

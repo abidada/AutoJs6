@@ -1442,7 +1442,7 @@
     <string name="summary_bibi_bluetooth_mic_permission">蓝牙耳机麦克风优先(可选)</string>
     <string name="text_bibi_boot_autostart">BIBI 开机自启</string>
     <string name="summary_bibi_boot_autostart">开机后自动启动 BIBI 悬浮球服务(可选)</string>
-    <string name="text_bibi_voice_dispatch">文字分发</string>
+    <string name="text_bibi_voice_dispatch">语音设置</string>
     <string name="summary_bibi_voice_dispatch">配置语音识别文字对应任务的分发规则</string>
-    <string name="error_open_voice_dispatch_settings">打开语音分发设置失败</string>
+    <string name="error_open_voice_dispatch_settings">打开语音设置失败</string>
 </resources>

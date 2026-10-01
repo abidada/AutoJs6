@@ -184,6 +184,7 @@
     <string name="listening_panel_copied">已複製</string>
     <string name="listening_panel_error_prefix">辨識出錯：%1$s</string>
     <string name="title_voice_dispatch">語音分發</string>
+    <string name="title_voice_dispatch_rules">語音規則分發</string>
     <string name="voice_dispatch_feedback_miss">沒有匹配到相關任務</string>
     <string name="voice_dispatch_feedback_hit">已分發：%1$s</string>
     <string name="label_voice_ready_collapse">發起語音停留收縮</string>

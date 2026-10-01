@@ -560,9 +560,9 @@ open class DrawerFragment : Fragment() {
                         Intent(mContext, com.brycewg.asrkb.ui.SettingsActivity::class.java)
                             .putExtra(
                                 com.brycewg.asrkb.ui.SettingsActivity.EXTRA_INITIAL_ROUTE,
-                                com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute.VoiceDispatch.id
+                                com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute.Home.id
                             )
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     )
                 } catch (e: Exception) {
                     android.widget.Toast.makeText(

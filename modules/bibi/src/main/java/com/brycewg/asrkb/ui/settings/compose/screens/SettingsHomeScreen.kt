@@ -29,6 +29,7 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Info
@@ -367,6 +368,12 @@ private fun inputSections(
     SettingsSection(
         id = "input_quick",
         entries = listOf(
+            SettingsEntry.Action(
+                id = "voice_dispatch",
+                titleRes = R.string.title_voice_dispatch_rules,
+                icon = Icons.Rounded.Code,
+                onClick = { onPushRoute(BibiSettingsRoute.VoiceDispatch) }
+            ),
             SettingsEntry.Action(
                 id = "one_click_setup",
                 titleRes = R.string.btn_one_click_setup,

@@ -184,6 +184,7 @@
     <string name="listening_panel_copied">已复制</string>
     <string name="listening_panel_error_prefix">识别出错：%1$s</string>
     <string name="title_voice_dispatch">语音分发</string>
+    <string name="title_voice_dispatch_rules">语音规则分发</string>
     <string name="title_voice_dispatch_new">新建规则</string>
     <string name="title_voice_dispatch_edit">编辑规则</string>
     <string name="btn_voice_dispatch_new_rule">＋ 新建</string>

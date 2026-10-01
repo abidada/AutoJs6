@@ -185,6 +185,7 @@
     <string name="listening_panel_copied">コピーしました</string>
     <string name="listening_panel_error_prefix">認識エラー：%1$s</string>
     <string name="title_voice_dispatch">音声ディスパッチ</string>
+    <string name="title_voice_dispatch_rules">音声ディスパッチルール</string>
     <string name="voice_dispatch_feedback_miss">一致するタスクがありません</string>
     <string name="voice_dispatch_feedback_hit">ディスパッチ：%1$s</string>
     <string name="label_voice_ready_collapse">音声ピル収縮までの時間</string>

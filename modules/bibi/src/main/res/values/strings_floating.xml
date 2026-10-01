@@ -184,6 +184,7 @@
     <string name="listening_panel_copied">Copied</string>
     <string name="listening_panel_error_prefix">Recognition error: %1$s</string>
     <string name="title_voice_dispatch">Voice Dispatch</string>
+    <string name="title_voice_dispatch_rules">Voice Dispatch Rules</string>
     <string name="title_voice_dispatch_new">New Rule</string>
     <string name="title_voice_dispatch_edit">Edit Rule</string>
     <string name="btn_voice_dispatch_new_rule">+ New</string>
