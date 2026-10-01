@@ -1,6 +1,6 @@
 /**
- * 语音分发规则管理页（一级页）：总开关 + 测试匹配卡片 + 规则列表（按优先级降序）。
- *
+ * 语音分发规则管理页（一级页）：测试匹配卡片 + 规则列表（按优先级降序）。
+ * 分发始终开启（无总开关）：每句识别结果统一匹配规则。
  * 归属模块：ui/settings/compose/screens
  */
 package com.brycewg.asrkb.ui.settings.compose.screens
@@ -33,14 +33,11 @@ import androidx.compose.ui.unit.dp
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.VoiceCommandDispatcher
 import com.brycewg.asrkb.host.voice.VoiceDispatchRule
-import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
-import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreference
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
-import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -77,11 +74,9 @@ internal fun VoiceDispatchScreen(
     onEditRule: (String?) -> Unit
 ) {
     val context = LocalContext.current
-    val prefs = remember(context) { Prefs(context) }
     val dispatcher = remember(context) { VoiceCommandDispatcher.getInstance(context) }
     val scope = rememberCoroutineScope()
 
-    var dispatchEnabled by remember(context) { mutableStateOf(prefs.voiceDispatchEnabled) }
     var rules by remember(context) { mutableStateOf<List<VoiceDispatchRule>>(emptyList()) }
     var testInput by remember { mutableStateOf("") }
     var testResult by remember { mutableStateOf("") }
@@ -112,21 +107,6 @@ internal fun VoiceDispatchScreen(
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
         ) {
-            item("master") {
-                SettingsPreference(
-                    entry = SettingsEntry.Switch(
-                        id = "voice_dispatch_enabled",
-                        titleRes = R.string.label_voice_dispatch_master,
-                        summaryRes = R.string.summary_voice_dispatch_master,
-                        checked = dispatchEnabled,
-                        onCheckedChange = { enabled ->
-                            prefs.voiceDispatchEnabled = enabled
-                            dispatchEnabled = enabled
-                        }
-                    )
-                )
-            }
-
             item("test") {
                 Column {
                     SettingsThemedText(

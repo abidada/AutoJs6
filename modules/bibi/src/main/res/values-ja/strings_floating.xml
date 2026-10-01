@@ -180,7 +180,6 @@
     <string name="floating_pill_listening">録音中…</string>
     <string name="listening_panel_placeholder">何か話してください…</string>
     <string name="listening_panel_listening">録音中…</string>
-    <string name="listening_panel_relisten">再録音</string>
     <string name="listening_panel_copy">コピー</string>
     <string name="listening_panel_share">共有</string>
     <string name="listening_panel_copied">コピーしました</string>

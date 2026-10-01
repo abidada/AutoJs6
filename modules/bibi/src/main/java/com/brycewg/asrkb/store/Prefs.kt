@@ -712,11 +712,6 @@ class Prefs(context: Context) {
 
     // ==================== 语音分发（文字分发） ====================
 
-    // 分发总开关：开启时每句识别结果直接进规则匹配并连续监听；关闭=单次识别
-    var voiceDispatchEnabled: Boolean
-        get() = sp.getBoolean(KEY_VOICE_DISPATCH_ENABLED, false)
-        set(value) = sp.edit { putBoolean(KEY_VOICE_DISPATCH_ENABLED, value) }
-
     // 兼容旧备份键：原输入法 Hook 模块总开关（IME 桥接已移除，仅保留存储能力）
     var floatingImeBridgeEnabled: Boolean
         get() = sp.getBoolean(KEY_FLOATING_IME_BRIDGE_ENABLED, false)

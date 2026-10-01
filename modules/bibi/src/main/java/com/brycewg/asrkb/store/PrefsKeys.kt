@@ -62,7 +62,6 @@ internal const val KEY_VOICE_READY_COLLAPSE_SECONDS = "voice_ready_collapse_seco
 internal const val KEY_WAKE_WORD_ENABLED = "wake_word_enabled"
 internal const val KEY_WAKE_WORD_SELECTED = "wake_word_selected"
 internal const val KEY_WAKE_WORD_CUSTOM_JSON = "wake_word_custom_json"
-internal const val KEY_VOICE_DISPATCH_ENABLED = "voice_dispatch_enabled"
 internal const val KEY_FLOATING_A11Y_ANDROID13_API_ENABLED = "floating_a11y_android13_api_enabled"
 internal const val KEY_FLOATING_IME_BRIDGE_ENABLED = "floating_ime_bridge_enabled"
 internal const val KEY_IME_BRIDGE_PCM_RECORDING_ENABLED = "ime_bridge_pcm_recording_enabled"

@@ -56,8 +56,7 @@ internal class FloatingAsrInteractionController(
     }
 
     companion object {
-        private const val CONTINUOUS_LISTENING_RESTART_DELAY_MS = 500L
-        private const val CONTINUOUS_LISTENING_MAX_DURATION_MS = 10 * 60 * 1000L
+        private const val DISPATCH_FEEDBACK_HOLD_MS = 2000L
         private const val EDGE_HANDLE_AUTO_HIDE_DELAY_MS = 2500L
         private const val AMPLITUDE_DISPATCH_INTERVAL_MS = 32L
         private const val SHAKE_START_TONE_MS = 200
@@ -76,11 +75,8 @@ internal class FloatingAsrInteractionController(
     /** 交互模式层：ROUND 圆球 → READY_PILL「发起语音」→ LISTENING_PILL「正在听...」。 */
     private var interactionMode: FloatingBallInteractionMode = FloatingBallInteractionMode.ROUND
 
-    /** 连续监听循环：分发总开关 ON 时为 true；用户主动停止/出错/超时置回 false。 */
-    @Volatile
-    private var continuousListeningActive: Boolean = false
-
-    private var continuousListeningStartedAt: Long = 0L
+    /** 识别结束后展示分发反馈的驻留迁移（Idle → READY 延迟收起）。 */
+    private var postResultReadyTransitionRunnable: Runnable? = null
 
     /** 「发起语音」无操作收缩计时（默认 15 秒，见界面设置）。 */
     private var readyCollapseRunnable: Runnable? = null
@@ -97,12 +93,7 @@ internal class FloatingAsrInteractionController(
         if (mode == FloatingBallInteractionMode.LISTENING_PILL) {
             panel?.show()
             cancelReadyCollapseTimer()
-            if (isVoiceDispatchEnabled()) {
-                continuousListeningActive = true
-                continuousListeningStartedAt = android.os.SystemClock.elapsedRealtime()
-            }
         } else {
-            continuousListeningActive = false
             panel?.hide()
             if (mode == FloatingBallInteractionMode.READY_PILL) {
                 scheduleReadyCollapseTimer()
@@ -144,13 +135,6 @@ internal class FloatingAsrInteractionController(
         readyCollapseRunnable = null
     }
 
-    private fun isVoiceDispatchEnabled(): Boolean = try {
-        prefs.voiceDispatchEnabled
-    } catch (e: Throwable) {
-        Log.w(tag, "Failed to read voice dispatch preference", e)
-        false
-    }
-
     /**
      * 唤醒词命中：跳过 READY，直接进入 LISTENING 并开始识别（等价触发悬浮球单击后的聆听）。
      */
@@ -172,59 +156,52 @@ internal class FloatingAsrInteractionController(
         val dispatcher = getDispatcher() ?: return
         dispatcher.onHit = { ruleName ->
             handler.post {
-                if (isVoiceDispatchEnabled()) {
-                    listeningPanel?.showFeedback(
-                        context.getString(R.string.voice_dispatch_feedback_hit, ruleName)
-                    )
-                }
+                listeningPanel?.showFeedback(
+                    context.getString(R.string.voice_dispatch_feedback_hit, ruleName)
+                )
             }
         }
         dispatcher.onMiss = {
             handler.post {
-                if (isVoiceDispatchEnabled()) {
-                    listeningPanel?.showFeedback(
-                        context.getString(R.string.voice_dispatch_feedback_miss)
-                    )
-                }
+                listeningPanel?.showFeedback(
+                    context.getString(R.string.voice_dispatch_feedback_miss)
+                )
             }
         }
-    }
-
-    private fun stopContinuousListening() {
-        continuousListeningActive = false
     }
 
     /**
-     * 语音分发 + 连续监听循环（方案 §7A.4）：
-     * 总开关 ON 时每句最终文本直接进规则匹配；面板反馈后约 500ms 自动重新录音；
-     * 10 分钟无操作超时自动回 READY；用户单击胶囊/出错退出循环。
+     * 识别完成即分发（识别/判停流程保持 bibi 模块原生行为，分发只是结果挂钩）。
      */
-    private fun maybeDispatchAndContinueListening(text: String) {
-        if (!isVoiceDispatchEnabled() || !continuousListeningActive) return
+    private fun dispatchRecognizedText(text: String) {
         if (text.isBlank()) return
-
         wireDispatcherFeedback()
         val dispatcher = getDispatcher() ?: return
         dispatcher.maybeDispatch(text)
+    }
 
-        val elapsed = android.os.SystemClock.elapsedRealtime() - continuousListeningStartedAt
-        if (elapsed >= CONTINUOUS_LISTENING_MAX_DURATION_MS) {
-            Log.d(tag, "Continuous listening timeout; back to READY")
-            stopContinuousListening()
-            handler.post { transitionInteractionMode(FloatingBallInteractionMode.READY_PILL) }
-            return
-        }
-
-        handler.postDelayed({
-            if (continuousListeningActive &&
-                interactionMode == FloatingBallInteractionMode.LISTENING_PILL &&
+    /**
+     * 识别结束后面板驻留 [DISPATCH_FEEDBACK_HOLD_MS]，展示分发反馈再收起（Idle → READY）。
+     * 期间再次发起识别/用户显式退出/出错均取消待迁移。
+     */
+    private fun schedulePostResultReadyTransition() {
+        cancelPostResultReadyTransition()
+        val runnable = Runnable {
+            postResultReadyTransitionRunnable = null
+            if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL &&
                 !stateMachine.isRecording &&
                 !stateMachine.isProcessing
             ) {
-                Log.d(tag, "Continuous listening: restarting recording")
-                startRecording()
+                transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
             }
-        }, CONTINUOUS_LISTENING_RESTART_DELAY_MS)
+        }
+        postResultReadyTransitionRunnable = runnable
+        handler.postDelayed(runnable, DISPATCH_FEEDBACK_HOLD_MS)
+    }
+
+    private fun cancelPostResultReadyTransition() {
+        postResultReadyTransitionRunnable?.let { handler.removeCallbacks(it) }
+        postResultReadyTransitionRunnable = null
     }
 
     /** 监听面板停止按钮：与单击「正在听...」胶囊等价。 */
@@ -234,6 +211,7 @@ internal class FloatingAsrInteractionController(
         } else if (stateMachine.isProcessing) {
             cancelCurrentSession()
         } else {
+            cancelPostResultReadyTransition()
             transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
         }
     }
@@ -256,6 +234,7 @@ internal class FloatingAsrInteractionController(
 
     fun cleanup() {
         cancelReadyCollapseTimer()
+        cancelPostResultReadyTransition()
         cancelPostErrorResetState()
         cancelAmplitudeDispatch()
         cancelShakeFeedbackStartRecording()
@@ -330,6 +309,8 @@ internal class FloatingAsrInteractionController(
     ): Boolean {
         Log.d(tag, "startRecording called")
 
+        // 驻留期（分发反馈展示中）再次发起识别：取消待迁移，直接进入新一轮
+        cancelPostResultReadyTransition()
         if (!canStartRecording()) return false
 
         if (!startRecordingForeground()) {
@@ -428,7 +409,6 @@ internal class FloatingAsrInteractionController(
 
     private fun stopRecording() {
         Log.d(tag, "stopRecording called")
-        stopContinuousListening()
         volumeKeySessionActive = false
         shakeSessionActive = false
         asrSessionManager.stopRecording()
@@ -633,7 +613,6 @@ internal class FloatingAsrInteractionController(
 
     private fun cancelCurrentSession() {
         Log.d(tag, "cancelCurrentSession called")
-        stopContinuousListening()
         cancelShakeFeedbackStartRecording()
         volumeKeySessionActive = false
         shakeSessionActive = false
@@ -722,23 +701,19 @@ internal class FloatingAsrInteractionController(
         handler.post {
             viewManager.updateStateVisual(state)
             // 旁路启动（音量键/摇一摇/JS）时同步交互模式为 LISTENING；
-            // 识别完成/出错回 READY（S5 将在连续监听模式下改写此分支）。
+            // 识别完成驻留片刻（展示分发反馈）回 READY，出错直接回 READY。
             when (state) {
                 is FloatingBallState.Recording, is FloatingBallState.Processing ->
                     transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
 
                 is FloatingBallState.Idle -> {
-                    // 连续监听循环中：保持 LISTENING，等待自动续录
-                    if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL &&
-                        !continuousListeningActive
-                    ) {
-                        transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+                    if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL) {
+                        schedulePostResultReadyTransition()
                     }
                 }
 
                 is FloatingBallState.Error -> {
-                    // 出错退出连续监听，避免死循环（方案 §7A.4）
-                    stopContinuousListening()
+                    cancelPostResultReadyTransition()
                     if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL) {
                         transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
                     }
@@ -763,8 +738,8 @@ internal class FloatingAsrInteractionController(
             if (text.isNotBlank() || success) {
                 persistFloatingCommit(text)
             }
-            // 语音分发 + 连续监听循环（总开关 OFF 时为单次识别，Idle 回 READY）
-            maybeDispatchAndContinueListening(text)
+            // 识别完成即分发（总开关已移除，所有识别结果统一匹配规则）
+            dispatchRecognizedText(text)
         }
     }
 

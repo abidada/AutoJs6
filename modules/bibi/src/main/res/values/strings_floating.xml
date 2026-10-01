@@ -179,7 +179,6 @@
     <string name="floating_pill_listening">Listening…</string>
     <string name="listening_panel_placeholder">Say something…</string>
     <string name="listening_panel_listening">Listening…</string>
-    <string name="listening_panel_relisten">Relisten</string>
     <string name="listening_panel_copy">Copy</string>
     <string name="listening_panel_share">Share</string>
     <string name="listening_panel_copied">Copied</string>
@@ -192,8 +191,6 @@
     <string name="btn_voice_dispatch_edit">Edit</string>
     <string name="btn_voice_dispatch_delete">Delete</string>
     <string name="btn_voice_dispatch_test">Test</string>
-    <string name="label_voice_dispatch_master">Voice dispatch master switch</string>
-    <string name="summary_voice_dispatch_master">Every recognized sentence directly matches rules; matched rules are dispatched and listening continues</string>
     <string name="label_voice_dispatch_test">Test matching</string>
     <string name="hint_voice_dispatch_test">Enter simulated recognized text</string>
     <string name="voice_dispatch_test_hit">Hit: priority %1$d [%2$s] → %3$s %4$s</string>

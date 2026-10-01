@@ -271,7 +271,21 @@
   <!-- 外部输入法联动（AIDL） -->
   <string name="label_external_ime_link_aidl">允许外部输入法联动（AIDL）</string>
   <string name="external_aidl_guide_title">如何使用联动功能</string>
-  <string name="external_aidl_guide_message">支持从外部输入法调用说点啥的语音识别能力（AIDL）。目前支持：小企鹅输入法（Fcitx）与同文输入法（Trime）。\n\n请先在说点啥中启用：设置 - 输入设置 - 允许外部输入法联动（AIDL）（无需启用悬浮球和无障碍功能）。\n\n然后按你使用的输入法进行设置：\n\n【Fcitx（小企鹅）】\n1. 下载修改版 Fcitx：https://github.com/BryceWG/fcitx5-android-lexi-keyboard/releases（需卸载原版并注意备份数据）\n2. 打开 Fcitx 设置 - 虚拟键盘 - 空格键长按行为 - 语音输入(AIDL)\n3. 在输入法面板长按空格键即可语音输入\n\n【Trime（同文）】\n1. 下载修改版同文：https://github.com/BryceWG/trime-bibi-keyboard/releases\n2. 在同文设置 - 常规设置 开启「说点啥 AIDL 语音输入」，如果使用的主题方案没有长按  VOICE_ASSIST 功能则可以启用「工具栏麦克风按钮」\n3. 长按具有 VOICE_ASSIST 功能的按钮开始录音，松手停止; 或者在输入法工具栏点击麦克风按钮开始录音，再次点击停止并上屏。</string>
+  <string name="external_aidl_guide_message">支持从外部输入法调用说点啥的语音识别能力（AIDL）。目前支持：小企鹅输入法（Fcitx）与同文输入法（Trime）。
+
+请先在说点啥中启用：设置 - 输入设置 - 允许外部输入法联动（AIDL）（无需启用悬浮球和无障碍功能）。
+
+然后按你使用的输入法进行设置：
+
+【Fcitx（小企鹅）】
+1. 下载修改版 Fcitx：https://github.com/BryceWG/fcitx5-android-lexi-keyboard/releases（需卸载原版并注意备份数据）
+2. 打开 Fcitx 设置 - 虚拟键盘 - 空格键长按行为 - 语音输入(AIDL)
+3. 在输入法面板长按空格键即可语音输入
+
+【Trime（同文）】
+1. 下载修改版同文：https://github.com/BryceWG/trime-bibi-keyboard/releases
+2. 在同文设置 - 常规设置 开启「说点啥 AIDL 语音输入」，如果使用的主题方案没有长按  VOICE_ASSIST 功能则可以启用「工具栏麦克风按钮」
+3. 长按具有 VOICE_ASSIST 功能的按钮开始录音，松手停止; 或者在输入法工具栏点击麦克风按钮开始录音，再次点击停止并上屏。</string>
   <string name="external_aidl_guide_btn_close">关闭</string>
   <string name="external_aidl_guide_btn_open_release">打开Release页</string>
   <string name="external_aidl_guide_choose_release_title">选择要打开的 Release 页</string>

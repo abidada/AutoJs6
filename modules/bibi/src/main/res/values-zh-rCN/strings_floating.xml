@@ -179,7 +179,6 @@
     <string name="floating_pill_listening">正在听…</string>
     <string name="listening_panel_placeholder">说点什么…</string>
     <string name="listening_panel_listening">正在听…</string>
-    <string name="listening_panel_relisten">重新聆听</string>
     <string name="listening_panel_copy">复制</string>
     <string name="listening_panel_share">分享</string>
     <string name="listening_panel_copied">已复制</string>
@@ -192,8 +191,6 @@
     <string name="btn_voice_dispatch_edit">编辑</string>
     <string name="btn_voice_dispatch_delete">删除</string>
     <string name="btn_voice_dispatch_test">测试</string>
-    <string name="label_voice_dispatch_master">语音分发总开关</string>
-    <string name="summary_voice_dispatch_master">开启后每句识别结果直接匹配规则，命中即分发并持续监听</string>
     <string name="label_voice_dispatch_test">测试匹配</string>
     <string name="hint_voice_dispatch_test">输入模拟识别文本</string>
     <string name="voice_dispatch_test_hit">命中：优先级 %1$d「%2$s」→ %3$s %4$s</string>

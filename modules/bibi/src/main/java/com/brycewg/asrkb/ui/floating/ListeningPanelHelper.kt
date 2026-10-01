@@ -54,16 +54,16 @@ internal class ListeningPanelHelper(
 
     private val resultListener = object : AsrResultBroadcaster.Listener {
         override fun onPartial(text: String) {
-            post { applyText(if (text.isBlank()) null else text, isFinal = false) }
+            post { applyText(if (text.isBlank()) null else text) }
         }
 
         override fun onFinal(text: String) {
             lastFinalText = text
-            post { applyText(text.ifBlank { null }, isFinal = true) }
+            post { applyText(text.ifBlank { null }) }
         }
 
         override fun onError(msg: String) {
-            post { applyText(appContext.getString(R.string.listening_panel_error_prefix, msg), isFinal = true) }
+            post { applyText(appContext.getString(R.string.listening_panel_error_prefix, msg)) }
         }
     }
 
@@ -83,7 +83,7 @@ internal class ListeningPanelHelper(
                 windowManager.addView(view, buildLayoutParams())
                 panelView = view
                 lastFinalText = null
-                applyText(null, isFinal = false)
+                applyText(null)
                 AsrResultBroadcaster.add(resultListener)
             } catch (e: Throwable) {
                 Log.w(TAG, "Failed to show listening panel", e)
@@ -112,7 +112,7 @@ internal class ListeningPanelHelper(
 
     /** 分发反馈（S5）：在面板上展示命中/未命中结果。 */
     fun showFeedback(message: String) {
-        post { applyText(message, isFinal = true) }
+        post { applyText(message) }
     }
 
     // ==================== 构建 ====================
@@ -243,12 +243,10 @@ internal class ListeningPanelHelper(
 
     // ==================== 行为 ====================
 
-    private fun applyText(text: String?, isFinal: Boolean) {
+    private fun applyText(text: String?) {
         val label = textLabel ?: return
         label.text = text ?: appContext.getString(R.string.listening_panel_placeholder)
         label.alpha = if (text == null) 0.55f else 1f
-        stopButton?.text =
-            appContext.getString(if (isFinal) R.string.listening_panel_relisten else R.string.listening_panel_listening)
     }
 
     private fun copyCurrentText() {
