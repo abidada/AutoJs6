@@ -338,8 +338,22 @@ class FloatingBallViewManager(
         )
 
         if (newW != oldW) {
+            // 展开/收缩胶囊时，按贴边方向决定扩展锚点，避免胶囊越出屏幕导致文字被裁剪：
+            // - 右贴边：右边界贴屏幕，向左展开；
+            // - 左贴边：左边界贴屏幕，向右展开；
+            // - 其余（非贴边/底部）：保持球心不动，并做越界钳位兜底。
+            // 先基于当前（旧宽度）判断贴边方向，再修改窗口宽度，避免宽度变化干扰判断。
+            val (screenW, _) = getUsableScreenSize()
+            val dock = detectDockSide()
             p.width = newW
-            p.x += (oldW - newW) / 2
+            when (dock) {
+                DockSide.RIGHT -> p.x = (screenW - newW).coerceAtLeast(0)
+                DockSide.LEFT -> p.x = 0
+                else -> {
+                    p.x += (oldW - newW) / 2
+                    p.x = p.x.coerceIn(0, (screenW - newW).coerceAtLeast(0))
+                }
+            }
             try {
                 windowManager.updateViewLayout(v, p)
             } catch (e: Throwable) {
