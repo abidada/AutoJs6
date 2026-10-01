@@ -256,10 +256,19 @@
   <string name="option_recording_auto_stop_silence">Stop when speech ends</string>
   <string name="option_recording_auto_stop_max_duration">Timeout stop</string>
   <string name="label_auto_stop_silence">Auto stop when no speech</string>
-  <string name="label_silence_window_ms">Stop window (ms)</string>
+  <string name="label_silence_window_ms">Stop window (s)</string>
   <string name="label_silence_sensitivity">Stop-recording sensitivity (1-10; higher stops sooner)</string>
   <string name="label_recording_max_duration">Maximum recording duration</string>
   <string name="label_recording_max_duration_value_s">%1$d s</string>
+
+  <!-- Time input dialog: units and validation -->
+  <string name="time_unit_millisecond">ms</string>
+  <string name="time_unit_second">s</string>
+  <string name="time_unit_minute">min</string>
+  <string name="time_unit_hour">h</string>
+  <string name="settings_input_range_hint">Range: %1$d ~ %2$d %3$s</string>
+  <string name="settings_input_error_not_number">Please enter an integer</string>
+  <string name="settings_input_error_out_of_range">Out of range (%1$d ~ %2$d %3$s)</string>
 
   <!-- ============================================== -->
   <!-- Other General Settings -->

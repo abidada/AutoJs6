@@ -9,6 +9,7 @@
 
 package com.brycewg.asrkb.ui.settings.compose.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,6 +43,23 @@ import top.yukonga.miuix.kmp.basic.Slider as MiuixSlider
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
+/**
+ * 滑块数值点击精确输入的规格。
+ *
+ * @param title 对话框标题
+ * @param initialValueText 预填文本（单位与输入单位一致）
+ * @param unitLabel 输入框单位 label
+ * @param supportingText 取值范围说明
+ * @param onConfirm 校验并提交，返回错误文案或 null
+ */
+internal class SliderEditDialogSpec(
+    val title: String,
+    val initialValueText: String,
+    val unitLabel: String,
+    val supportingText: String?,
+    val onConfirm: (String) -> String?
+)
+
 @Composable
 internal fun SettingsSliderPreference(
     uiMode: BibiUiMode,
@@ -56,12 +74,14 @@ internal fun SettingsSliderPreference(
     highlightId: String? = null,
     index: Int = 0,
     count: Int = 1,
+    editDialog: SliderEditDialogSpec? = null,
     onValueChange: (Float) -> Unit,
     onValueChangeFinished: (Float) -> Unit = { _ -> }
 ) {
     val hapticTap = LocalSettingsHapticTap.current
     var sliderValue by remember { mutableFloatStateOf(value) }
     var isEditing by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
     val miuixPointerPressed = remember { mutableStateOf(false) }
     val latestValue by rememberUpdatedState(value)
     val latestOnValueChange by rememberUpdatedState(onValueChange)
@@ -95,7 +115,8 @@ internal fun SettingsSliderPreference(
                 SettingsControlLabel(
                     uiMode = uiMode,
                     title = title,
-                    value = displayLabel
+                    value = displayLabel,
+                    onValueClick = if (editDialog != null) {{ showEditDialog = true }} else null
                 )
                 Slider(
                     value = sliderValue,
@@ -127,7 +148,8 @@ internal fun SettingsSliderPreference(
                 SettingsControlLabel(
                     uiMode = uiMode,
                     title = title,
-                    value = displayLabel
+                    value = displayLabel,
+                    onValueClick = if (editDialog != null) {{ showEditDialog = true }} else null
                 )
                 MiuixSlider(
                     value = sliderValue,
@@ -173,6 +195,17 @@ internal fun SettingsSliderPreference(
         content()
     } else {
         SettingsHighlightContainer(entryId = highlightId, uiMode = uiMode, content = content)
+    }
+    val spec = editDialog
+    if (spec != null && showEditDialog) {
+        SettingsNumberInputDialog(
+            title = spec.title,
+            initialValueText = spec.initialValueText,
+            unitLabel = spec.unitLabel,
+            supportingText = spec.supportingText,
+            onConfirm = spec.onConfirm,
+            onDismiss = { showEditDialog = false }
+        )
     }
 }
 
@@ -226,8 +259,17 @@ private fun SettingsSliderScaleLabels(
 internal fun SettingsControlLabel(
     uiMode: BibiUiMode,
     title: String,
-    value: String
+    value: String,
+    onValueClick: (() -> Unit)? = null
 ) {
+    // 可编辑时数值变为可点击入口；否则保持原有语义清空，避免与滑块重复朗读
+    val valueModifier = if (onValueClick != null) {
+        Modifier.clickable { onValueClick() }
+    } else {
+        Modifier.clearAndSetSemantics {
+            // 数值由 Slider 的 stateDescription 朗读，避免重复播报
+        }
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -249,9 +291,7 @@ internal fun SettingsControlLabel(
                     text = value,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.clearAndSetSemantics {
-                        // 数值由 Slider 的 stateDescription 朗读，避免重复播报
-                    }
+                    modifier = valueModifier
                 )
             }
 
@@ -267,9 +307,7 @@ internal fun SettingsControlLabel(
                     text = value,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     style = MiuixTheme.textStyles.body2,
-                    modifier = Modifier.clearAndSetSemantics {
-                        // 数值由 Slider 的 stateDescription 朗读，避免重复播报
-                    }
+                    modifier = valueModifier
                 )
             }
         }

@@ -254,10 +254,19 @@
   <string name="option_recording_auto_stop_silence">停说自动停止</string>
   <string name="option_recording_auto_stop_max_duration">超时停止</string>
   <string name="label_auto_stop_silence">停说自动停止录音</string>
-  <string name="label_silence_window_ms">判停时间阈值（毫秒）</string>
+  <string name="label_silence_window_ms">判停时间阈值（秒）</string>
   <string name="label_silence_sensitivity">判停灵敏度（1-10，越高越容易停录）</string>
   <string name="label_recording_max_duration">最长录音时长</string>
   <string name="label_recording_max_duration_value_s">%1$d 秒</string>
+
+  <!-- 时间输入对话框：单位与校验文案 -->
+  <string name="time_unit_millisecond">毫秒</string>
+  <string name="time_unit_second">秒</string>
+  <string name="time_unit_minute">分</string>
+  <string name="time_unit_hour">小时</string>
+  <string name="settings_input_range_hint">取值范围：%1$d ~ %2$d %3$s</string>
+  <string name="settings_input_error_not_number">请输入整数</string>
+  <string name="settings_input_error_out_of_range">数值超出范围（%1$d ~ %2$d %3$s）</string>
 
   <!-- ============================================== -->
   <!-- 其他通用设置 -->

@@ -31,6 +31,7 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSliderPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsTextField
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsValuePreference
+import com.brycewg.asrkb.ui.settings.compose.components.SliderEditDialogSpec
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalBibiSettingsDark
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
@@ -242,6 +243,7 @@ internal fun AsrSliderPreference(
     highlightId: String? = null,
     index: Int = 0,
     count: Int = 1,
+    editDialog: SliderEditDialogSpec? = null,
     onValueChange: (Float) -> Unit,
     onValueChangeFinished: (Float) -> Unit = { _ -> }
 ) {
@@ -258,6 +260,7 @@ internal fun AsrSliderPreference(
         highlightId = highlightId,
         index = index,
         count = count,
+        editDialog = editDialog,
         onValueChange = onValueChange,
         onValueChangeFinished = onValueChangeFinished
     )
