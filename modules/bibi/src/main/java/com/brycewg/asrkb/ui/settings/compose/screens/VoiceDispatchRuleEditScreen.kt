@@ -42,6 +42,7 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
+import kotlin.math.roundToLong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -62,6 +63,9 @@ internal fun VoiceDispatchRuleEditScreen(
 
     var name by remember(ruleId) { mutableStateOf(existing?.name ?: "") }
     var priority by remember(ruleId) { mutableStateOf((existing?.priority ?: 0).toFloat()) }
+    var cooldownSeconds by remember(ruleId) {
+        mutableStateOf(((existing?.cooldownMs ?: 0L) / 1000f).coerceIn(0f, 60f))
+    }
     var matchType by remember(ruleId) { mutableStateOf(existing?.matchType ?: VoiceMatchType.KEYWORD_INCLUDE) }
     var patternsText by remember(ruleId) {
         mutableStateOf(existing?.patterns?.joinToString("\n") ?: "")
@@ -110,6 +114,8 @@ internal fun VoiceDispatchRuleEditScreen(
                             name = name.trim(),
                             enabled = enabled,
                             priority = priority.toInt().coerceIn(0, 100),
+                            cooldownMs = (cooldownSeconds * 1000f).roundToLong()
+                                .coerceIn(0L, 60_000L),
                             matchType = matchType,
                             patterns = patterns,
                             dispatchType = dispatchType,
@@ -271,6 +277,29 @@ internal fun VoiceDispatchRuleEditScreen(
                 label = { Text(stringResource(R.string.label_voice_dispatch_args)) },
                 supportingText = { Text(stringResource(R.string.hint_voice_dispatch_args)) },
                 singleLine = true
+            )
+
+            // 冷却时间滑杆（0-60 秒，步进 0.5；0 = 不限制）
+            SettingsThemedText(
+                text = if (cooldownSeconds <= 0f) {
+                    stringResource(R.string.label_voice_dispatch_cooldown_unlimited)
+                } else {
+                    stringResource(
+                        R.string.label_voice_dispatch_cooldown_seconds,
+                        cooldownSeconds.toString()
+                    )
+                },
+                style = MaterialTheme.typography.titleSmall
+            )
+            Slider(
+                value = cooldownSeconds,
+                onValueChange = { cooldownSeconds = it },
+                valueRange = 0f..60f,
+                steps = 119
+            )
+            SettingsThemedText(
+                text = stringResource(R.string.hint_voice_dispatch_cooldown),
+                style = MaterialTheme.typography.bodySmall
             )
 
             Spacer(Modifier.height(20.dp))

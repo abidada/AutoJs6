@@ -203,4 +203,16 @@
     <string name="wake_word_invalid">包含模型不支援的讀音，請換一個詞</string>
     <string name="wake_word_exists">喚醒詞已存在</string>
     <string name="wake_word_custom_tag">自訂</string>
+
+    <string name="section_voice_dispatch">語音分發</string>
+    <string name="label_dispatch_continue">分發識別繼續</string>
+    <string name="label_dispatch_continue_none">無</string>
+    <string name="label_dispatch_continue_always">分發成功/失敗繼續</string>
+    <string name="label_dispatch_continue_on_miss">分發失敗繼續</string>
+    <string name="label_dispatch_feedback_hold">分發反饋展示時長</string>
+    <string name="toast_dispatch_continue_switched">分發識別繼續：%1$s</string>
+
+    <string name="label_voice_dispatch_cooldown_seconds">冷卻時間：%1$s 秒</string>
+    <string name="label_voice_dispatch_cooldown_unlimited">冷卻時間：不限制</string>
+    <string name="hint_voice_dispatch_cooldown">同一規則兩次觸發的最小間隔，防止誤觸連發；0 = 不限制</string>
 </resources>

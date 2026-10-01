@@ -60,7 +60,9 @@ data class VoiceDispatchRule(
     val argsTemplate: String? = null,
 
     // ---- 高级（v1 存储并生效于匹配冷却；执行面 v2 启用） ----
-    val cooldownMs: Long = 1500,
+
+    /** 同一规则两次触发的最小间隔（毫秒）；0 = 不限制（冷却为显式配置项，默认关闭） */
+    val cooldownMs: Long = 0,
     val confirmBeforeRun: Boolean = false,
 
     // ---- 统计 ----

@@ -56,7 +56,10 @@ internal class FloatingAsrInteractionController(
     }
 
     companion object {
-        private const val DISPATCH_FEEDBACK_HOLD_MS = 2000L
+        private const val SESSION_END_DECISION_DELAY_MS = 100L
+        private const val AUTO_RESTART_DELAY_MS = 100L
+        private const val AUTO_RETRY_DELAY_MS = 300L
+        private const val ERROR_DISPLAY_MS = 1000L
         private const val EDGE_HANDLE_AUTO_HIDE_DELAY_MS = 2500L
         private const val AMPLITUDE_DISPATCH_INTERVAL_MS = 32L
         private const val SHAKE_START_TONE_MS = 200
@@ -75,8 +78,17 @@ internal class FloatingAsrInteractionController(
     /** 交互模式层：ROUND 圆球 → READY_PILL「发起语音」→ LISTENING_PILL「正在听...」。 */
     private var interactionMode: FloatingBallInteractionMode = FloatingBallInteractionMode.ROUND
 
-    /** 识别结束后展示分发反馈的驻留迁移（Idle → READY 延迟收起）。 */
-    private var postResultReadyTransitionRunnable: Runnable? = null
+    /** 会话结束后的延迟任务（决策/驻留迁移/错误展示/自动续听），同一时刻仅一个。 */
+    private var postResultRunnable: Runnable? = null
+
+    /** 本轮会话分发结论：null=无结论（未分发或冷却期静默）。 */
+    private var lastDispatchHit: Boolean? = null
+
+    /** 本轮会话是否产生了文字结果（commit）。 */
+    private var lastSessionHadText: Boolean = false
+
+    /** 用户主动停止后置位：本轮结束后不自动续听；下次启动识别时复位。 */
+    private var suppressAutoContinue: Boolean = false
 
     /** 「发起语音」无操作收缩计时（默认 15 秒，见界面设置）。 */
     private var readyCollapseRunnable: Runnable? = null
@@ -155,6 +167,8 @@ internal class FloatingAsrInteractionController(
     private fun wireDispatcherFeedback() {
         val dispatcher = getDispatcher() ?: return
         dispatcher.onHit = { ruleName ->
+            // 结论同步记录（分发在主线程执行），驻留评估可立即读取
+            lastDispatchHit = true
             handler.post {
                 listeningPanel?.showFeedback(
                     context.getString(R.string.voice_dispatch_feedback_hit, ruleName)
@@ -162,6 +176,7 @@ internal class FloatingAsrInteractionController(
             }
         }
         dispatcher.onMiss = {
+            lastDispatchHit = false
             handler.post {
                 listeningPanel?.showFeedback(
                     context.getString(R.string.voice_dispatch_feedback_miss)
@@ -180,28 +195,133 @@ internal class FloatingAsrInteractionController(
         dispatcher.maybeDispatch(text)
     }
 
+    private fun readDispatchContinueMode(): Prefs.DispatchContinueMode = try {
+        prefs.dispatchContinueMode
+    } catch (e: Throwable) {
+        Log.w(tag, "Failed to read dispatch continue mode", e)
+        Prefs.DispatchContinueMode.NONE
+    }
+
+    private fun dispatchFeedbackHoldMs(): Long = try {
+        prefs.dispatchFeedbackHoldSeconds.coerceIn(0, 10) * 1000L
+    } catch (e: Throwable) {
+        2000L
+    }
+
+    private fun cancelPostResultRunnable() {
+        postResultRunnable?.let { handler.removeCallbacks(it) }
+        postResultRunnable = null
+    }
+
     /**
-     * 识别结束后面板驻留 [DISPATCH_FEEDBACK_HOLD_MS]，展示分发反馈再收起（Idle → READY）。
-     * 期间再次发起识别/用户显式退出/出错均取消待迁移。
+     * 会话结束（Idle）后的决策：稍候一拍让 commit/分发结论落定，再分流——
+     * 空结果（②③模式且非用户主动停止）保持监听态直接重录；
+     * 其余走「驻留展示反馈 → READY → 按分发结论续听」。
      */
-    private fun schedulePostResultReadyTransition() {
-        cancelPostResultReadyTransition()
+    private fun scheduleSessionEndDecision() {
+        cancelPostResultRunnable()
         val runnable = Runnable {
-            postResultReadyTransitionRunnable = null
-            if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL &&
-                !stateMachine.isRecording &&
-                !stateMachine.isProcessing
+            postResultRunnable = null
+            if (interactionMode != FloatingBallInteractionMode.LISTENING_PILL ||
+                stateMachine.isRecording ||
+                stateMachine.isProcessing
             ) {
+                return@Runnable
+            }
+            if (!lastSessionHadText &&
+                !suppressAutoContinue &&
+                readDispatchContinueMode() != Prefs.DispatchContinueMode.NONE
+            ) {
+                scheduleAutoRestart()
+            } else {
+                scheduleReadyTransitionAfterHold()
+            }
+        }
+        postResultRunnable = runnable
+        handler.postDelayed(runnable, SESSION_END_DECISION_DELAY_MS)
+    }
+
+    /** 驻留展示分发反馈（时长可配，0=不驻留）后回「发起语音」，并按本轮分发结论决定是否续听。 */
+    private fun scheduleReadyTransitionAfterHold() {
+        cancelPostResultRunnable()
+        val holdMs = dispatchFeedbackHoldMs()
+        val runnable = Runnable {
+            postResultRunnable = null
+            if (interactionMode != FloatingBallInteractionMode.LISTENING_PILL ||
+                stateMachine.isRecording ||
+                stateMachine.isProcessing
+            ) {
+                return@Runnable
+            }
+            transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+            maybeScheduleAutoRestartAfterDispatch()
+        }
+        postResultRunnable = runnable
+        if (holdMs > 0L) {
+            handler.postDelayed(runnable, holdMs)
+        } else {
+            runnable.run()
+        }
+    }
+
+    private fun maybeScheduleAutoRestartAfterDispatch() {
+        if (suppressAutoContinue) return
+        val hit = lastDispatchHit
+        // 冷却期静默轮（hit == null，无"已分发/未命中"提示）按用户决策继续循环，不再中断
+        val shouldContinue = when (readDispatchContinueMode()) {
+            Prefs.DispatchContinueMode.ALWAYS -> true
+            Prefs.DispatchContinueMode.ON_MISS -> hit != true
+            Prefs.DispatchContinueMode.NONE -> false
+        }
+        if (shouldContinue) {
+            scheduleAutoRestart()
+        }
+    }
+
+    /**
+     * 自动续听：READY 闪现后重开识别（正常轮次）；空结果续听则保持 LISTENING 直接重录。
+     * 启动失败（麦克风释放慢等瞬时原因）自动重试一次；重试仍失败退回「发起语音」。
+     */
+    private fun scheduleAutoRestart(isRetry: Boolean = false) {
+        cancelPostResultRunnable()
+        val runnable = Runnable {
+            postResultRunnable = null
+            if (stateMachine.isRecording || stateMachine.isProcessing) return@Runnable
+            val fromListening = interactionMode == FloatingBallInteractionMode.LISTENING_PILL
+            val fromReady = interactionMode == FloatingBallInteractionMode.READY_PILL
+            if (!fromListening && !fromReady) return@Runnable
+            if (startRecording()) {
+                if (fromReady) {
+                    transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+                }
+            } else if (!isRetry) {
+                scheduleAutoRestart(isRetry = true)
+            } else if (fromListening) {
                 transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
             }
         }
-        postResultReadyTransitionRunnable = runnable
-        handler.postDelayed(runnable, DISPATCH_FEEDBACK_HOLD_MS)
+        postResultRunnable = runnable
+        handler.postDelayed(runnable, if (isRetry) AUTO_RETRY_DELAY_MS else AUTO_RESTART_DELAY_MS)
     }
 
-    private fun cancelPostResultReadyTransition() {
-        postResultReadyTransitionRunnable?.let { handler.removeCallbacks(it) }
-        postResultReadyTransitionRunnable = null
+    /** 出错续听（②③模式，无次数保护）：面板展示错误信息片刻后收起并重新聆听。 */
+    private fun scheduleErrorRestart() {
+        cancelPostResultRunnable()
+        val runnable = Runnable {
+            postResultRunnable = null
+            if (interactionMode != FloatingBallInteractionMode.LISTENING_PILL ||
+                stateMachine.isRecording ||
+                stateMachine.isProcessing
+            ) {
+                return@Runnable
+            }
+            transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+            if (!suppressAutoContinue) {
+                scheduleAutoRestart()
+            }
+        }
+        postResultRunnable = runnable
+        handler.postDelayed(runnable, ERROR_DISPLAY_MS)
     }
 
     /** 监听面板停止按钮：与单击「正在听...」胶囊等价。 */
@@ -211,7 +331,8 @@ internal class FloatingAsrInteractionController(
         } else if (stateMachine.isProcessing) {
             cancelCurrentSession()
         } else {
-            cancelPostResultReadyTransition()
+            suppressAutoContinue = true
+            cancelPostResultRunnable()
             transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
         }
     }
@@ -234,7 +355,7 @@ internal class FloatingAsrInteractionController(
 
     fun cleanup() {
         cancelReadyCollapseTimer()
-        cancelPostResultReadyTransition()
+        cancelPostResultRunnable()
         cancelPostErrorResetState()
         cancelAmplitudeDispatch()
         cancelShakeFeedbackStartRecording()
@@ -309,8 +430,11 @@ internal class FloatingAsrInteractionController(
     ): Boolean {
         Log.d(tag, "startRecording called")
 
-        // 驻留期（分发反馈展示中）再次发起识别：取消待迁移，直接进入新一轮
-        cancelPostResultReadyTransition()
+        // 新一轮识别：清掉会话结束决策/续听待办，重置本轮分发结论；用户启动恢复续听资格
+        cancelPostResultRunnable()
+        lastDispatchHit = null
+        lastSessionHadText = false
+        suppressAutoContinue = false
         if (!canStartRecording()) return false
 
         if (!startRecordingForeground()) {
@@ -409,6 +533,8 @@ internal class FloatingAsrInteractionController(
 
     private fun stopRecording() {
         Log.d(tag, "stopRecording called")
+        // 用户主动停止：本轮结束后不自动续听
+        suppressAutoContinue = true
         volumeKeySessionActive = false
         shakeSessionActive = false
         asrSessionManager.stopRecording()
@@ -613,6 +739,8 @@ internal class FloatingAsrInteractionController(
 
     private fun cancelCurrentSession() {
         Log.d(tag, "cancelCurrentSession called")
+        // 用户主动取消：本轮结束后不自动续听
+        suppressAutoContinue = true
         cancelShakeFeedbackStartRecording()
         volumeKeySessionActive = false
         shakeSessionActive = false
@@ -708,14 +836,21 @@ internal class FloatingAsrInteractionController(
 
                 is FloatingBallState.Idle -> {
                     if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL) {
-                        schedulePostResultReadyTransition()
+                        scheduleSessionEndDecision()
                     }
                 }
 
                 is FloatingBallState.Error -> {
-                    cancelPostResultReadyTransition()
+                    cancelPostResultRunnable()
                     if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL) {
-                        transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+                        if (!suppressAutoContinue &&
+                            readDispatchContinueMode() != Prefs.DispatchContinueMode.NONE
+                        ) {
+                            // ②③模式：出错也续听（展示错误片刻后收起重录）
+                            scheduleErrorRestart()
+                        } else {
+                            transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+                        }
                     }
                 }
 
@@ -739,6 +874,7 @@ internal class FloatingAsrInteractionController(
                 persistFloatingCommit(text)
             }
             // 识别完成即分发（总开关已移除，所有识别结果统一匹配规则）
+            lastSessionHadText = text.isNotBlank()
             dispatchRecognizedText(text)
         }
     }
@@ -924,6 +1060,8 @@ internal class FloatingAsrInteractionController(
                 } else if (stateMachine.isProcessing) {
                     cancelCurrentSession()
                 } else {
+                    suppressAutoContinue = true
+                    cancelPostResultRunnable()
                     transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
                 }
             }
@@ -1079,6 +1217,52 @@ internal class FloatingAsrInteractionController(
             touchActiveGuard = false
             updateVisibilityByPref("prompt_panel_dismiss")
         }
+    }
+
+    /** 长按菜单「分发识别继续」：弹出三选项列表面板，点选即生效。 */
+    private fun showDispatchContinuePanelFromMenu() {
+        touchActiveGuard = true
+        val center = viewManager.getBallCenterSnapshot()
+        val alpha = getMenuAlphaOrDefault()
+        val current = readDispatchContinueMode()
+
+        val entries = listOf(
+            Triple(context.getString(R.string.label_dispatch_continue_none), current == Prefs.DispatchContinueMode.NONE) {
+                applyDispatchContinueModeFromMenu(Prefs.DispatchContinueMode.NONE)
+            },
+            Triple(context.getString(R.string.label_dispatch_continue_always), current == Prefs.DispatchContinueMode.ALWAYS) {
+                applyDispatchContinueModeFromMenu(Prefs.DispatchContinueMode.ALWAYS)
+            },
+            Triple(context.getString(R.string.label_dispatch_continue_on_miss), current == Prefs.DispatchContinueMode.ON_MISS) {
+                applyDispatchContinueModeFromMenu(Prefs.DispatchContinueMode.ON_MISS)
+            }
+        )
+
+        menuController.showListPanel(
+            anchorCenter = center,
+            alpha = alpha,
+            title = context.getString(R.string.label_dispatch_continue),
+            entries = entries
+        ) {
+            touchActiveGuard = false
+            updateVisibilityByPref("dispatch_continue_panel_dismiss")
+        }
+    }
+
+    private fun applyDispatchContinueModeFromMenu(mode: Prefs.DispatchContinueMode) {
+        try {
+            prefs.dispatchContinueMode = mode
+        } catch (e: Throwable) {
+            Log.w(tag, "Failed to save dispatch continue mode", e)
+        }
+        val label = context.getString(
+            when (mode) {
+                Prefs.DispatchContinueMode.NONE -> R.string.label_dispatch_continue_none
+                Prefs.DispatchContinueMode.ALWAYS -> R.string.label_dispatch_continue_always
+                Prefs.DispatchContinueMode.ON_MISS -> R.string.label_dispatch_continue_on_miss
+            }
+        )
+        showToast(context.getString(R.string.toast_dispatch_continue_switched, label))
     }
 
     private fun onPickAsrVendor() {
@@ -1380,6 +1564,17 @@ internal class FloatingAsrInteractionController(
     }
 
     private fun buildRadialMenuItems(): List<FloatingMenuHelper.MenuItem> = buildList {
+        add(
+            FloatingMenuHelper.MenuItem(
+                if (readDispatchContinueMode() == Prefs.DispatchContinueMode.NONE) {
+                    R.drawable.circles_four
+                } else {
+                    R.drawable.circles_four_fill
+                },
+                context.getString(R.string.label_dispatch_continue),
+                context.getString(R.string.label_dispatch_continue)
+            ) { showDispatchContinuePanelFromMenu() }
+        )
         add(
             FloatingMenuHelper.MenuItem(
                 R.drawable.article,

@@ -46,6 +46,10 @@ internal fun AsrSettingsRouteContent(
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
         ) {
+            item("dispatch") {
+                AsrDispatchSection(uiMode = uiMode, prefs = prefs)
+            }
+
             item("silence") {
                 AsrSilenceSection(
                     uiMode = uiMode,

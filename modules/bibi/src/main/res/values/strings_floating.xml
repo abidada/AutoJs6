@@ -237,4 +237,16 @@
     <string name="wake_word_invalid">Contains unsupported pronunciation</string>
     <string name="wake_word_exists">Wake word already exists</string>
     <string name="wake_word_custom_tag">Custom</string>
+
+    <string name="section_voice_dispatch">Voice dispatch</string>
+    <string name="label_dispatch_continue">Dispatch continue</string>
+    <string name="label_dispatch_continue_none">None</string>
+    <string name="label_dispatch_continue_always">Continue on hit or miss</string>
+    <string name="label_dispatch_continue_on_miss">Continue on miss</string>
+    <string name="label_dispatch_feedback_hold">Dispatch feedback duration</string>
+    <string name="toast_dispatch_continue_switched">Dispatch continue: %1$s</string>
+
+    <string name="label_voice_dispatch_cooldown_seconds">Cooldown: %1$s s</string>
+    <string name="label_voice_dispatch_cooldown_unlimited">Cooldown: unlimited</string>
+    <string name="hint_voice_dispatch_cooldown">Minimum interval between two triggers of the same rule to prevent rapid re-firing; 0 = unlimited</string>
 </resources>

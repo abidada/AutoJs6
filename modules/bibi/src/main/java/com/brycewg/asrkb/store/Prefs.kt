@@ -78,8 +78,31 @@ class Prefs(context: Context) {
         }
     }
 
+    /**
+     * 分发识别继续：识别会话结束后的续听策略。
+     * NONE=单次识别；ALWAYS=分发命中/未命中后均自动续听；ON_MISS=仅未命中后自动续听。
+     */
+    enum class DispatchContinueMode(val id: String) {
+        NONE("none"),
+        ALWAYS("always"),
+        ON_MISS("on_miss");
+
+        companion object {
+            fun fromId(id: String?): DispatchContinueMode = entries.firstOrNull { it.id == id } ?: NONE
+        }
+    }
+
     internal val appContext = context.applicationContext
     private val sp = appContext.getSharedPreferences("asr_prefs", Context.MODE_PRIVATE)
+
+    /** 注册偏好变更监听（同进程内任意入口写入都会回调），供设置页跨入口同步显示。 */
+    fun registerOnSharedPreferenceChangeListener(listener: android.content.SharedPreferences.OnSharedPreferenceChangeListener) {
+        sp.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterOnSharedPreferenceChangeListener(listener: android.content.SharedPreferences.OnSharedPreferenceChangeListener) {
+        sp.unregisterOnSharedPreferenceChangeListener(listener)
+    }
     init {
         PrefsInitTasks.run(appContext, sp)
     }
@@ -711,6 +734,16 @@ class Prefs(context: Context) {
         set(value) = sp.edit { putString(KEY_WAKE_WORD_CUSTOM_JSON, value) }
 
     // ==================== 语音分发（文字分发） ====================
+
+    // 分发识别继续：识别结束后的续听策略
+    var dispatchContinueMode: DispatchContinueMode
+        get() = DispatchContinueMode.fromId(sp.getString(KEY_DISPATCH_CONTINUE_MODE, null))
+        set(value) = sp.edit { putString(KEY_DISPATCH_CONTINUE_MODE, value.id) }
+
+    // 分发反馈展示时长（0-10 秒）：识别结束后面板驻留展示分发结果的时长，0=不驻留
+    var dispatchFeedbackHoldSeconds: Int
+        get() = sp.getInt(KEY_DISPATCH_FEEDBACK_HOLD_SECONDS, DEFAULT_DISPATCH_FEEDBACK_HOLD_SECONDS)
+        set(value) = sp.edit { putInt(KEY_DISPATCH_FEEDBACK_HOLD_SECONDS, value.coerceIn(0, 10)) }
 
     // 兼容旧备份键：原输入法 Hook 模块总开关（IME 桥接已移除，仅保留存储能力）
     var floatingImeBridgeEnabled: Boolean
@@ -2283,6 +2316,9 @@ class Prefs(context: Context) {
         const val SETTINGS_THEME_MODE_LIGHT = "light"
         const val SETTINGS_THEME_MODE_DARK = "dark"
         const val DEFAULT_KEEP_ALIVE_NOTIFICATION_CLICK_ROUTE = "history"
+        const val DEFAULT_DISPATCH_FEEDBACK_HOLD_SECONDS = 2
+        const val DISPATCH_FEEDBACK_HOLD_MIN_SECONDS = 0
+        const val DISPATCH_FEEDBACK_HOLD_MAX_SECONDS = 10
 
         // 输入/点击触觉反馈等级（兼容旧开关）
         const val HAPTIC_FEEDBACK_LEVEL_OFF = 0

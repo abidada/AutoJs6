@@ -203,4 +203,16 @@
     <string name="wake_word_invalid">يحتوي على نطق غير مدعوم</string>
     <string name="wake_word_exists">كلمة الاستيقاظ موجودة بالفعل</string>
     <string name="wake_word_custom_tag">مخصص</string>
+
+    <string name="section_voice_dispatch">التوزيع الصوتي</string>
+    <string name="label_dispatch_continue">متابعة التعرف بعد التوزيع</string>
+    <string name="label_dispatch_continue_none">بدون</string>
+    <string name="label_dispatch_continue_always">متابعة عند النجاح أو الفشل</string>
+    <string name="label_dispatch_continue_on_miss">متابعة عند الفشل فقط</string>
+    <string name="label_dispatch_feedback_hold">مدة عرض نتيجة التوزيع</string>
+    <string name="toast_dispatch_continue_switched">متابعة التوزيع: %1$s</string>
+
+    <string name="label_voice_dispatch_cooldown_seconds">وقت التبريد: %1$s ث</string>
+    <string name="label_voice_dispatch_cooldown_unlimited">وقت التبريد: بلا حد</string>
+    <string name="hint_voice_dispatch_cooldown">الحد الأدنى للفاصل بين تفعيلين متتاليين لنفس القاعدة؛ 0 = بلا حد</string>
 </resources>

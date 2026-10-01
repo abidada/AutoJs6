@@ -204,4 +204,16 @@
     <string name="wake_word_invalid">サポートされていない読み方が含まれています</string>
     <string name="wake_word_exists">ウェイクワードは既に存在します</string>
     <string name="wake_word_custom_tag">カスタム</string>
+
+    <string name="section_voice_dispatch">音声ディスパッチ</string>
+    <string name="label_dispatch_continue">ディスパッチ後の継続認識</string>
+    <string name="label_dispatch_continue_none">なし</string>
+    <string name="label_dispatch_continue_always">成功/失敗どちらも継続</string>
+    <string name="label_dispatch_continue_on_miss">失敗時のみ継続</string>
+    <string name="label_dispatch_feedback_hold">ディスパッチ結果の表示時間</string>
+    <string name="toast_dispatch_continue_switched">ディスパッチ継続：%1$s</string>
+
+    <string name="label_voice_dispatch_cooldown_seconds">クールダウン：%1$s 秒</string>
+    <string name="label_voice_dispatch_cooldown_unlimited">クールダウン：無制限</string>
+    <string name="hint_voice_dispatch_cooldown">同一ルールの連続発火を防ぐ最小間隔；0 = 無制限</string>
 </resources>
