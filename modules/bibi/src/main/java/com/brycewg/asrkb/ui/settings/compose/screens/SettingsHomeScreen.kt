@@ -37,7 +37,6 @@ import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.MoreHoriz
 import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.SystemUpdate
-import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material3.Card
@@ -374,12 +373,6 @@ private fun inputSections(
                 summary = snapshot.oneClickSetupSummary,
                 icon = Icons.Rounded.RocketLaunch,
                 onClick = actions::startOneClickSetup
-            ),
-            SettingsEntry.Action(
-                id = "test_input",
-                titleRes = R.string.btn_test_input,
-                icon = Icons.Rounded.TextFields,
-                onClick = actions::showTestInput
             ),
             SettingsEntry.Action(
                 id = "recording_test",

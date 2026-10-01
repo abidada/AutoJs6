@@ -76,7 +76,6 @@ object SettingsSearchIndex {
 
     private fun baseEntries(): List<DeclarativeEntry> = buildList {
         add(DeclarativeEntry(R.string.btn_one_click_setup, R.string.settings_title, BibiSettingsRoute.Home))
-        add(DeclarativeEntry(R.string.btn_test_input, R.string.settings_title, BibiSettingsRoute.Home))
         add(DeclarativeEntry(R.string.title_input_settings, R.string.settings_title, BibiSettingsRoute.Input))
         add(DeclarativeEntry(R.string.title_floating_settings, R.string.settings_title, BibiSettingsRoute.Floating))
         add(DeclarativeEntry(R.string.title_asr_settings, R.string.settings_title, BibiSettingsRoute.Asr))

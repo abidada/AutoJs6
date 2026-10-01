@@ -39,10 +39,6 @@ class SettingsActionController(
         activity.checkForUpdatesFromCompose()
     }
 
-    fun showTestInput() {
-        activity.showTestInputFromCompose()
-    }
-
     fun openOnboardingGuide() {
         activity.startActivity(Intent(activity, OnboardingGuideActivity::class.java))
     }

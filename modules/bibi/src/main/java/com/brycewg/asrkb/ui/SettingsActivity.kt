@@ -35,7 +35,6 @@ import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
-import com.brycewg.asrkb.ui.settings.compose.components.SettingsTestInputSheet
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsUpdateHost
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsUpdateUiState
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute
@@ -77,7 +76,6 @@ class SettingsActivity : BaseActivity() {
     // Handler 用于延迟任务
     private val handler = Handler(Looper.getMainLooper())
 
-    private val testInputSheetVisible = mutableStateOf(false)
     private val systemActionDialogState = mutableStateOf<SettingsMessageDialogState?>(null)
     private val pendingInitialRoute = mutableStateOf<BibiSettingsRoute?>(null)
 
@@ -144,11 +142,6 @@ class SettingsActivity : BaseActivity() {
 
     @Composable
     private fun settingsOverlayHosts(uiMode: BibiUiMode) {
-        SettingsTestInputSheet(
-            show = testInputSheetVisible.value,
-            uiMode = uiMode,
-            onDismiss = { testInputSheetVisible.value = false }
-        )
         SettingsUpdateHost(
             state = updateCoordinator.uiState.value,
             uiMode = uiMode,
@@ -220,10 +213,6 @@ class SettingsActivity : BaseActivity() {
 
     fun checkForUpdatesFromCompose() {
         updateCoordinator.checkForUpdates()
-    }
-
-    fun showTestInputFromCompose() {
-        testInputSheetVisible.value = true
     }
 
     fun hapticTapFromCompose() {

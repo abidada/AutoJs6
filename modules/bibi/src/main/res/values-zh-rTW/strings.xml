@@ -176,8 +176,6 @@
   <string name="trim_trailing_punct_threshold_unlimited">無限制</string>
   <string name="label_mic_haptic">按鍵與懸浮球震動回饋</string>
   <string name="label_mic_tap_toggle">鍵盤錄音使用點按啟停</string>
-  <string name="label_test_input">體驗輸入</string>
-  <string name="btn_test_input">體驗輸入</string>
 
   <!-- ============================================== -->
   <!-- 擴展按鈕配置 -->

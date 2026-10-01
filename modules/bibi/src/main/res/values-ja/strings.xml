@@ -177,8 +177,6 @@
   <string name="trim_trailing_punct_threshold_unlimited">制限なし</string>
   <string name="label_mic_haptic">キーとフローティングボールのバイブレーション</string>
   <string name="label_mic_tap_toggle">タップで録音開始/停止</string>
-  <string name="label_test_input">IMEを試す</string>
-  <string name="btn_test_input">IMEを試す</string>
 
   <!-- ============================================== -->
   <!-- 拡張ボタン設定 -->

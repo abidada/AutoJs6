@@ -178,8 +178,6 @@
   <string name="trim_trailing_punct_threshold_unlimited">بدون حد</string>
   <string name="label_mic_haptic">اهتزاز للمفاتيح والكرة العائمة</string>
   <string name="label_mic_tap_toggle">اضغط لبدء/إيقاف التسجيل</string>
-  <string name="label_test_input">جرّب لوحة المفاتيح</string>
-  <string name="btn_test_input">جرّب لوحة المفاتيح</string>
 
   <!-- ============================================== -->
   <!-- Extension Button Configuration -->
