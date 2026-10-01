@@ -53,11 +53,20 @@ internal fun VoiceDispatchRoute(
     uiMode: BibiUiMode,
     onBack: () -> Unit
 ) {
+    // editing 与 ruleId 分开：ruleId == null 既表示「新建」，不能同时用来表示「不在编辑」
+    var editing by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     var editingRuleId by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
-    if (editingRuleId == null) {
-        VoiceDispatchScreen(uiMode = uiMode, onBack = onBack, onEditRule = { editingRuleId = it })
+    if (!editing) {
+        VoiceDispatchScreen(
+            uiMode = uiMode,
+            onBack = onBack,
+            onEditRule = {
+                editingRuleId = it
+                editing = true
+            }
+        )
     } else {
-        VoiceDispatchRuleEditScreen(uiMode = uiMode, ruleId = editingRuleId, onBack = { editingRuleId = null })
+        VoiceDispatchRuleEditScreen(uiMode = uiMode, ruleId = editingRuleId, onBack = { editing = false })
     }
 }
 
