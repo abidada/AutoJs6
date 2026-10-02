@@ -179,14 +179,11 @@
     <string name="floating_pill_listening">正在聽…</string>
     <string name="listening_panel_placeholder">說點什麼…</string>
     <string name="listening_panel_listening">正在聽…</string>
-    <string name="listening_panel_copy">複製</string>
-    <string name="listening_panel_share">分享</string>
-    <string name="listening_panel_copied">已複製</string>
     <string name="listening_panel_error_prefix">辨識出錯：%1$s</string>
     <string name="title_voice_dispatch">語音分發</string>
     <string name="title_voice_dispatch_rules">語音規則分發</string>
-    <string name="voice_dispatch_feedback_miss">沒有匹配到相關任務</string>
-    <string name="voice_dispatch_feedback_hit">已分發：%1$s</string>
+    <string name="voice_dispatch_feedback_executing">%1$s 正在執行...</string>
+    <string name="voice_dispatch_feedback_no_task">%1$s 沒有找到任務...</string>
     <string name="label_voice_ready_collapse">發起語音停留收縮</string>
     <string name="voice_time_seconds_value">%1$d 秒</string>
     <string name="section_wake_word">語音喚醒</string>

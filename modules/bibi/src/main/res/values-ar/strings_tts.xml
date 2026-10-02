@@ -7,14 +7,7 @@
 
     <!-- مفاتيح النطق ونصوصه -->
     <string name="label_tts_enabled">تمكين النطق الصوتي</string>
-    <string name="label_tts_speak_on_hit">تأكيد عند مطابقة التوزيع</string>
-    <string name="label_tts_speak_on_miss">تنبيه عند عدم المطابقة</string>
-    <string name="label_tts_speak_on_error">تنبيه عند خطأ التعرف</string>
-    <string name="label_tts_speak_result">نطق نتيجة التعرف</string>
-    <string name="label_tts_hit_template">نص تأكيد المطابقة</string>
-    <string name="label_tts_miss_template">نص تنبيه عدم المطابقة</string>
-    <string name="label_tts_error_template">نص تنبيه الخطأ</string>
-    <string name="tts_template_hint">العناصر النائبة: {rule}=اسم القاعدة، {text}=النص المعترف به، {1}~{3}=مجموعات الالتقاط للتعابير النمطية</string>
+    <string name="tts_listening_announcement">جارٍ الاستماع</string>
     <string name="label_tts_speed">سرعة الكلام</string>
 
     <!-- المزود والنموذج المحلي -->

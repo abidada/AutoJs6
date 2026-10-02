@@ -108,13 +108,8 @@ object OfflineTtsManager {
             try {
                 val loaded = loadSync(context, prefs)
                 if (loaded != null) {
-                    // 预热：空跑一次最短合成，触发 espeak-ng/jieba 词库初始化
-                    loaded.speak("好", prefs.ttsSpeed, object : TtsSpeakCallback {
-                        override fun onDone() = Unit
-                        override fun onError(message: String) {
-                            Log.w(TAG, "TTS warm-up failed: $message")
-                        }
-                    })
+                    // 预热：静默空跑一次最短合成（只合成不播放），触发 espeak-ng/jieba 词库初始化
+                    loaded.warmUp()
                 }
             } catch (t: Throwable) {
                 Log.w(TAG, "TTS preload failed", t)

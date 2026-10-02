@@ -91,6 +91,9 @@ internal class FloatingAsrInteractionController(
     /** 用户主动停止后置位：本轮结束后不自动续听；下次启动识别时复位。 */
     private var suppressAutoContinue: Boolean = false
 
+    /** 「正在听」播报等待令牌：非空 = 已发起、正播报、尚未开麦；任何实际开麦都会使其失效。 */
+    private var listeningAnnounceToken: Any? = null
+
     /** 「发起语音」无操作收缩计时（默认 15 秒，见界面设置）。 */
     private var readyCollapseRunnable: Runnable? = null
 
@@ -150,12 +153,11 @@ internal class FloatingAsrInteractionController(
 
     /**
      * 唤醒词命中：跳过 READY，直接进入 LISTENING 并开始识别（等价触发悬浮球单击后的聆听）。
+     * TTS 开时同样先播「正在听」再开麦（播完约 1s 才开始收音，唤醒后需稍候再说话）。
      */
     fun onWakeTriggered() {
         if (stateMachine.isRecording || stateMachine.isProcessing) return
-        if (startRecordingFromBall() == RecordingStartFromBallResult.Started) {
-            transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
-        }
+        startRecordingForUser()
     }
 
     private fun getDispatcher(): com.brycewg.asrkb.host.VoiceCommandDispatcher? = try {
@@ -167,29 +169,29 @@ internal class FloatingAsrInteractionController(
 
     private fun wireDispatcherFeedback() {
         val dispatcher = getDispatcher() ?: return
-        dispatcher.onHit = { rule, recognizedText, captured ->
+        dispatcher.onHit = { _, recognizedText, _ ->
             // 结论同步记录（分发在主线程执行），驻留评估可立即读取
             lastDispatchHit = true
             handler.post {
-                listeningPanel?.showFeedback(
-                    context.getString(R.string.voice_dispatch_feedback_hit, rule.name)
+                // 面板与 TTS 同源文案：识别文本 + 执行后缀
+                val message = context.getString(
+                    R.string.voice_dispatch_feedback_executing,
+                    recognizedText
                 )
-                // TTS 命中即播（决策 §3）；播报期间由开麦闸口推迟自动续听
-                speakDispatchFeedback(rule, recognizedText, captured)
+                listeningPanel?.showFeedback(message)
+                // 命中即播；播报期间由开麦闸口推迟自动续听
+                if (isTtsEnabled()) TtsPlaybackCoordinator.speak(context, message)
             }
         }
-        dispatcher.onMiss = {
+        dispatcher.onMiss = { recognizedText ->
             lastDispatchHit = false
             handler.post {
-                listeningPanel?.showFeedback(
-                    context.getString(R.string.voice_dispatch_feedback_miss)
+                val message = context.getString(
+                    R.string.voice_dispatch_feedback_no_task,
+                    recognizedText
                 )
-                if (isTtsEnabled() && tryOrNull { prefs.ttsSpeakOnMiss } == true) {
-                    TtsPlaybackCoordinator.speak(
-                        context,
-                        tryOrNull { prefs.ttsMissTemplate } ?: ""
-                    )
-                }
+                listeningPanel?.showFeedback(message)
+                if (isTtsEnabled()) TtsPlaybackCoordinator.speak(context, message)
             }
         }
     }
@@ -199,34 +201,6 @@ internal class FloatingAsrInteractionController(
         prefs.ttsEnabled
     } catch (e: Throwable) {
         false
-    }
-
-    private inline fun <T> tryOrNull(block: () -> T): T? = try {
-        block()
-    } catch (e: Throwable) {
-        null
-    }
-
-    /** 命中确认播报：规则级 ttsFeedback 优先（"none"=静音），否则全局模板 */
-    private fun speakDispatchFeedback(
-        rule: com.brycewg.asrkb.host.voice.VoiceDispatchRule,
-        recognizedText: String,
-        captured: List<String>
-    ) {
-        if (!isTtsEnabled() || tryOrNull { prefs.ttsSpeakOnHit } != true) return
-        val template = when (val override = rule.ttsFeedback?.trim()) {
-            null -> prefs.ttsHitTemplate
-            "none", "" -> return
-            else -> override
-        }
-        val message = template
-            .replace("{rule}", rule.name)
-            .replace("{text}", recognizedText)
-            .replace("{1}", captured.getOrNull(0) ?: "")
-            .replace("{2}", captured.getOrNull(1) ?: "")
-            .replace("{3}", captured.getOrNull(2) ?: "")
-        if (message.isBlank()) return
-        TtsPlaybackCoordinator.speak(context, message)
     }
 
     /**
@@ -418,6 +392,8 @@ internal class FloatingAsrInteractionController(
         } else if (stateMachine.isProcessing) {
             cancelCurrentSession()
         } else {
+            // 「正在听」播报等待中点停止：取消播报，不进入录音
+            listeningAnnounceToken = null
             suppressAutoContinue = true
             cancelPostResultRunnable()
             transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
@@ -447,6 +423,7 @@ internal class FloatingAsrInteractionController(
         cancelAmplitudeDispatch()
         cancelShakeFeedbackStartRecording()
         cancelShakeFeedbackTone()
+        listeningAnnounceToken = null
         TtsPlaybackCoordinator.stopSpeaking()
         stopRecordingForeground()
         try {
@@ -477,7 +454,7 @@ internal class FloatingAsrInteractionController(
 
     fun onVolumeKeyStart() {
         if (stateMachine.isRecording || stateMachine.isProcessing) return
-        if (startRecording(fromVolumeKey = true)) showVolumeKeyStatusToast(R.string.toast_volume_key_recording_started)
+        if (startRecordingForUser(fromVolumeKey = true)) showVolumeKeyStatusToast(R.string.toast_volume_key_recording_started)
     }
 
     fun onVolumeKeyStop() {
@@ -493,7 +470,7 @@ internal class FloatingAsrInteractionController(
             return
         }
         if (stateMachine.isProcessing) return
-        if (startRecording(fromVolumeKey = true)) showVolumeKeyStatusToast(R.string.toast_volume_key_recording_started)
+        if (startRecordingForUser(fromVolumeKey = true)) showVolumeKeyStatusToast(R.string.toast_volume_key_recording_started)
     }
 
     fun onShakeRecordingToggle() {
@@ -504,6 +481,11 @@ internal class FloatingAsrInteractionController(
             return
         }
         if (stateMachine.isProcessing) return
+        if (isTtsEnabled()) {
+            // 总开关开：以「正在听」播报替代开始提示音（同样先播后开麦）
+            startRecordingForUser(fromShake = true)
+            return
+        }
         // 先播开始音，再开麦，避免 AudioRecord 抢焦点截断提示音。
         playShakeRecordingFeedback(starting = true) {
             if (!stateMachine.isRecording && !stateMachine.isProcessing) {
@@ -520,6 +502,8 @@ internal class FloatingAsrInteractionController(
 
         // 抢话优先：开麦前打断任何进行中的 TTS 播报（幂等，空闲时为 no-op）
         TtsPlaybackCoordinator.stopSpeaking()
+        // 任何实际开麦都使「正在听」播报等待回调失效，避免双重启动
+        listeningAnnounceToken = null
 
         // 新一轮识别：清掉会话结束决策/续听待办，重置本轮分发结论；用户启动恢复续听资格
         cancelPostResultRunnable()
@@ -548,6 +532,46 @@ internal class FloatingAsrInteractionController(
         )
 
         return startAsrRecording(fromVolumeKey = fromVolumeKey, fromShake = fromShake)
+    }
+
+    /**
+     * 用户主动发起语音（点击/音量键/摇一摇）：总开关开时先播「正在听」再开麦——
+     * 麦克风与扬声器不能同时工作，否则 TTS 声音会被 ASR 收进识别流；
+     * 关闭时直通原 startRecording，行为与引入 TTS 前完全一致。
+     *
+     * @return true 表示已开始录音或已进入播报等待
+     */
+    private fun startRecordingForUser(
+        fromVolumeKey: Boolean = false,
+        fromShake: Boolean = false
+    ): Boolean {
+        if (!isTtsEnabled()) {
+            val started = startRecording(fromVolumeKey, fromShake)
+            if (started) {
+                transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+            }
+            return started
+        }
+        if (!canStartRecording()) return false
+        // 提前清掉上一轮遗留待办，防止驻留/续听 runnable 在播报窗口把面板拉回 READY
+        cancelPostResultRunnable()
+        suppressAutoContinue = false
+        val token = Any()
+        listeningAnnounceToken = token
+        transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+        TtsPlaybackCoordinator.speak(
+            context,
+            context.getString(R.string.tts_listening_announcement)
+        ) {
+            // 期间再次发起会使令牌失效（由 startRecording 统一失效），旧回调不再开麦
+            if (listeningAnnounceToken !== token) return@speak
+            listeningAnnounceToken = null
+            if (stateMachine.isRecording || stateMachine.isProcessing) return@speak
+            if (!startRecording(fromVolumeKey, fromShake)) {
+                transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+            }
+        }
+        return true
     }
 
     private fun canStartRecording(): Boolean {
@@ -967,13 +991,6 @@ internal class FloatingAsrInteractionController(
             // 识别完成即分发（总开关已移除，所有识别结果统一匹配规则）
             lastSessionHadText = text.isNotBlank()
             dispatchRecognizedText(text)
-            // 结果播报（默认关；YOYO/小爱式读结果）
-            if (isTtsEnabled() &&
-                text.isNotBlank() &&
-                tryOrNull { prefs.ttsSpeakResult } == true
-            ) {
-                TtsPlaybackCoordinator.speak(context, text)
-            }
         }
     }
 
@@ -1105,14 +1122,6 @@ internal class FloatingAsrInteractionController(
                 showToast(context.getString(R.string.floating_asr_error, message))
             }
 
-            // 识别错误语音提示（默认开；不改变错误后的任何重启行为）
-            if (isTtsEnabled() && tryOrNull { prefs.ttsSpeakOnError } == true) {
-                TtsPlaybackCoordinator.speak(
-                    context,
-                    tryOrNull { prefs.ttsErrorTemplate } ?: ""
-                )
-            }
-
             schedulePostErrorResetState()
         }
     }
@@ -1148,24 +1157,31 @@ internal class FloatingAsrInteractionController(
             }
 
             FloatingBallInteractionMode.READY_PILL -> {
-                // 单击「发起语音」→ 开始录音 + 「正在听...」
+                // 单击「发起语音」→ 开始录音 + 「正在听...」（TTS 开时先播「正在听」再开麦）
                 if (stateMachine.isRecording || stateMachine.isProcessing) {
                     // 旁路已启动录音：仅同步视觉
                     transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
                     return
                 }
-                if (startRecordingFromBall() == RecordingStartFromBallResult.Started) {
-                    transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
-                }
+                startRecordingForUser()
             }
 
             FloatingBallInteractionMode.LISTENING_PILL -> {
-                // 单击「正在听...」→ 停止并回「发起语音」
-                if (stateMachine.isRecording) {
+                // 「正在听」播报尚未开麦：再次点击 = 跳过播报立即开麦
+                if (listeningAnnounceToken != null &&
+                    !stateMachine.isRecording &&
+                    !stateMachine.isProcessing
+                ) {
+                    if (startRecordingFromBall() == RecordingStartFromBallResult.Failed) {
+                        transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+                    }
+                } else if (stateMachine.isRecording) {
+                    // 单击「正在听...」→ 停止并回「发起语音」
                     stopRecording()
                 } else if (stateMachine.isProcessing) {
                     cancelCurrentSession()
                 } else {
+                    listeningAnnounceToken = null
                     suppressAutoContinue = true
                     cancelPostResultRunnable()
                     transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)

@@ -42,6 +42,9 @@ internal class OfflineSherpaTtsEngine private constructor(
         /** 写入停滞保护上限（缓冲满且系统侧长时间不消费时抛错，防工作线程卡死） */
         private const val WRITE_STALL_TIMEOUT_MS = 5_000L
 
+        /** 预热合成文本（只合成不播放，取最短常用音节即可） */
+        private const val WARMUP_TEXT = "好"
+
         @Volatile private var classLoadFailed: Boolean = false
 
         fun create(context: Context, modelFiles: TtsLocalModelCatalog.ModelFiles, numThreads: Int): OfflineSherpaTtsEngine? {
@@ -179,6 +182,31 @@ internal class OfflineSherpaTtsEngine private constructor(
             track?.flush()
         } catch (t: Throwable) {
             Log.w(TAG, "Failed to stop audio track", t)
+        }
+    }
+
+    /**
+     * 静默预热：仅合成、不创建 AudioTrack、不申请音频焦点——
+     * 触发 espeak-ng/jieba/声学模型初始化，消除首次播报延迟。
+     * 期间置位 speaking，避免与真实播报并发进入 native 合成。
+     */
+    fun warmUp() {
+        if (speaking) return
+        speaking = true
+        cancelled = false
+        try {
+            val method = ttsClass.getMethod(
+                "generate",
+                String::class.java,
+                Int::class.javaPrimitiveType,
+                Float::class.javaPrimitiveType
+            )
+            // 样本直接丢弃：预热只关心初始化副作用
+            method.invoke(ttsInstance, WARMUP_TEXT, 0, 1.0f)
+        } catch (t: Throwable) {
+            Log.w(TAG, "TTS warm-up synthesis failed", t)
+        } finally {
+            speaking = false
         }
     }
 

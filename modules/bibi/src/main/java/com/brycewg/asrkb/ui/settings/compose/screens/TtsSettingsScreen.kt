@@ -48,6 +48,7 @@ import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -68,13 +69,6 @@ fun TtsSettingsScreen(
 
     // ---- 播报设置状态 ----
     var ttsEnabled by remember { mutableStateOf(prefs.ttsEnabled) }
-    var speakOnHit by remember { mutableStateOf(prefs.ttsSpeakOnHit) }
-    var speakOnMiss by remember { mutableStateOf(prefs.ttsSpeakOnMiss) }
-    var speakOnError by remember { mutableStateOf(prefs.ttsSpeakOnError) }
-    var speakResult by remember { mutableStateOf(prefs.ttsSpeakResult) }
-    var hitTemplate by remember { mutableStateOf(prefs.ttsHitTemplate) }
-    var missTemplate by remember { mutableStateOf(prefs.ttsMissTemplate) }
-    var errorTemplate by remember { mutableStateOf(prefs.ttsErrorTemplate) }
     var speed by remember { mutableStateOf(prefs.ttsSpeed) }
 
     // ---- 服务商/模型状态 ----
@@ -84,6 +78,10 @@ fun TtsSettingsScreen(
     var keepAliveMinutes by remember { mutableStateOf(prefs.ttsKeepAliveMinutes) }
     var modelReady by remember { mutableStateOf(false) }
     var operationStatus by remember { mutableStateOf<String?>(null) }
+
+    // 下载/导入进行中标记：后台任务完成时页面仍在前台、不会触发 ON_RESUME，
+    // 需轮询刷新就绪状态（与 AsrSettingsScreen 的 2.5s×120 轮询模式一致）
+    var operationPending by remember { mutableStateOf(false) }
 
     // ---- 试听状态 ----
     var auditionText by remember { mutableStateOf("") }
@@ -96,10 +94,26 @@ fun TtsSettingsScreen(
     fun refreshModelReady() {
         scope.launch(Dispatchers.IO) {
             val ready = TtsLocalModelCatalog.isModelReady(context, prefs.ttsModelVariant)
-            withContext(Dispatchers.Main) { modelReady = ready }
+            withContext(Dispatchers.Main) {
+                modelReady = ready
+                if (ready) {
+                    // 到达终态：清掉「已开始下载/导入」等陈旧操作提示，停止轮询
+                    operationStatus = null
+                    operationPending = false
+                }
+            }
         }
     }
     LaunchedEffect(Unit) { refreshModelReady() }
+
+    LaunchedEffect(operationPending) {
+        var attempts = 0
+        while (operationPending && attempts < 120) {
+            delay(2500)
+            refreshModelReady()
+            attempts += 1
+        }
+    }
 
     // 返回本页时刷新就绪状态（后台下载可能已完成）
     DisposableEffect(lifecycleOwner) {
@@ -119,6 +133,7 @@ fun TtsSettingsScreen(
             runCatching {
                 ModelDownloadService.startImport(context, uri, importVariant, TtsLocalModelCatalog.MODEL_TYPE)
                 operationStatus = context.getString(R.string.tts_import_started_in_bg)
+                operationPending = true
             }.onFailure {
                 operationStatus = context.getString(R.string.tts_import_failed, it.message ?: "")
             }
@@ -140,6 +155,7 @@ fun TtsSettingsScreen(
                             TtsLocalModelCatalog.MODEL_TYPE
                         )
                         operationStatus = context.getString(R.string.tts_download_started_in_bg)
+                        operationPending = true
                     }.onFailure {
                         operationStatus = context.getString(R.string.tts_download_status_failed)
                     }
@@ -165,15 +181,7 @@ fun TtsSettingsScreen(
             item("feedback") {
                 TtsFeedbackSection(
                     uiMode = uiMode,
-                    prefs = prefs,
                     ttsEnabled = ttsEnabled,
-                    speakOnHit = speakOnHit,
-                    speakOnMiss = speakOnMiss,
-                    speakOnError = speakOnError,
-                    speakResult = speakResult,
-                    hitTemplate = hitTemplate,
-                    missTemplate = missTemplate,
-                    errorTemplate = errorTemplate,
                     speed = speed,
                     onEnabledChange = { checked ->
                         ttsEnabled = checked
@@ -183,13 +191,6 @@ fun TtsSettingsScreen(
                             TtsPlaybackCoordinator.stopSpeaking()
                         }
                     },
-                    onSpeakOnHitChange = { speakOnHit = it; prefs.ttsSpeakOnHit = it },
-                    onSpeakOnMissChange = { speakOnMiss = it; prefs.ttsSpeakOnMiss = it },
-                    onSpeakOnErrorChange = { speakOnError = it; prefs.ttsSpeakOnError = it },
-                    onSpeakResultChange = { speakResult = it; prefs.ttsSpeakResult = it },
-                    onHitTemplateChange = { hitTemplate = it; prefs.ttsHitTemplate = it },
-                    onMissTemplateChange = { missTemplate = it; prefs.ttsMissTemplate = it },
-                    onErrorTemplateChange = { errorTemplate = it; prefs.ttsErrorTemplate = it },
                     onSpeedChange = { speed = it; prefs.ttsSpeed = it }
                 )
             }
@@ -322,35 +323,15 @@ private fun TtsClearDialogHost(
 @Composable
 private fun TtsFeedbackSection(
     uiMode: BibiUiMode,
-    prefs: Prefs,
     ttsEnabled: Boolean,
-    speakOnHit: Boolean,
-    speakOnMiss: Boolean,
-    speakOnError: Boolean,
-    speakResult: Boolean,
-    hitTemplate: String,
-    missTemplate: String,
-    errorTemplate: String,
     speed: Float,
     onEnabledChange: (Boolean) -> Unit,
-    onSpeakOnHitChange: (Boolean) -> Unit,
-    onSpeakOnMissChange: (Boolean) -> Unit,
-    onSpeakOnErrorChange: (Boolean) -> Unit,
-    onSpeakResultChange: (Boolean) -> Unit,
-    onHitTemplateChange: (String) -> Unit,
-    onMissTemplateChange: (String) -> Unit,
-    onErrorTemplateChange: (String) -> Unit,
     onSpeedChange: (Float) -> Unit
 ) {
     AsrSection(uiMode = uiMode, titleRes = R.string.section_tts_feedback) {
+        // 总开关即全部行为：开启后固定播报「正在听」与分发命中/未命中结果
         var itemIndex = 0
-        val itemCount = if (!ttsEnabled) {
-            1
-        } else {
-            6 + (if (speakOnHit) 1 else 0) +
-                (if (speakOnMiss) 1 else 0) +
-                (if (speakOnError) 1 else 0)
-        }
+        val itemCount = if (!ttsEnabled) 1 else 2
         AsrSwitchPreference(
             id = "tts_enabled",
             titleRes = R.string.label_tts_enabled,
@@ -360,69 +341,6 @@ private fun TtsFeedbackSection(
             onCheckedChange = onEnabledChange
         )
         if (!ttsEnabled) return@AsrSection
-        AsrSwitchPreference(
-            id = "tts_speak_on_hit",
-            titleRes = R.string.label_tts_speak_on_hit,
-            checked = speakOnHit,
-            index = itemIndex++,
-            count = itemCount,
-            onCheckedChange = onSpeakOnHitChange
-        )
-        if (speakOnHit) {
-            AsrTextField(
-                uiMode = uiMode,
-                value = hitTemplate,
-                onValueChange = onHitTemplateChange,
-                label = stringResource(R.string.label_tts_hit_template),
-                index = itemIndex++,
-                count = itemCount
-            )
-            AsrBodyText(uiMode = uiMode, textRes = R.string.tts_template_hint)
-        }
-        AsrSwitchPreference(
-            id = "tts_speak_on_miss",
-            titleRes = R.string.label_tts_speak_on_miss,
-            checked = speakOnMiss,
-            index = itemIndex++,
-            count = itemCount,
-            onCheckedChange = onSpeakOnMissChange
-        )
-        if (speakOnMiss) {
-            AsrTextField(
-                uiMode = uiMode,
-                value = missTemplate,
-                onValueChange = onMissTemplateChange,
-                label = stringResource(R.string.label_tts_miss_template),
-                index = itemIndex++,
-                count = itemCount
-            )
-        }
-        AsrSwitchPreference(
-            id = "tts_speak_on_error",
-            titleRes = R.string.label_tts_speak_on_error,
-            checked = speakOnError,
-            index = itemIndex++,
-            count = itemCount,
-            onCheckedChange = onSpeakOnErrorChange
-        )
-        if (speakOnError) {
-            AsrTextField(
-                uiMode = uiMode,
-                value = errorTemplate,
-                onValueChange = onErrorTemplateChange,
-                label = stringResource(R.string.label_tts_error_template),
-                index = itemIndex++,
-                count = itemCount
-            )
-        }
-        AsrSwitchPreference(
-            id = "tts_speak_result",
-            titleRes = R.string.label_tts_speak_result,
-            checked = speakResult,
-            index = itemIndex++,
-            count = itemCount,
-            onCheckedChange = onSpeakResultChange
-        )
         AsrSliderPreference(
             titleRes = R.string.label_tts_speed,
             valueLabel = { value -> String.format(Locale.US, "%.2f×", value) },

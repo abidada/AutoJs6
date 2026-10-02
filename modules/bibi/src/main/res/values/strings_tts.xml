@@ -5,16 +5,9 @@
     <string name="section_tts_vendor">TTS Provider</string>
     <string name="section_tts_audition">Audition</string>
 
-    <!-- Broadcast toggles & templates -->
+    <!-- 播报开关与文案 -->
     <string name="label_tts_enabled">Enable voice broadcast</string>
-    <string name="label_tts_speak_on_hit">Confirm on dispatch hit</string>
-    <string name="label_tts_speak_on_miss">Prompt on dispatch miss</string>
-    <string name="label_tts_speak_on_error">Prompt on recognition error</string>
-    <string name="label_tts_speak_result">Speak recognized result</string>
-    <string name="label_tts_hit_template">Hit confirmation text</string>
-    <string name="label_tts_miss_template">Miss prompt text</string>
-    <string name="label_tts_error_template">Error prompt text</string>
-    <string name="tts_template_hint">Placeholders: {rule} = rule name, {text} = recognized text, {1}–{3} = regex capture groups</string>
+    <string name="tts_listening_announcement">Listening</string>
     <string name="label_tts_speed">Speech rate</string>
 
     <!-- Provider & local model -->

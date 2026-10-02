@@ -7,14 +7,7 @@
 
     <!-- 播報開關與文案 -->
     <string name="label_tts_enabled">啟用語音播報</string>
-    <string name="label_tts_speak_on_hit">分發命中確認</string>
-    <string name="label_tts_speak_on_miss">分發未命中提示</string>
-    <string name="label_tts_speak_on_error">辨識錯誤提示</string>
-    <string name="label_tts_speak_result">播報辨識結果</string>
-    <string name="label_tts_hit_template">命中確認文案</string>
-    <string name="label_tts_miss_template">未命中提示文案</string>
-    <string name="label_tts_error_template">錯誤提示文案</string>
-    <string name="tts_template_hint">支援佔位符：{rule}=規則名、{text}=辨識文字、{1}~{3}=正則擷取群組</string>
+    <string name="tts_listening_announcement">正在聽</string>
     <string name="label_tts_speed">語速</string>
 
     <!-- 服務商與本地模型 -->

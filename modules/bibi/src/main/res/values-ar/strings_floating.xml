@@ -179,14 +179,11 @@
     <string name="floating_pill_listening">جارٍ الاستماع…</string>
     <string name="listening_panel_placeholder">قل شيئًا…</string>
     <string name="listening_panel_listening">جارٍ الاستماع…</string>
-    <string name="listening_panel_copy">نسخ</string>
-    <string name="listening_panel_share">مشاركة</string>
-    <string name="listening_panel_copied">تم النسخ</string>
     <string name="listening_panel_error_prefix">خطأ في التعرف: %1$s</string>
     <string name="title_voice_dispatch">توزيع الصوت</string>
     <string name="title_voice_dispatch_rules">قواعد توزيع الصوت</string>
-    <string name="voice_dispatch_feedback_miss">لا توجد مهمة مطابقة</string>
-    <string name="voice_dispatch_feedback_hit">تم التوزيع：%1$s</string>
+    <string name="voice_dispatch_feedback_executing">%1$s جارٍ التنفيذ...</string>
+    <string name="voice_dispatch_feedback_no_task">%1$s لا توجد مهمة مطابقة...</string>
     <string name="label_voice_ready_collapse">زمن انكماش كبسولة الصوت</string>
     <string name="voice_time_seconds_value">%1$d ث</string>
     <string name="section_wake_word">الاستيقاظ الصوتي</string>

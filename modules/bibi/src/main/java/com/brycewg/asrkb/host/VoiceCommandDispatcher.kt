@@ -62,13 +62,13 @@ internal class VoiceCommandDispatcher private constructor(appContext: Context) {
 
     /**
      * 面板反馈槽（由交互层注入；调用发生在调用方线程）。
-     * onHit 携带规则、整句识别文本与正则捕获组，供 TTS 命中确认模板渲染。
+     * onHit/onMiss 均携带整句识别文本，供面板与 TTS 同源文案使用。
      */
     @Volatile
     var onHit: ((rule: VoiceDispatchRule, recognizedText: String, captured: List<String>) -> Unit)? = null
 
     @Volatile
-    var onMiss: (() -> Unit)? = null
+    var onMiss: ((recognizedText: String) -> Unit)? = null
 
     /** 规则增删改后调用，使缓存失效重载。 */
     fun invalidateCache() {
@@ -132,7 +132,7 @@ internal class VoiceCommandDispatcher private constructor(appContext: Context) {
             if (trimmed.isEmpty()) return null
             val hit = match(trimmed) ?: run {
                 Log.i(TAG, "fallback: no rule matched for \"$trimmed\"")
-                onMiss?.invoke()
+                onMiss?.invoke(trimmed)
                 return null
             }
             val (rule, captured) = hit

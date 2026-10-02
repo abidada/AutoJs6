@@ -179,9 +179,6 @@
     <string name="floating_pill_listening">Listening…</string>
     <string name="listening_panel_placeholder">Say something…</string>
     <string name="listening_panel_listening">Listening…</string>
-    <string name="listening_panel_copy">Copy</string>
-    <string name="listening_panel_share">Share</string>
-    <string name="listening_panel_copied">Copied</string>
     <string name="listening_panel_error_prefix">Recognition error: %1$s</string>
     <string name="title_voice_dispatch">Voice Dispatch</string>
     <string name="title_voice_dispatch_rules">Voice Dispatch Rules</string>
@@ -219,8 +216,8 @@
     <string name="hint_voice_dispatch_payload">Script path / JS snippet / command name / API name / task id</string>
     <string name="label_voice_dispatch_args">Arguments template (optional)</string>
     <string name="hint_voice_dispatch_args">Placeholders: {text} = whole sentence, {1} = regex group 1</string>
-    <string name="voice_dispatch_feedback_hit">Dispatched: %1$s</string>
-    <string name="voice_dispatch_feedback_miss">No matching task</string>
+    <string name="voice_dispatch_feedback_executing">%1$s executing...</string>
+    <string name="voice_dispatch_feedback_no_task">%1$s no matching task...</string>
     <string name="label_voice_ready_collapse">Voice pill collapse delay</string>
     <string name="voice_time_seconds_value">%1$d s</string>
     <string name="section_wake_word">Voice Wake-up</string>

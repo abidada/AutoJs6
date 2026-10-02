@@ -180,14 +180,11 @@
     <string name="floating_pill_listening">録音中…</string>
     <string name="listening_panel_placeholder">何か話してください…</string>
     <string name="listening_panel_listening">録音中…</string>
-    <string name="listening_panel_copy">コピー</string>
-    <string name="listening_panel_share">共有</string>
-    <string name="listening_panel_copied">コピーしました</string>
     <string name="listening_panel_error_prefix">認識エラー：%1$s</string>
     <string name="title_voice_dispatch">音声ディスパッチ</string>
     <string name="title_voice_dispatch_rules">音声ディスパッチルール</string>
-    <string name="voice_dispatch_feedback_miss">一致するタスクがありません</string>
-    <string name="voice_dispatch_feedback_hit">ディスパッチ：%1$s</string>
+    <string name="voice_dispatch_feedback_executing">%1$s 実行します...</string>
+    <string name="voice_dispatch_feedback_no_task">%1$s 一致するタスクがありません...</string>
     <string name="label_voice_ready_collapse">音声ピル収縮までの時間</string>
     <string name="voice_time_seconds_value">%1$d 秒</string>
     <string name="section_wake_word">音声ウェイクワード</string>

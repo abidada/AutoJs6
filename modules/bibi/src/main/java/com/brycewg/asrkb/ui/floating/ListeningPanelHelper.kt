@@ -8,10 +8,7 @@
  */
 package com.brycewg.asrkb.ui.floating
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Typeface
@@ -22,10 +19,8 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.AsrResultBroadcaster
 import com.brycewg.asrkb.store.Prefs
@@ -47,7 +42,6 @@ internal class ListeningPanelHelper(
     private var panelView: View? = null
     private var textLabel: TextView? = null
     private var stopButton: TextView? = null
-    private var lastFinalText: String? = null
 
     /** 停止按钮回调（由 FloatingAsrService 注入，等价单击「正在听...」胶囊）。 */
     var onStopClicked: (() -> Unit)? = null
@@ -58,7 +52,6 @@ internal class ListeningPanelHelper(
         }
 
         override fun onFinal(text: String) {
-            lastFinalText = text
             post { applyText(text.ifBlank { null }) }
         }
 
@@ -82,7 +75,6 @@ internal class ListeningPanelHelper(
                 stopButton = view.findViewById(R.id.listeningPanelStop)
                 windowManager.addView(view, buildLayoutParams())
                 panelView = view
-                lastFinalText = null
                 applyText(null)
                 AsrResultBroadcaster.add(resultListener)
             } catch (e: Throwable) {
@@ -177,24 +169,11 @@ internal class ListeningPanelHelper(
             }
         )
 
-        // 底部按钮行：复制 / 停止 / 分享
+        // 底部按钮行：停止（绿色「正在听」胶囊，居中）
         val row = LinearLayout(overlayContext).apply {
             orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
+            gravity = Gravity.CENTER
         }
-
-        row.addView(
-            Button(overlayContext).apply {
-                id = R.id.listeningPanelCopy
-                text = context.getString(R.string.listening_panel_copy)
-                setTextColor(0xCCFFFFFF.toInt())
-                setBackgroundColor(Color.TRANSPARENT)
-                setOnClickListener { copyCurrentText() }
-                layoutParams = LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
-                )
-            }
-        )
 
         row.addView(
             TextView(overlayContext).apply {
@@ -214,19 +193,6 @@ internal class ListeningPanelHelper(
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { marginStart = dp(8); marginEnd = dp(8) }
-            }
-        )
-
-        row.addView(
-            Button(overlayContext).apply {
-                id = R.id.listeningPanelShare
-                text = context.getString(R.string.listening_panel_share)
-                setTextColor(0xCCFFFFFF.toInt())
-                setBackgroundColor(Color.TRANSPARENT)
-                setOnClickListener { shareCurrentText() }
-                layoutParams = LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
                 )
             }
         )
@@ -247,30 +213,5 @@ internal class ListeningPanelHelper(
         val label = textLabel ?: return
         label.text = text ?: appContext.getString(R.string.listening_panel_placeholder)
         label.alpha = if (text == null) 0.55f else 1f
-    }
-
-    private fun copyCurrentText() {
-        val text = textLabel?.text?.toString().orEmpty()
-        try {
-            val cm = appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cm.setPrimaryClip(ClipData.newPlainText("bibi_asr", text))
-            Toast.makeText(appContext, R.string.listening_panel_copied, Toast.LENGTH_SHORT).show()
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to copy panel text", e)
-        }
-    }
-
-    private fun shareCurrentText() {
-        val text = textLabel?.text?.toString().orEmpty()
-        try {
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, text)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            appContext.startActivity(Intent.createChooser(intent, null))
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to share panel text", e)
-        }
     }
 }
