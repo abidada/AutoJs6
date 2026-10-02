@@ -180,9 +180,6 @@
     <string name="listening_panel_placeholder">قل شيئًا…</string>
     <string name="listening_panel_listening">جارٍ الاستماع…</string>
     <string name="listening_panel_error_prefix">خطأ في التعرف: %1$s</string>
-    <string name="listening_panel_copy">نسخ</string>
-    <string name="listening_panel_share">مشاركة</string>
-    <string name="listening_panel_copied">تم النسخ</string>
     <string name="title_voice_dispatch">توزيع الصوت</string>
     <string name="title_voice_dispatch_rules">قواعد توزيع الصوت</string>
     <string name="voice_dispatch_feedback_executing">%1$s جارٍ التنفيذ...</string>

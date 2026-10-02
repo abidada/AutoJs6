@@ -8,10 +8,7 @@
  */
 package com.brycewg.asrkb.ui.floating
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Typeface
@@ -25,11 +22,10 @@ import android.view.Gravity
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
-import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import android.widget.Toast
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.AsrResultBroadcaster
 import com.brycewg.asrkb.store.Prefs
@@ -50,9 +46,7 @@ internal class ListeningPanelHelper(
     private val mainHandler = Handler(Looper.getMainLooper())
     private var panelView: View? = null
     private var textLabel: TextView? = null
-    private var stopButton: TextView? = null
     private var textScroll: FollowScrollView? = null
-    private var lastFinalText: String? = null
 
     /** 自动跟底：用户上滑回看历史时暂停，滚回底部后恢复。 */
     private var autoFollow = true
@@ -69,7 +63,6 @@ internal class ListeningPanelHelper(
         }
 
         override fun onFinal(text: String) {
-            lastFinalText = text
             post { applyText(text.ifBlank { null }) }
         }
 
@@ -92,10 +85,8 @@ internal class ListeningPanelHelper(
                 autoFollow = true
                 val view = buildPanel()
                 textLabel = view.findViewById(R.id.listeningPanelText)
-                stopButton = view.findViewById(R.id.listeningPanelStop)
                 windowManager.addView(view, buildLayoutParams())
                 panelView = view
-                lastFinalText = null
                 applyText(null)
                 AsrResultBroadcaster.add(resultListener)
             } catch (e: Throwable) {
@@ -111,7 +102,6 @@ internal class ListeningPanelHelper(
             val view = panelView ?: return@post
             panelView = null
             textLabel = null
-            stopButton = null
             textScroll = null
             try {
                 windowManager.removeView(view)
@@ -221,9 +211,9 @@ internal class ListeningPanelHelper(
                 textSize = 22f
                 typeface = Typeface.DEFAULT_BOLD
                 setLineSpacing(dp(2f).toFloat(), 1f)
-                layoutParams = ScrollView.LayoutParams(
-                    ScrollView.LayoutParams.MATCH_PARENT,
-                    ScrollView.LayoutParams.WRAP_CONTENT
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
                 )
             }
         )
@@ -236,24 +226,11 @@ internal class ListeningPanelHelper(
         )
         textScroll = scroll
 
-        // 底部按钮行：复制 / 停止 / 分享
+        // 底部按钮行：停止（绿色「正在听」胶囊，居中）
         val row = LinearLayout(overlayContext).apply {
             orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
+            gravity = Gravity.CENTER
         }
-
-        row.addView(
-            Button(overlayContext).apply {
-                id = R.id.listeningPanelCopy
-                text = context.getString(R.string.listening_panel_copy)
-                setTextColor(0xCCFFFFFF.toInt())
-                setBackgroundColor(Color.TRANSPARENT)
-                setOnClickListener { copyCurrentText() }
-                layoutParams = LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
-                )
-            }
-        )
 
         row.addView(
             TextView(overlayContext).apply {
@@ -273,19 +250,6 @@ internal class ListeningPanelHelper(
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { marginStart = dp(8); marginEnd = dp(8) }
-            }
-        )
-
-        row.addView(
-            Button(overlayContext).apply {
-                id = R.id.listeningPanelShare
-                text = context.getString(R.string.listening_panel_share)
-                setTextColor(0xCCFFFFFF.toInt())
-                setBackgroundColor(Color.TRANSPARENT)
-                setOnClickListener { shareCurrentText() }
-                layoutParams = LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
                 )
             }
         )
@@ -312,31 +276,6 @@ internal class ListeningPanelHelper(
             scroll.post {
                 if (autoFollow) scroll.fullScroll(View.FOCUS_DOWN)
             }
-        }
-    }
-
-    private fun copyCurrentText() {
-        val text = textLabel?.text?.toString().orEmpty()
-        try {
-            val cm = appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cm.setPrimaryClip(ClipData.newPlainText("bibi_asr", text))
-            Toast.makeText(appContext, R.string.listening_panel_copied, Toast.LENGTH_SHORT).show()
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to copy panel text", e)
-        }
-    }
-
-    private fun shareCurrentText() {
-        val text = textLabel?.text?.toString().orEmpty()
-        try {
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, text)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            appContext.startActivity(Intent.createChooser(intent, null))
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to share panel text", e)
         }
     }
 

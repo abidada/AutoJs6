@@ -181,9 +181,6 @@
     <string name="listening_panel_placeholder">何か話してください…</string>
     <string name="listening_panel_listening">録音中…</string>
     <string name="listening_panel_error_prefix">認識エラー：%1$s</string>
-    <string name="listening_panel_copy">コピー</string>
-    <string name="listening_panel_share">共有</string>
-    <string name="listening_panel_copied">コピーしました</string>
     <string name="title_voice_dispatch">音声ディスパッチ</string>
     <string name="title_voice_dispatch_rules">音声ディスパッチルール</string>
     <string name="voice_dispatch_feedback_executing">%1$s 実行します...</string>
