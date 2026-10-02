@@ -24,6 +24,7 @@
     <string name="asr_vendor_tag_pseudo_streaming">擬似ストリーミング</string>
     <string name="asr_vendor_tag_chinese_dialect">中国語方言</string>
     <string name="asr_vendor_tag_accurate">高精度</string>
+    <string name="asr_vendor_tag_last_used">前回使用</string>
     <string name="asr_vendor_group_configured">設定済み</string>
     <string name="asr_vendor_group_unconfigured">未設定</string>
 </resources>

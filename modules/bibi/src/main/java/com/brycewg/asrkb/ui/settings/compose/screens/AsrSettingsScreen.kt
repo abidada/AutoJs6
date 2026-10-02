@@ -240,6 +240,7 @@ fun AsrSettingsScreen(
     fun showVendorPicker(
         titleResId: Int,
         selectedVendor: AsrVendor,
+        showLastUsedTag: Boolean,
         onSelected: (AsrVendor) -> Unit
     ) {
         choiceSheet = asrVendorChoiceSheetState(
@@ -247,6 +248,7 @@ fun AsrSettingsScreen(
             prefs = prefs,
             titleResId = titleResId,
             selectedVendor = selectedVendor,
+            showLastUsedTag = showLastUsedTag,
             onSelected = onSelected
         )
     }

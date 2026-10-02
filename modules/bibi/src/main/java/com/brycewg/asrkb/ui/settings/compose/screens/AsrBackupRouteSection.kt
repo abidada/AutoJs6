@@ -25,7 +25,7 @@ internal fun AsrBackupRouteSection(
     localResidency: BackupAsrLocalResidency,
     onEnabledChange: (Boolean) -> Unit,
     onVendorChange: (AsrVendor) -> Unit,
-    showVendorPicker: (Int, AsrVendor, (AsrVendor) -> Unit) -> Unit,
+    showVendorPicker: (Int, AsrVendor, Boolean, (AsrVendor) -> Unit) -> Unit,
     showSensitivityPicker: () -> Unit,
     showLocalResidencyPicker: () -> Unit
 ) {
@@ -40,7 +40,7 @@ internal fun AsrBackupRouteSection(
             prefs.backupAsrEnabled = checked
         },
         onVendorClick = {
-            showVendorPicker(R.string.label_backup_asr_vendor, vendor) { selected ->
+            showVendorPicker(R.string.label_backup_asr_vendor, vendor, false) { selected ->
                 onVendorChange(selected)
                 prefs.backupAsrVendor = selected
             }

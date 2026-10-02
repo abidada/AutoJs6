@@ -13,6 +13,7 @@ import com.brycewg.asrkb.store.Prefs
 internal typealias AsrVendorPicker = (
     titleResId: Int,
     selectedVendor: AsrVendor,
+    showLastUsedTag: Boolean,
     onSelected: (AsrVendor) -> Unit
 ) -> Unit
 

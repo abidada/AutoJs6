@@ -15,6 +15,7 @@ import androidx.core.content.edit
 import androidx.core.os.LocaleListCompat
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.asr.AsrVendor
+import com.brycewg.asrkb.asr.AsrVendorRegistry
 import com.brycewg.asrkb.asr.BackupAsrLocalResidency
 import com.brycewg.asrkb.asr.GeminiAsrMode
 import com.brycewg.asrkb.asr.LlmReasoningThreshold
@@ -1742,7 +1743,17 @@ class Prefs(context: Context) {
     // 选中的ASR供应商（默认使用 SiliconFlow 免费服务）
     var asrVendor: AsrVendor
         get() = AsrVendor.fromId(sp.getString(KEY_ASR_VENDOR, AsrVendor.SiliconFlow.id))
-        set(value) = sp.edit { putString(KEY_ASR_VENDOR, value.id) }
+        set(value) {
+            val old = AsrVendor.fromId(sp.getString(KEY_ASR_VENDOR, AsrVendor.SiliconFlow.id))
+            sp.edit {
+                if (old != value) putString(KEY_ASR_VENDOR_LAST_USED, old.id)
+                putString(KEY_ASR_VENDOR, value.id)
+            }
+        }
+
+    // 上一次使用的ASR供应商：切换供应商时记录切换前的取值，供选择器展示“上次使用”标记
+    val lastUsedAsrVendor: AsrVendor?
+        get() = AsrVendorRegistry.vendorFromIdOrNull(sp.getString(KEY_ASR_VENDOR_LAST_USED, null))
 
     // 备用 ASR 引擎：开关（默认关闭）
     var backupAsrEnabled: Boolean

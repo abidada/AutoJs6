@@ -1,21 +1,33 @@
 /**
  * 语音分发规则管理页（一级页）：测试匹配卡片 + 规则列表（按优先级降序）。
  * 分发始终开启（无总开关）：每句识别结果统一匹配规则。
+ * 规则项复用全局设置列表的标准行样式（分区卡片 + 56dp 最小行高 + 主题化开关），
+ * 启用（选中）与停用（未选中）仅开关状态不同，行尺寸保持一致。
  * 归属模块：ui/settings/compose/screens
  */
 package com.brycewg.asrkb.ui.settings.compose.screens
 
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Edit
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -27,23 +39,38 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.VoiceCommandDispatcher
 import com.brycewg.asrkb.host.voice.VoiceDispatchRule
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButton
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
-import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsMaterialItemSurface
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionTitle
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsTextField
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
+import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
+import com.brycewg.asrkb.ui.settings.compose.core.settingsSegmentedItemShape
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.Switch as MiuixSwitch
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun VoiceDispatchRoute(
@@ -109,99 +136,113 @@ internal fun VoiceDispatchScreen(
         ) {
             item("test") {
                 Column {
-                    SettingsThemedText(
+                    SettingsSectionTitle(
                         text = stringResource(R.string.label_voice_dispatch_test),
-                        style = MaterialTheme.typography.titleSmall
+                        uiMode = uiMode
                     )
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = testInput,
-                        onValueChange = { testInput = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text(stringResource(R.string.hint_voice_dispatch_test)) },
-                        singleLine = true
+                    SettingsSectionContainer(uiMode = uiMode) {
+                        SettingsTextField(
+                            uiMode = uiMode,
+                            value = testInput,
+                            onValueChange = { testInput = it },
+                            label = stringResource(R.string.hint_voice_dispatch_test),
+                            singleLine = true
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = SettingsLayoutMetrics.ActionButtonRowHorizontalPadding,
+                                    top = SettingsLayoutMetrics.ActionButtonRowTopPadding,
+                                    bottom = SettingsLayoutMetrics.ActionButtonRowBottomPadding
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            SettingsActionButton(
+                                uiMode = uiMode,
+                                text = stringResource(R.string.btn_voice_dispatch_test),
+                                onClick = {
+                                    val hit = dispatcher.match(testInput)
+                                    testResult = if (hit == null) {
+                                        context.getString(R.string.voice_dispatch_test_miss)
+                                    } else {
+                                        val (rule, _) = hit
+                                        context.getString(
+                                            R.string.voice_dispatch_test_hit,
+                                            rule.priority,
+                                            rule.name,
+                                            rule.dispatchType.name,
+                                            rule.payload
+                                        )
+                                    }
+                                }
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            SettingsThemedText(
+                                text = testResult,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            item("rules") {
+                Column {
+                    SettingsSectionTitle(
+                        text = stringResource(R.string.label_voice_dispatch_rules, rules.size),
+                        uiMode = uiMode
                     )
-                    Spacer(Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        OutlinedButton(onClick = {
-                            val hit = dispatcher.match(testInput)
-                            testResult = if (hit == null) {
-                                context.getString(R.string.voice_dispatch_test_miss)
-                            } else {
-                                val (rule, _) = hit
-                                context.getString(
-                                    R.string.voice_dispatch_test_hit,
-                                    rule.priority,
-                                    rule.name,
-                                    rule.dispatchType.name,
-                                    rule.payload
+                    SettingsSectionContainer(uiMode = uiMode) {
+                        if (rules.isEmpty()) {
+                            AiBodyText(uiMode = uiMode, textRes = R.string.summary_voice_dispatch_empty)
+                        } else {
+                            rules.forEachIndexed { index, rule ->
+                                VoiceDispatchRuleItem(
+                                    uiMode = uiMode,
+                                    rule = rule,
+                                    index = index,
+                                    count = rules.size,
+                                    onToggle = { enabled ->
+                                        scope.launch(Dispatchers.IO) {
+                                            val store = dispatcher.getStore()
+                                            val current = store.load()
+                                            val idx = current.indexOfFirst { it.id == rule.id }
+                                            if (idx >= 0) {
+                                                val updated = current.toMutableList()
+                                                updated[idx] = updated[idx].copy(enabled = enabled)
+                                                store.save(updated)
+                                                dispatcher.invalidateCache()
+                                            }
+                                            reloadRules()
+                                        }
+                                    },
+                                    onEdit = { onEditRule(rule.id) },
+                                    onDelete = {
+                                        scope.launch(Dispatchers.IO) {
+                                            val store = dispatcher.getStore()
+                                            store.save(store.load().filterNot { it.id == rule.id })
+                                            dispatcher.invalidateCache()
+                                            reloadRules()
+                                        }
+                                    }
                                 )
                             }
-                        }) {
-                            Text(stringResource(R.string.btn_voice_dispatch_test))
-                        }
-                        Spacer(Modifier.padding(start = 12.dp))
-                        SettingsThemedText(
-                            text = testResult,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-
-            item("rules_header") {
-                SettingsThemedText(
-                    text = stringResource(R.string.label_voice_dispatch_rules, rules.size),
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
-
-            if (rules.isEmpty()) {
-                item("rules_empty") {
-                    SettingsThemedText(
-                        text = stringResource(R.string.summary_voice_dispatch_empty),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-
-            items(rules.size, key = { rules[it].id }) { index ->
-                val rule = rules[index]
-                VoiceDispatchRuleCard(
-                    rule = rule,
-                    onToggle = { enabled ->
-                        scope.launch(Dispatchers.IO) {
-                            val store = dispatcher.getStore()
-                            val current = store.load()
-                            val idx = current.indexOfFirst { it.id == rule.id }
-                            if (idx >= 0) {
-                                val updated = current.toMutableList()
-                                updated[idx] = updated[idx].copy(enabled = enabled)
-                                store.save(updated)
-                                dispatcher.invalidateCache()
-                            }
-                            reloadRules()
-                        }
-                    },
-                    onEdit = { onEditRule(rule.id) },
-                    onDelete = {
-                        scope.launch(Dispatchers.IO) {
-                            val store = dispatcher.getStore()
-                            store.save(store.load().filterNot { it.id == rule.id })
-                            dispatcher.invalidateCache()
-                            reloadRules()
                         }
                     }
-                )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun VoiceDispatchRuleCard(
+private fun VoiceDispatchRuleItem(
+    uiMode: BibiUiMode,
     rule: VoiceDispatchRule,
+    index: Int,
+    count: Int,
     onToggle: (Boolean) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
@@ -231,35 +272,185 @@ private fun VoiceDispatchRuleCard(
             "${fmt.format(Date(rule.lastTriggeredAt))} · ${rule.triggerCount}"
         }
     }
+    val title = "${rule.name} · ${rule.priority}"
 
-    Column {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                SettingsThemedText(
-                    text = "${rule.name} · ${rule.priority}",
-                    style = MaterialTheme.typography.titleSmall
-                )
-                SettingsThemedText(
-                    text = summary,
-                    style = MaterialTheme.typography.bodySmall
-                )
-                SettingsThemedText(
-                    text = timeText,
-                    style = MaterialTheme.typography.bodySmall
+    when (uiMode) {
+        BibiUiMode.Miuix -> MiuixRuleItem(
+            rule = rule,
+            title = title,
+            summary = summary,
+            timeText = timeText,
+            onToggle = onToggle,
+            onEdit = onEdit,
+            onDelete = onDelete
+        )
+
+        BibiUiMode.Material -> MaterialRuleItem(
+            rule = rule,
+            title = title,
+            summary = summary,
+            timeText = timeText,
+            index = index,
+            count = count,
+            onToggle = onToggle,
+            onEdit = onEdit,
+            onDelete = onDelete
+        )
+    }
+}
+
+/** Miuix 风格规则行：与其他设置项同构（BasicComponent 标准行高/边距 + 主题化开关）。 */
+@Composable
+private fun MiuixRuleItem(
+    rule: VoiceDispatchRule,
+    title: String,
+    summary: String,
+    timeText: String,
+    onToggle: (Boolean) -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val hapticTap = LocalSettingsHapticTap.current
+    BasicComponent(
+        title = title,
+        summary = "$summary\n$timeText",
+        onClick = {
+            hapticTap()
+            onToggle(!rule.enabled)
+        },
+        endActions = {
+            MiuixIconButton(
+                onClick = {
+                    hapticTap()
+                    onEdit()
+                },
+                modifier = Modifier.size(36.dp),
+                minWidth = 36.dp,
+                minHeight = 36.dp
+            ) {
+                MiuixIcon(
+                    imageVector = Icons.AutoMirrored.Rounded.Edit,
+                    contentDescription = stringResource(R.string.btn_voice_dispatch_edit),
+                    modifier = Modifier.size(18.dp),
+                    tint = MiuixTheme.colorScheme.onSurfaceVariantActions
                 )
             }
-            Switch(checked = rule.enabled, onCheckedChange = onToggle)
+            MiuixIconButton(
+                onClick = {
+                    hapticTap()
+                    onDelete()
+                },
+                modifier = Modifier.size(36.dp),
+                minWidth = 36.dp,
+                minHeight = 36.dp
+            ) {
+                MiuixIcon(
+                    imageVector = Icons.Rounded.Delete,
+                    contentDescription = stringResource(R.string.btn_voice_dispatch_delete),
+                    modifier = Modifier.size(18.dp),
+                    tint = MiuixTheme.colorScheme.onSurfaceVariantActions
+                )
+            }
+            MiuixSwitch(
+                checked = rule.enabled,
+                onCheckedChange = { checked ->
+                    hapticTap()
+                    onToggle(checked)
+                }
+            )
         }
-        Row {
-            TextButton(onClick = onEdit) {
-                Text(stringResource(R.string.btn_voice_dispatch_edit))
-            }
-            TextButton(onClick = onDelete) {
-                Text(
-                    text = stringResource(R.string.btn_voice_dispatch_delete),
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-        }
+    )
+}
+
+/** Material 风格规则行：分段表面 + 56dp 最小行高 + 标准开关，选中/未选中尺寸一致。 */
+@Composable
+private fun MaterialRuleItem(
+    rule: VoiceDispatchRule,
+    title: String,
+    summary: String,
+    timeText: String,
+    index: Int,
+    count: Int,
+    onToggle: (Boolean) -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val hapticTap = LocalSettingsHapticTap.current
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = settingsSegmentedItemShape(index, count)
+    SettingsMaterialItemSurface(
+        shape = shape,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .toggleable(
+                value = rule.enabled,
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                role = Role.Switch,
+                onValueChange = { checked ->
+                    hapticTap()
+                    onToggle(checked)
+                }
+            )
+    ) {
+        ListItem(
+            modifier = Modifier.heightIn(min = SettingsLayoutMetrics.SettingsPreferenceMinHeight),
+            headlineContent = {
+                Text(text = title, style = MaterialTheme.typography.bodyLarge)
+            },
+            supportingContent = {
+                Column {
+                    Text(
+                        text = summary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = timeText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            trailingContent = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = {
+                            hapticTap()
+                            onEdit()
+                        },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.Edit,
+                            contentDescription = stringResource(R.string.btn_voice_dispatch_edit),
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            hapticTap()
+                            onDelete()
+                        },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Delete,
+                            contentDescription = stringResource(R.string.btn_voice_dispatch_delete),
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Switch(
+                        checked = rule.enabled,
+                        onCheckedChange = null,
+                        interactionSource = interactionSource
+                    )
+                }
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+        )
     }
 }

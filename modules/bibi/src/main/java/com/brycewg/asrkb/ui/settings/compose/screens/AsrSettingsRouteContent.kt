@@ -95,6 +95,7 @@ internal fun AsrSettingsRouteContent(
                             showVendorPicker(
                                 R.string.label_asr_vendor,
                                 uiState.selectedVendor,
+                                true,
                                 onPrimaryVendorSelected
                             )
                         }

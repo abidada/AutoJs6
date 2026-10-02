@@ -24,6 +24,7 @@
     <string name="asr_vendor_tag_pseudo_streaming">偽流</string>
     <string name="asr_vendor_tag_chinese_dialect">中文方言</string>
     <string name="asr_vendor_tag_accurate">準確</string>
+    <string name="asr_vendor_tag_last_used">上次使用</string>
     <string name="asr_vendor_group_configured">已配置</string>
     <string name="asr_vendor_group_unconfigured">未配置</string>
 </resources>

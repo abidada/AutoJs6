@@ -24,6 +24,7 @@
     <string name="asr_vendor_tag_pseudo_streaming">شبه بث</string>
     <string name="asr_vendor_tag_chinese_dialect">لهجات صينية</string>
     <string name="asr_vendor_tag_accurate">دقيق</string>
+    <string name="asr_vendor_tag_last_used">آخر استخدام</string>
     <string name="asr_vendor_group_configured">مُعدّ</string>
     <string name="asr_vendor_group_unconfigured">غير مُعدّ</string>
 </resources>

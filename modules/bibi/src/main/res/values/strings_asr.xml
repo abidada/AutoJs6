@@ -24,6 +24,7 @@
     <string name="asr_vendor_tag_pseudo_streaming">Pseudo-streaming</string>
     <string name="asr_vendor_tag_chinese_dialect">Chinese dialects</string>
     <string name="asr_vendor_tag_accurate">Accurate</string>
+    <string name="asr_vendor_tag_last_used">Last used</string>
     <string name="asr_vendor_group_configured">Configured</string>
     <string name="asr_vendor_group_unconfigured">Not configured</string>
 </resources>

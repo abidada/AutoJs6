@@ -392,5 +392,7 @@ private fun asrTagColor(@ColorRes colorResId: Int, isDark: Boolean): Color = whe
     R.color.asr_tag_fg_cn_dialect -> if (isDark) Color(0xFFFFB8C8) else Color(0xFF6A3D4A)
     R.color.asr_tag_bg_accurate -> if (isDark) Color(0xFF2A2F38) else Color(0xFFE5E8EF)
     R.color.asr_tag_fg_accurate -> if (isDark) Color(0xFFD8E0EF) else Color(0xFF3B4557)
+    R.color.asr_tag_bg_last_used -> if (isDark) Color(0xFF2C2C2C) else Color(0xFFECECEC)
+    R.color.asr_tag_fg_last_used -> if (isDark) Color(0xFFC9C9C9) else Color(0xFF4D4D4D)
     else -> Color.Unspecified
 }

@@ -257,20 +257,33 @@ internal fun asrVendorChoiceSheetState(
     prefs: Prefs,
     titleResId: Int,
     selectedVendor: AsrVendor,
+    showLastUsedTag: Boolean,
     onSelected: (AsrVendor) -> Unit
 ): SettingsChoiceSheetState {
     val vendorOrder = AsrVendorUi.ordered()
+    // “上次使用”标记：记录切换前的供应商，与当前选中重复（或入口不适用）时不展示
+    val lastUsedVendor = if (showLastUsedTag) prefs.lastUsedAsrVendor else null
     val vendorItems = vendorOrder.mapIndexed { index, vendor ->
+        val tags = AsrVendorUi.tags(vendor).map { tag ->
+            SettingsChoiceTag(
+                label = context.getString(tag.labelResId),
+                bgColorResId = tag.bgColorResId,
+                textColorResId = tag.textColorResId
+            )
+        }.toMutableList()
+        if (lastUsedVendor != null && vendor == lastUsedVendor && vendor != selectedVendor) {
+            tags.add(
+                SettingsChoiceTag(
+                    label = context.getString(R.string.asr_vendor_tag_last_used),
+                    bgColorResId = R.color.asr_tag_bg_last_used,
+                    textColorResId = R.color.asr_tag_fg_last_used
+                )
+            )
+        }
         SettingsChoiceItem(
             title = AsrVendorUi.name(context, vendor),
             originalIndex = index,
-            tags = AsrVendorUi.tags(vendor).map { tag ->
-                SettingsChoiceTag(
-                    label = context.getString(tag.labelResId),
-                    bgColorResId = tag.bgColorResId,
-                    textColorResId = tag.textColorResId
-                )
-            }
+            tags = tags
         )
     }
     val indexByVendor = vendorOrder.withIndex().associate { it.value to it.index }
