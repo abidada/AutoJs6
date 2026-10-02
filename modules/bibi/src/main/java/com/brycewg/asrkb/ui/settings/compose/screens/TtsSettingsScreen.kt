@@ -1,0 +1,599 @@
+/**
+ * Compose TTS 语音配置页：播报设置 / TTS 服务商（本地模型管理）/ 试听。
+ *
+ * 自包含状态（直读写 Prefs），不经过 AsrSettingsViewModel；模型下载/导入/清除
+ * 复用 ModelDownloadService（modelType=tts_offline），就绪检查走 TtsLocalModelCatalog。
+ *
+ * 归属模块：ui/settings/compose/screens
+ */
+@file:Suppress("FunctionName")
+
+package com.brycewg.asrkb.ui.settings.compose.screens
+
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.brycewg.asrkb.R
+import com.brycewg.asrkb.store.Prefs
+import com.brycewg.asrkb.tts.TtsLocalModelCatalog
+import com.brycewg.asrkb.tts.TtsPlaybackCoordinator
+import com.brycewg.asrkb.tts.TtsVendor
+import com.brycewg.asrkb.ui.DownloadSourceConfig
+import com.brycewg.asrkb.ui.DownloadSourceOption
+import com.brycewg.asrkb.ui.settings.asr.ModelDownloadService
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButton
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButtonRow
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsDownloadSourceSheet
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
+import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
+import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
+import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
+import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+private data class TtsDownloadRequest(
+    val variant: String,
+    val options: List<DownloadSourceOption>
+)
+
+@Composable
+fun TtsSettingsScreen(
+    uiMode: BibiUiMode,
+    onBack: () -> Unit
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
+    val prefs = remember(context) { Prefs(context) }
+
+    // ---- 播报设置状态 ----
+    var ttsEnabled by remember { mutableStateOf(prefs.ttsEnabled) }
+    var speakOnHit by remember { mutableStateOf(prefs.ttsSpeakOnHit) }
+    var speakOnMiss by remember { mutableStateOf(prefs.ttsSpeakOnMiss) }
+    var speakOnError by remember { mutableStateOf(prefs.ttsSpeakOnError) }
+    var speakResult by remember { mutableStateOf(prefs.ttsSpeakResult) }
+    var hitTemplate by remember { mutableStateOf(prefs.ttsHitTemplate) }
+    var missTemplate by remember { mutableStateOf(prefs.ttsMissTemplate) }
+    var errorTemplate by remember { mutableStateOf(prefs.ttsErrorTemplate) }
+    var speed by remember { mutableStateOf(prefs.ttsSpeed) }
+
+    // ---- 服务商/模型状态 ----
+    var variant by remember { mutableStateOf(prefs.ttsModelVariant) }
+    var numThreads by remember { mutableStateOf(prefs.ttsNumThreads) }
+    var preload by remember { mutableStateOf(prefs.ttsPreloadEnabled) }
+    var keepAliveMinutes by remember { mutableStateOf(prefs.ttsKeepAliveMinutes) }
+    var modelReady by remember { mutableStateOf(false) }
+    var operationStatus by remember { mutableStateOf<String?>(null) }
+
+    // ---- 试听状态 ----
+    var auditionText by remember { mutableStateOf("") }
+    var auditionBusy by remember { mutableStateOf(false) }
+
+    var downloadRequest by remember { mutableStateOf<TtsDownloadRequest?>(null) }
+    var pendingImportVariant by remember { mutableStateOf<String?>(null) }
+    var clearDialog by remember { mutableStateOf<SettingsMessageDialogState?>(null) }
+
+    fun refreshModelReady() {
+        scope.launch(Dispatchers.IO) {
+            val ready = TtsLocalModelCatalog.isModelReady(context, prefs.ttsModelVariant)
+            withContext(Dispatchers.Main) { modelReady = ready }
+        }
+    }
+    LaunchedEffect(Unit) { refreshModelReady() }
+
+    // 返回本页时刷新就绪状态（后台下载可能已完成）
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) refreshModelReady()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        val importVariant = pendingImportVariant
+        pendingImportVariant = null
+        if (uri != null && importVariant != null) {
+            runCatching {
+                ModelDownloadService.startImport(context, uri, importVariant, TtsLocalModelCatalog.MODEL_TYPE)
+                operationStatus = context.getString(R.string.tts_import_started_in_bg)
+            }.onFailure {
+                operationStatus = context.getString(R.string.tts_import_failed, it.message ?: "")
+            }
+        }
+    }
+
+    TtsScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+        downloadRequest?.let { request ->
+            SettingsDownloadSourceSheet(
+                options = request.options,
+                uiMode = uiMode,
+                onDismiss = { downloadRequest = null },
+                onSelect = { option ->
+                    runCatching {
+                        ModelDownloadService.startDownload(
+                            context,
+                            option.url,
+                            request.variant,
+                            TtsLocalModelCatalog.MODEL_TYPE
+                        )
+                        operationStatus = context.getString(R.string.tts_download_started_in_bg)
+                    }.onFailure {
+                        operationStatus = context.getString(R.string.tts_download_status_failed)
+                    }
+                    downloadRequest = null
+                }
+            )
+        }
+        clearDialog?.let { dialog ->
+            TtsClearDialogHost(
+                uiMode = uiMode,
+                dialog = dialog,
+                onDismiss = { clearDialog = null }
+            )
+        }
+
+        SettingsLazyColumn(
+            uiMode = uiMode,
+            modifier = Modifier.fillMaxSize(),
+            miuixScrollModifier = scrollModifier,
+            contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
+            verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
+        ) {
+            item("feedback") {
+                TtsFeedbackSection(
+                    uiMode = uiMode,
+                    prefs = prefs,
+                    ttsEnabled = ttsEnabled,
+                    speakOnHit = speakOnHit,
+                    speakOnMiss = speakOnMiss,
+                    speakOnError = speakOnError,
+                    speakResult = speakResult,
+                    hitTemplate = hitTemplate,
+                    missTemplate = missTemplate,
+                    errorTemplate = errorTemplate,
+                    speed = speed,
+                    onEnabledChange = { checked ->
+                        ttsEnabled = checked
+                        prefs.ttsEnabled = checked
+                        if (!checked) {
+                            // 总开关关闭：立刻打断播报，监听逻辑回到原版行为
+                            TtsPlaybackCoordinator.stopSpeaking()
+                        }
+                    },
+                    onSpeakOnHitChange = { speakOnHit = it; prefs.ttsSpeakOnHit = it },
+                    onSpeakOnMissChange = { speakOnMiss = it; prefs.ttsSpeakOnMiss = it },
+                    onSpeakOnErrorChange = { speakOnError = it; prefs.ttsSpeakOnError = it },
+                    onSpeakResultChange = { speakResult = it; prefs.ttsSpeakResult = it },
+                    onHitTemplateChange = { hitTemplate = it; prefs.ttsHitTemplate = it },
+                    onMissTemplateChange = { missTemplate = it; prefs.ttsMissTemplate = it },
+                    onErrorTemplateChange = { errorTemplate = it; prefs.ttsErrorTemplate = it },
+                    onSpeedChange = { speed = it; prefs.ttsSpeed = it }
+                )
+            }
+
+            item("vendor") {
+                TtsVendorSection(
+                    uiMode = uiMode,
+                    context = context,
+                    prefs = prefs,
+                    variant = variant,
+                    numThreads = numThreads,
+                    preload = preload,
+                    keepAliveMinutes = keepAliveMinutes,
+                    modelReady = modelReady,
+                    operationStatus = operationStatus,
+                    onVariantChange = { selected ->
+                        variant = selected
+                        prefs.ttsModelVariant = selected
+                        refreshModelReady()
+                    },
+                    onNumThreadsChange = { numThreads = it; prefs.ttsNumThreads = it },
+                    onPreloadChange = { preload = it; prefs.ttsPreloadEnabled = it },
+                    onKeepAliveChange = { keepAliveMinutes = it; prefs.ttsKeepAliveMinutes = it },
+                    onDownload = { selectedVariant ->
+                        downloadRequest = TtsDownloadRequest(
+                            variant = selectedVariant,
+                            options = DownloadSourceConfig.buildOptions(
+                                context,
+                                TtsLocalModelCatalog.variantSpec(selectedVariant).downloadUrl
+                            )
+                        )
+                    },
+                    onImport = { selectedVariant ->
+                        pendingImportVariant = selectedVariant
+                        importLauncher.launch("*/*")
+                    },
+                    onClear = {
+                        clearDialog = SettingsMessageDialogState(
+                            title = context.getString(R.string.tts_clear_confirm_title),
+                            message = context.getString(R.string.tts_clear_confirm_message),
+                            confirmText = context.getString(android.R.string.ok),
+                            dismissText = context.getString(R.string.btn_cancel),
+                            onConfirm = {
+                                scope.launch(Dispatchers.IO) {
+                                    val success = runCatching {
+                                        TtsLocalModelCatalog.clearInstalled(context)
+                                    }.getOrDefault(false)
+                                    withContext(Dispatchers.Main) {
+                                        operationStatus = context.getString(
+                                            if (success) R.string.tts_clear_done else R.string.tts_clear_failed
+                                        )
+                                        refreshModelReady()
+                                    }
+                                }
+                            }
+                        )
+                    }
+                )
+            }
+
+            item("audition") {
+                TtsAuditionSection(
+                    uiMode = uiMode,
+                    context = context,
+                    prefs = prefs,
+                    text = auditionText,
+                    busy = auditionBusy,
+                    modelReady = modelReady,
+                    onTextChange = { auditionText = it },
+                    onPlay = {
+                        val textToSpeak = auditionText.ifBlank {
+                            context.getString(R.string.tts_audition_default_text)
+                        }
+                        auditionBusy = true
+                        TtsPlaybackCoordinator.speak(
+                            context,
+                            textToSpeak,
+                            bypassToggle = true,
+                            onFinished = { success ->
+                                auditionBusy = false
+                                if (!success && !TtsLocalModelCatalog.isModelReady(context, prefs.ttsModelVariant)) {
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        R.string.tts_status_not_installed,
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        )
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TtsScaffold(
+    uiMode: BibiUiMode,
+    onBack: () -> Unit,
+    content: @Composable (PaddingValues, Modifier) -> Unit
+) {
+    SettingsDetailScaffold(
+        uiMode = uiMode,
+        titleRes = R.string.title_tts_settings,
+        onBack = onBack,
+        content = content
+    )
+}
+
+@Composable
+private fun TtsClearDialogHost(
+    uiMode: BibiUiMode,
+    dialog: SettingsMessageDialogState,
+    onDismiss: () -> Unit
+) {
+    AsrSettingsDialogHost(
+        uiMode = uiMode,
+        choiceSheet = null,
+        multiChoiceSheet = null,
+        featureExplainerDialog = null,
+        messageDialog = dialog,
+        onDismissChoiceSheet = {},
+        onDismissMultiChoiceSheet = {},
+        onDismissFeatureExplainerDialog = {},
+        onDismissMessageDialog = onDismiss
+    )
+}
+
+@Composable
+private fun TtsFeedbackSection(
+    uiMode: BibiUiMode,
+    prefs: Prefs,
+    ttsEnabled: Boolean,
+    speakOnHit: Boolean,
+    speakOnMiss: Boolean,
+    speakOnError: Boolean,
+    speakResult: Boolean,
+    hitTemplate: String,
+    missTemplate: String,
+    errorTemplate: String,
+    speed: Float,
+    onEnabledChange: (Boolean) -> Unit,
+    onSpeakOnHitChange: (Boolean) -> Unit,
+    onSpeakOnMissChange: (Boolean) -> Unit,
+    onSpeakOnErrorChange: (Boolean) -> Unit,
+    onSpeakResultChange: (Boolean) -> Unit,
+    onHitTemplateChange: (String) -> Unit,
+    onMissTemplateChange: (String) -> Unit,
+    onErrorTemplateChange: (String) -> Unit,
+    onSpeedChange: (Float) -> Unit
+) {
+    AsrSection(uiMode = uiMode, titleRes = R.string.section_tts_feedback) {
+        var itemIndex = 0
+        val itemCount = if (!ttsEnabled) {
+            1
+        } else {
+            6 + (if (speakOnHit) 1 else 0) +
+                (if (speakOnMiss) 1 else 0) +
+                (if (speakOnError) 1 else 0)
+        }
+        AsrSwitchPreference(
+            id = "tts_enabled",
+            titleRes = R.string.label_tts_enabled,
+            checked = ttsEnabled,
+            index = itemIndex++,
+            count = itemCount,
+            onCheckedChange = onEnabledChange
+        )
+        if (!ttsEnabled) return@AsrSection
+        AsrSwitchPreference(
+            id = "tts_speak_on_hit",
+            titleRes = R.string.label_tts_speak_on_hit,
+            checked = speakOnHit,
+            index = itemIndex++,
+            count = itemCount,
+            onCheckedChange = onSpeakOnHitChange
+        )
+        if (speakOnHit) {
+            AsrTextField(
+                uiMode = uiMode,
+                value = hitTemplate,
+                onValueChange = onHitTemplateChange,
+                label = stringResource(R.string.label_tts_hit_template),
+                index = itemIndex++,
+                count = itemCount
+            )
+            AsrBodyText(uiMode = uiMode, textRes = R.string.tts_template_hint)
+        }
+        AsrSwitchPreference(
+            id = "tts_speak_on_miss",
+            titleRes = R.string.label_tts_speak_on_miss,
+            checked = speakOnMiss,
+            index = itemIndex++,
+            count = itemCount,
+            onCheckedChange = onSpeakOnMissChange
+        )
+        if (speakOnMiss) {
+            AsrTextField(
+                uiMode = uiMode,
+                value = missTemplate,
+                onValueChange = onMissTemplateChange,
+                label = stringResource(R.string.label_tts_miss_template),
+                index = itemIndex++,
+                count = itemCount
+            )
+        }
+        AsrSwitchPreference(
+            id = "tts_speak_on_error",
+            titleRes = R.string.label_tts_speak_on_error,
+            checked = speakOnError,
+            index = itemIndex++,
+            count = itemCount,
+            onCheckedChange = onSpeakOnErrorChange
+        )
+        if (speakOnError) {
+            AsrTextField(
+                uiMode = uiMode,
+                value = errorTemplate,
+                onValueChange = onErrorTemplateChange,
+                label = stringResource(R.string.label_tts_error_template),
+                index = itemIndex++,
+                count = itemCount
+            )
+        }
+        AsrSwitchPreference(
+            id = "tts_speak_result",
+            titleRes = R.string.label_tts_speak_result,
+            checked = speakResult,
+            index = itemIndex++,
+            count = itemCount,
+            onCheckedChange = onSpeakResultChange
+        )
+        AsrSliderPreference(
+            titleRes = R.string.label_tts_speed,
+            valueLabel = { value -> String.format(Locale.US, "%.2f×", value) },
+            value = speed,
+            valueRange = Prefs.TTS_SPEED_MIN..Prefs.TTS_SPEED_MAX,
+            steps = 5,
+            uiMode = uiMode,
+            index = itemIndex,
+            count = itemCount,
+            onValueChange = onSpeedChange
+        )
+    }
+}
+
+@Composable
+private fun TtsVendorSection(
+    uiMode: BibiUiMode,
+    context: android.content.Context,
+    prefs: Prefs,
+    variant: String,
+    numThreads: Int,
+    preload: Boolean,
+    keepAliveMinutes: Int,
+    modelReady: Boolean,
+    operationStatus: String?,
+    onVariantChange: (String) -> Unit,
+    onNumThreadsChange: (Int) -> Unit,
+    onPreloadChange: (Boolean) -> Unit,
+    onKeepAliveChange: (Int) -> Unit,
+    onDownload: (String) -> Unit,
+    onImport: (String) -> Unit,
+    onClear: () -> Unit
+) {
+    AsrSection(uiMode = uiMode, titleRes = R.string.section_tts_vendor) {
+        var itemIndex = 0
+        val itemCount = 5
+        AsrDropdownPreference(
+            id = "tts_vendor",
+            titleRes = R.string.label_tts_vendor,
+            options = TtsVendor.ordered().map { vendor ->
+                DropdownOption(vendor.id, context.getString(vendor.displayNameResId))
+            },
+            selectedOptionId = TtsVendor.fromId(prefs.ttsVendorId).id,
+            index = itemIndex++,
+            count = itemCount,
+            onSelectedOptionChange = { prefs.ttsVendorId = it }
+        )
+        AsrDropdownPreference(
+            id = "tts_model_variant",
+            titleRes = R.string.label_tts_model_variant,
+            options = TtsLocalModelCatalog.variants.map { spec ->
+                DropdownOption(spec.id, context.getString(spec.labelRes))
+            },
+            selectedOptionId = TtsLocalModelCatalog.normalizeVariant(variant),
+            index = itemIndex++,
+            count = itemCount,
+            onSelectedOptionChange = onVariantChange
+        )
+        AsrSliderPreference(
+            titleRes = R.string.label_tts_threads,
+            valueLabel = { it.toInt().toString() },
+            value = numThreads.toFloat(),
+            valueRange = 1f..8f,
+            steps = 6,
+            uiMode = uiMode,
+            index = itemIndex++,
+            count = itemCount,
+            onValueChange = { onNumThreadsChange(it.toInt()) }
+        )
+        AsrSwitchPreference(
+            id = "tts_preload",
+            titleRes = R.string.label_tts_preload,
+            checked = preload,
+            index = itemIndex++,
+            count = itemCount,
+            onCheckedChange = { checked ->
+                onPreloadChange(checked)
+                if (checked) {
+                    TtsPlaybackCoordinator.ensureInit(context)
+                    com.brycewg.asrkb.tts.OfflineTtsManager.preloadAsync(context, prefs)
+                }
+            }
+        )
+        AsrDropdownPreference(
+            id = "tts_keep_alive",
+            titleRes = R.string.label_tts_keep_alive,
+            options = ttsKeepAliveOptions(context),
+            selectedOptionId = keepAliveMinutes.toString(),
+            index = itemIndex,
+            count = itemCount,
+            onSelectedOptionChange = { value -> onKeepAliveChange(value.toIntOrNull() ?: 5) }
+        )
+
+        // 模型状态与操作（下载/导入/清除）
+        val status = operationStatus
+            ?: stringResource(if (modelReady) R.string.tts_status_ready else R.string.tts_status_not_installed)
+        AsrBodyText(uiMode = uiMode, text = status)
+        SettingsActionButtonRow(uiMode = uiMode) {
+            if (modelReady) {
+                SettingsActionButton(
+                    uiMode = uiMode,
+                    text = stringResource(R.string.btn_tts_clear),
+                    onClick = onClear,
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                SettingsActionButton(
+                    uiMode = uiMode,
+                    text = stringResource(R.string.btn_tts_download),
+                    onClick = { onDownload(TtsLocalModelCatalog.normalizeVariant(variant)) },
+                    modifier = Modifier.weight(1f)
+                )
+                SettingsActionButton(
+                    uiMode = uiMode,
+                    text = stringResource(R.string.btn_tts_import),
+                    onClick = { onImport(TtsLocalModelCatalog.normalizeVariant(variant)) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TtsAuditionSection(
+    uiMode: BibiUiMode,
+    context: android.content.Context,
+    prefs: Prefs,
+    text: String,
+    busy: Boolean,
+    modelReady: Boolean,
+    onTextChange: (String) -> Unit,
+    onPlay: () -> Unit
+) {
+    AsrSection(uiMode = uiMode, titleRes = R.string.section_tts_audition) {
+        AsrTextField(
+            uiMode = uiMode,
+            value = text,
+            onValueChange = onTextChange,
+            label = stringResource(R.string.label_tts_audition_text),
+            singleLine = false,
+            minLines = 2,
+            index = 0,
+            count = 2
+        )
+        AsrActionPreference(
+            id = "tts_audition_play",
+            titleRes = if (busy) R.string.btn_tts_audition_stop else R.string.btn_tts_audition_play,
+            index = 1,
+            count = 2,
+            onClick = {
+                if (busy || TtsPlaybackCoordinator.isBusy) {
+                    TtsPlaybackCoordinator.stopSpeaking()
+                } else if (modelReady || TtsLocalModelCatalog.isModelReady(context, prefs.ttsModelVariant)) {
+                    onPlay()
+                } else {
+                    android.widget.Toast.makeText(
+                        context,
+                        R.string.tts_status_not_installed,
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        )
+    }
+}
+
+private fun ttsKeepAliveOptions(context: android.content.Context): List<DropdownOption> = listOf(
+    DropdownOption("0", context.getString(R.string.tts_keep_alive_immediate)),
+    DropdownOption("1", context.getString(R.string.tts_keep_alive_1m)),
+    DropdownOption("5", context.getString(R.string.tts_keep_alive_5m)),
+    DropdownOption("15", context.getString(R.string.tts_keep_alive_15m)),
+    DropdownOption("-1", context.getString(R.string.tts_keep_alive_forever))
+)

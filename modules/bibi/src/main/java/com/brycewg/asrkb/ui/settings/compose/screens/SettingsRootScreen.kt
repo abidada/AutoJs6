@@ -218,6 +218,11 @@ private fun SettingsRouteContent(
             actions = actions
         )
 
+        BibiSettingsRoute.Tts -> TtsSettingsScreen(
+            uiMode = uiState.uiMode,
+            onBack = { onPopRoute() }
+        )
+
         BibiSettingsRoute.VoiceDispatch -> VoiceDispatchRoute(
             uiMode = uiState.uiMode,
             onBack = { onPopRoute() }

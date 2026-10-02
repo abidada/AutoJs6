@@ -39,6 +39,7 @@ import androidx.compose.material.icons.rounded.MoreHoriz
 import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -430,6 +431,13 @@ private fun smartSections(
                 onClick = { onPushRoute(BibiSettingsRoute.Asr) }
             ),
             SettingsEntry.Action(
+                id = "tts_settings",
+                titleRes = R.string.title_tts_settings,
+                summary = snapshot.ttsSummary,
+                icon = Icons.Rounded.VolumeUp,
+                onClick = { onPushRoute(BibiSettingsRoute.Tts) }
+            ),
+            SettingsEntry.Action(
                 id = "ai_settings",
                 titleRes = R.string.title_ai_settings,
                 summary = snapshot.aiSummary,
@@ -506,6 +514,7 @@ private data class SettingsHomeSnapshot(
     val floatingSummary: String,
     val asrSummary: String,
     val aiSummary: String,
+    val ttsSummary: String,
     val autoUpdateCheckEnabled: Boolean
 ) {
     companion object {
@@ -515,6 +524,7 @@ private data class SettingsHomeSnapshot(
             floatingSummary = context.getString(R.string.home_summary_more_input_disabled),
             asrSummary = "",
             aiSummary = "",
+            ttsSummary = "",
             autoUpdateCheckEnabled = false
         )
 
@@ -540,6 +550,7 @@ private data class SettingsHomeSnapshot(
                 ),
                 asrSummary = asrSummary(context, prefs),
                 aiSummary = aiSummary(context, prefs),
+                ttsSummary = ttsSummary(context, prefs),
                 autoUpdateCheckEnabled = prefs.autoUpdateCheckEnabled
             )
         }
@@ -599,6 +610,28 @@ private fun aiSummary(context: Context, prefs: Prefs): String {
         vendorName,
         promptName
     )
+}
+
+private fun ttsSummary(context: Context, prefs: Prefs): String {
+    if (!prefs.ttsEnabled) {
+        return context.getString(R.string.home_summary_disabled)
+    }
+    return context.getString(R.string.home_summary_tts_format, ttsVariantSummary(context, prefs))
+}
+
+private fun ttsVariantSummary(context: Context, prefs: Prefs): String {
+    val ready = com.brycewg.asrkb.tts.TtsLocalModelCatalog.isModelReady(
+        context,
+        prefs.ttsModelVariant
+    )
+    val variantName = context.getString(
+        com.brycewg.asrkb.tts.TtsLocalModelCatalog.variantSpec(prefs.ttsModelVariant).labelRes
+    )
+    return if (ready) {
+        variantName
+    } else {
+        context.getString(R.string.home_summary_tts_model_missing, variantName)
+    }
 }
 
 private fun activePromptPresetTitle(prefs: Prefs): String {

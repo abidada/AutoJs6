@@ -1,0 +1,63 @@
+<resources>
+    <!-- TTS 音声読み上げ設定 -->
+    <string name="title_tts_settings">TTS 音声設定</string>
+    <string name="section_tts_feedback">読み上げ設定</string>
+    <string name="section_tts_vendor">TTS プロバイダー</string>
+    <string name="section_tts_audition">試聴</string>
+
+    <!-- 読み上げトグルとテンプレート -->
+    <string name="label_tts_enabled">音声読み上げを有効化</string>
+    <string name="label_tts_speak_on_hit">ディスパッチ命中時の確認</string>
+    <string name="label_tts_speak_on_miss">ディスパッチ未命中時の通知</string>
+    <string name="label_tts_speak_on_error">認識エラー時の通知</string>
+    <string name="label_tts_speak_result">認識結果を読み上げる</string>
+    <string name="label_tts_hit_template">命中確認テキスト</string>
+    <string name="label_tts_miss_template">未命中通知テキスト</string>
+    <string name="label_tts_error_template">エラー通知テキスト</string>
+    <string name="tts_template_hint">プレースホルダー：{rule}=ルール名、{text}=認識テキスト、{1}～{3}=正規表現キャプチャグループ</string>
+    <string name="label_tts_speed">話速</string>
+
+    <!-- プロバイダーとローカルモデル -->
+    <string name="label_tts_vendor">音声合成プロバイダー</string>
+    <string name="tts_vendor_sherpa_offline">ローカル オフライン (sherpa-onnx)</string>
+    <string name="label_tts_model_variant">モデルバージョン</string>
+    <string name="tts_model_medium">XiaoYa medium (58 MB)</string>
+    <string name="tts_model_medium_int8">XiaoYa medium int8 (13 MB)</string>
+    <string name="label_tts_threads">スレッド数 (1-8)</string>
+    <string name="label_tts_preload">モデルを事前ロード（初回読み上げを高速化）</string>
+    <string name="label_tts_keep_alive">読み上げ後のエンジン常駐</string>
+    <string name="tts_keep_alive_immediate">即時アンロード</string>
+    <string name="tts_keep_alive_1m">1 分間常駐</string>
+    <string name="tts_keep_alive_5m">5 分間常駐</string>
+    <string name="tts_keep_alive_15m">15 分間常駐</string>
+    <string name="tts_keep_alive_forever">常駐し続ける</string>
+    <string name="tts_status_ready">モデル準備完了</string>
+    <string name="tts_status_not_installed">TTS モデル未インストール。設定でダウンロードまたはインポートしてください</string>
+    <string name="btn_tts_download">モデルをダウンロード</string>
+    <string name="btn_tts_import">モデルをインポート</string>
+    <string name="btn_tts_clear">モデルを削除</string>
+    <string name="tts_download_started_in_bg">バックグラウンドでダウンロードを開始しました。通知で進行状況を確認できます</string>
+    <string name="tts_download_status_downloading">ダウンロード中… %1$d%%</string>
+    <string name="tts_download_status_extracting_progress">展開中… %1$d%%</string>
+    <string name="tts_download_status_done">TTS モデルのインストールが完了しました</string>
+    <string name="tts_download_status_failed">ダウンロードまたは展開に失敗しました</string>
+    <string name="tts_import_started_in_bg">バックグラウンドでインポートを開始しました。通知で進行状況を確認できます</string>
+    <string name="tts_import_success">TTS モデルのインポートに成功しました：%1$s</string>
+    <string name="tts_import_failed">TTS モデルのインポートに失敗しました：%1$s</string>
+    <string name="tts_clear_confirm_title">TTS モデルを削除しますか？</string>
+    <string name="tts_clear_confirm_message">ダウンロード済みの TTS モデルファイルを削除します。後で再ダウンロードできます。続行しますか？</string>
+    <string name="tts_clear_done">TTS モデルを削除しました</string>
+    <string name="tts_clear_failed">削除に失敗しました</string>
+    <string name="notif_tts_title_medium">TTS モデル（XiaoYa medium）</string>
+    <string name="notif_tts_title_medium_int8">TTS モデル（XiaoYa int8）</string>
+
+    <!-- 試聴 -->
+    <string name="label_tts_audition_text">試聴テキスト</string>
+    <string name="tts_audition_default_text">你好，我是语音助手。</string>
+    <string name="btn_tts_audition_play">今すぐ再生</string>
+    <string name="btn_tts_audition_stop">再生を停止</string>
+
+    <!-- ホームサマリー -->
+    <string name="home_summary_tts_format">有効 · %1$s</string>
+    <string name="home_summary_tts_model_missing">%1$s（モデル未インストール）</string>
+</resources>

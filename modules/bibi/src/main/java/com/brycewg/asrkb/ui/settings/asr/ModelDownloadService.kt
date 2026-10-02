@@ -32,6 +32,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Call
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 
 /**
  * 本地模型下载/解压 前台服务：
@@ -70,6 +72,7 @@ class ModelDownloadService : Service() {
                 "funasr_nano" -> "download_funasr_nano"
                 "qwen3_asr" -> "download_qwen3_asr"
                 "parakeet" -> "download_parakeet"
+                "tts_offline" -> "download_tts"
                 else -> "download_sensevoice"
             }
             return DownloadKey(variant, sourceId)
@@ -262,7 +265,8 @@ class ModelDownloadService : Service() {
         pruneDownloadCaches("doDownloadTask", cacheFile, url)
 
         try {
-            if (!url.lowercase().substringBefore('#').substringBefore('?').endsWith(".zip")) {
+            val cleanUrl = url.lowercase().substringBefore('#').substringBefore('?')
+            if (!cleanUrl.endsWith(".zip") && !cleanUrl.endsWith(".tar.bz2")) {
                 throw IllegalArgumentException(getString(R.string.error_only_zip_supported))
             }
 
@@ -285,6 +289,7 @@ class ModelDownloadService : Service() {
                 "funasr_nano" -> getString(R.string.fn_download_status_done)
                 "qwen3_asr" -> getString(R.string.qw_download_status_done)
                 "parakeet" -> getString(R.string.pk_download_status_done)
+                "tts_offline" -> getString(R.string.tts_download_status_done)
                 else -> getString(R.string.sv_download_status_done)
             }
             notificationHandler.notifySuccess(doneText)
@@ -292,6 +297,7 @@ class ModelDownloadService : Service() {
             Log.e(TAG, "Download task failed for key=$key, url=$url", t)
             val onlyZipMsg = getString(R.string.error_only_zip_supported)
             val userCancelled = userCancelledKeys.contains(key)
+            val detail = t.message ?: t.javaClass.simpleName
             val failText = when {
                 userCancelled || t is CancellationException ->
                     getString(R.string.error_model_download_cancelled)
@@ -301,13 +307,14 @@ class ModelDownloadService : Service() {
                     t.message ?: getString(R.string.error_local_model_integrity_failed, "")
                 t.message == onlyZipMsg -> onlyZipMsg
                 downloadCompleted ->
-                    getString(R.string.error_model_package_verify_failed)
+                    getString(R.string.error_model_package_verify_failed, detail)
                 modelType == "x_asr" -> getString(R.string.x_asr_download_status_failed)
                 modelType == "firered_asr" -> getString(R.string.fr_download_status_failed)
                 modelType == "punctuation" -> getString(R.string.punct_download_status_failed)
                 modelType == "funasr_nano" -> getString(R.string.fn_download_status_failed)
                 modelType == "qwen3_asr" -> getString(R.string.qw_download_status_failed)
                 modelType == "parakeet" -> getString(R.string.pk_download_status_failed)
+                modelType == "tts_offline" -> getString(R.string.tts_download_status_failed)
                 else -> getString(R.string.sv_download_status_failed)
             }
             // 用户取消：ACTION_CANCEL 已展示「已取消下载」，禁止被 OkHttp IOException 等覆盖成失败
@@ -348,7 +355,8 @@ class ModelDownloadService : Service() {
 
         try {
             val displayName = getDisplayNameFromUri(uri) ?: uri.lastPathSegment ?: ""
-            if (!displayName.lowercase().endsWith(".zip")) {
+            val lowerName = displayName.lowercase()
+            if (!lowerName.endsWith(".zip") && !lowerName.endsWith(".tar.bz2")) {
                 throw IllegalArgumentException(getString(R.string.error_only_zip_supported))
             }
 
@@ -379,6 +387,7 @@ class ModelDownloadService : Service() {
                     "qwen3_asr" -> true
                     "parakeet" -> true
                     "x_asr" -> true
+                    "tts_offline" -> true
                     else -> false
                 }
                 if (shouldUpdateVariant) notificationHandler.updateVariant(detectedVariant)
@@ -398,6 +407,7 @@ class ModelDownloadService : Service() {
                         // FireRedASR：离线 CTC，int8/full 二选一，直接同步用户选择
                         "firered_asr" -> prefs.frModelVariant = detectedVariant
                         "x_asr" -> prefs.xAsrModelVariant = detectedVariant
+                        "tts_offline" -> prefs.ttsModelVariant = detectedVariant
                     }
                 } catch (e: Throwable) {
                     Log.w(
@@ -424,6 +434,7 @@ class ModelDownloadService : Service() {
                 "qwen3_asr" -> getString(R.string.qw_import_success, modelInfo)
                 "parakeet" -> getString(R.string.pk_import_success, modelInfo)
                 "x_asr" -> getString(R.string.x_asr_import_success, modelInfo)
+                "tts_offline" -> getString(R.string.tts_import_success, modelInfo)
                 else -> getString(R.string.sv_import_success, modelInfo)
             }
             notificationHandler.notifySuccess(successMessage)
@@ -436,6 +447,7 @@ class ModelDownloadService : Service() {
                 "qwen3_asr" -> getString(R.string.qw_import_failed, errorMessage)
                 "parakeet" -> getString(R.string.pk_import_failed, errorMessage)
                 "x_asr" -> getString(R.string.x_asr_import_failed, errorMessage)
+                "tts_offline" -> getString(R.string.tts_import_failed, errorMessage)
                 else -> getString(R.string.sv_import_failed, errorMessage)
             }
             notificationHandler.notifyFailed(failMessage)
@@ -501,6 +513,7 @@ class ModelDownloadService : Service() {
     private fun detectModelTypeFromFileName(name: String): String? {
         val n = name.lowercase()
         return when {
+            n.contains("vits-piper") || n.contains("tts-model") || n.contains("tts_model") -> "tts_offline"
             n.contains("x-asr") || n.contains("x_asr") -> "x_asr"
             n.contains("fire-red-asr2") ||
                 n.contains("fire_red_asr2") ||
@@ -525,6 +538,10 @@ class ModelDownloadService : Service() {
             .substringBeforeLast('.')
             .lowercase()
         return when (base) {
+            // TTS（vits-piper zh_CN 晓雅）
+            "vits-piper-zh_cn-xiao_ya-medium-int8" -> "tts_offline" to "medium-int8"
+            "vits-piper-zh_cn-xiao_ya-medium" -> "tts_offline" to "medium"
+
             // SenseVoice
             "sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17" -> "sensevoice" to "small-full"
             "sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17" ->
@@ -596,6 +613,7 @@ class ModelDownloadService : Service() {
         }
         "firered_asr" -> "FireRedASR CTC (int8)"
         "x_asr" -> "X-ASR 480ms"
+        "tts_offline" -> "vits-piper zh_CN xiao_ya ($variant)"
         "punctuation" -> {
             // 目前仅一套中英通用标点模型
             "Punctuation zh+en ($variant)"
@@ -704,10 +722,23 @@ class ModelDownloadService : Service() {
             "funasr_nano" -> File(base, "funasr_nano")
             "qwen3_asr" -> File(base, "qwen3_asr")
             "parakeet" -> File(base, "parakeet")
+            "tts_offline" -> File(base, com.brycewg.asrkb.tts.TtsLocalModelCatalog.MODEL_ROOT_DIR)
             else -> File(base, "sensevoice")
         }
         val tmpDir =
             File(outRoot, ".tmp_extract_${key.toSafeFileName()}_${System.currentTimeMillis()}")
+
+        // 清理早前失败残留的临时解压目录（超过 30 分钟的必然是失败遗留，避免占满存储）
+        try {
+            outRoot.listFiles()
+                ?.filter {
+                    it.isDirectory && it.name.startsWith(".tmp_extract_") &&
+                        System.currentTimeMillis() - it.lastModified() > 30 * 60_000L
+                }
+                ?.forEach { it.deleteRecursively() }
+        } catch (e: Throwable) {
+            Log.w(TAG, "Error pruning stale tmp extract dirs", e)
+        }
 
         if (tmpDir.exists()) {
             tmpDir.deleteRecursively()
@@ -717,11 +748,19 @@ class ModelDownloadService : Service() {
         val cancelIntent = notificationHandler.createCancelIntent()
         val compressedTotal = cacheFile.length()
         notificationHandler.notifyExtractProgressImmediate(0, cancelIntent)
-        if (detectArchiveType(cacheFile) != ArchiveType.ZIP) {
-            throw IllegalStateException(getString(R.string.error_only_zip_supported))
-        }
-        extractZipWithCompressedProgress(cacheFile, tmpDir, compressedTotal) { percent ->
-            notificationHandler.notifyExtractProgress(percent, cancelIntent)
+        when (detectArchiveType(cacheFile)) {
+            ArchiveType.ZIP ->
+                extractZipWithCompressedProgress(cacheFile, tmpDir, compressedTotal) { percent ->
+                    notificationHandler.notifyExtractProgress(percent, cancelIntent)
+                }
+
+            ArchiveType.TAR_BZ2 ->
+                extractTarBz2WithCompressedProgress(cacheFile, tmpDir, compressedTotal) { percent ->
+                    notificationHandler.notifyExtractProgress(percent, cancelIntent)
+                }
+
+            ArchiveType.UNKNOWN ->
+                throw IllegalStateException(getString(R.string.error_only_zip_supported))
         }
 
         Log.d(TAG, "Extraction completed to: ${tmpDir.path}")
@@ -737,6 +776,12 @@ class ModelDownloadService : Service() {
         // 标点模型：单独走简化校验/安装逻辑（仅需 model.int8.onnx），不依赖 tokens.txt
         if (modelType == "punctuation") {
             verifyAndInstallPunctuationModel(tmpDir)
+            return@withContext
+        }
+
+        // TTS 模型：tokens.txt + espeak-ng-data + onnx，安装到 tts/<variant>
+        if (modelType == "tts_offline") {
+            verifyAndInstallTtsModel(tmpDir, variant)
             return@withContext
         }
 
@@ -809,6 +854,46 @@ class ModelDownloadService : Service() {
         }
 
         Log.d(TAG, "Model installation completed: ${outFinal.path}")
+    }
+
+    /**
+     * TTS 模型（tts_offline）安装：
+     * - 定位含 tokens.txt + espeak-ng-data 的目录并校验 onnx 存在；
+     * - 最终落盘路径为 externalFilesDir/tts/<variant>。
+     */
+    private suspend fun verifyAndInstallTtsModel(tmpDir: File, variant: String) = withContext(Dispatchers.IO) {
+        val normalized = com.brycewg.asrkb.tts.TtsLocalModelCatalog.normalizeVariant(variant)
+        val files = com.brycewg.asrkb.tts.TtsLocalModelCatalog.findModelFiles(tmpDir, normalized)
+            ?: throw IllegalStateException("tts model files missing after extract")
+
+        Log.d(TAG, "TTS model dir located at: ${files.dir.path}")
+
+        val base = getExternalFilesDir(null) ?: filesDir
+        val outFinal = File(File(base, com.brycewg.asrkb.tts.TtsLocalModelCatalog.MODEL_ROOT_DIR), normalized)
+
+        if (outFinal.exists()) {
+            outFinal.deleteRecursively()
+        }
+        outFinal.parentFile?.mkdirs()
+
+        val renamed = try {
+            files.dir.renameTo(outFinal)
+        } catch (e: Throwable) {
+            Log.w(TAG, "Rename tts model dir failed, will fallback to copy", e)
+            false
+        }
+        if (!renamed) {
+            copyDirRecursivelyInternal(files.dir, outFinal)
+        }
+
+        // 清理临时目录（包括父目录）
+        try {
+            tmpDir.deleteRecursively()
+        } catch (e: Throwable) {
+            Log.w(TAG, "Error deleting tmp tts dir: ${tmpDir.path}", e)
+        }
+
+        Log.d(TAG, "TTS model installation completed: ${outFinal.path}")
     }
 
     /**
@@ -1023,7 +1108,7 @@ class ModelDownloadService : Service() {
         override fun reset() = input.reset()
     }
 
-    private enum class ArchiveType { ZIP, UNKNOWN }
+    private enum class ArchiveType { ZIP, TAR_BZ2, UNKNOWN }
 
     private fun detectArchiveType(file: File): ArchiveType = try {
         file.inputStream().use { ins ->
@@ -1031,6 +1116,10 @@ class ModelDownloadService : Service() {
             val n = ins.read(header)
             if (n >= 2 && header[0] == 0x50.toByte() && header[1] == 0x4B.toByte()) { // PK
                 ArchiveType.ZIP
+            } else if (n >= 3 && header[0] == 0x42.toByte() && header[1] == 0x5A.toByte() &&
+                header[2] == 0x68.toByte()
+            ) { // BZh
+                ArchiveType.TAR_BZ2
             } else {
                 ArchiveType.UNKNOWN
             }
@@ -1038,6 +1127,66 @@ class ModelDownloadService : Service() {
     } catch (e: Throwable) {
         Log.w(TAG, "detectArchiveType failed", e)
         ArchiveType.UNKNOWN
+    }
+
+    /** tar.bz2 解包（sherpa-onnx 官方 tts-models 发布格式），按压缩字节计进度 */
+    private suspend fun extractTarBz2WithCompressedProgress(
+        file: File,
+        outDir: File,
+        compressedTotal: Long,
+        onProgress: (Int) -> Unit
+    ) = withContext(Dispatchers.IO) {
+        val ctx = coroutineContext
+        val counting = CountingInputStream(file.inputStream().buffered(64 * 1024))
+        TarArchiveInputStream(BZip2CompressorInputStream(counting)).use { tar ->
+            val buf = ByteArray(64 * 1024)
+            var entry = tar.nextTarEntry
+            var lastPercent = -1
+            while (entry != null) {
+                if (!ctx.isActive) {
+                    throw CancellationException("Extraction cancelled")
+                }
+                val outFile = File(outDir, entry.name)
+                if (entry.isDirectory) {
+                    outFile.mkdirs()
+                } else {
+                    // 防路径穿越：仅允许落在解压目录内
+                    if (!outFile.canonicalPath.startsWith(outDir.canonicalPath + File.separator)) {
+                        throw IllegalStateException("illegal tar entry: ${entry.name}")
+                    }
+                    outFile.parentFile?.mkdirs()
+                    java.io.BufferedOutputStream(FileOutputStream(outFile), 64 * 1024).use { bos ->
+                        var written = 0L
+                        while (true) {
+                            if (!ctx.isActive) {
+                                throw CancellationException("Extraction cancelled")
+                            }
+                            val n = tar.read(buf)
+                            if (n <= 0) break
+                            bos.write(buf, 0, n)
+                            written += n
+                            if (compressedTotal > 0L) {
+                                val percent =
+                                    ((counting.bytesRead * 100) / compressedTotal).toInt().coerceIn(
+                                        0,
+                                        100
+                                    )
+                                if (percent != lastPercent) {
+                                    lastPercent = percent
+                                    onProgress(percent)
+                                }
+                            }
+                        }
+                        bos.flush()
+                    }
+                }
+                entry = tar.nextTarEntry
+            }
+            // 结束时确保进度到 100%
+            if (ctx.isActive) {
+                onProgress(100)
+            }
+        }
     }
 
     private suspend fun extractZipWithCompressedProgress(
@@ -1371,6 +1520,7 @@ class NotificationHandler(
             "funasr_nano" -> context.getString(R.string.fn_download_status_downloading, progress)
             "qwen3_asr" -> context.getString(R.string.qw_download_status_downloading, progress)
             "parakeet" -> context.getString(R.string.pk_download_status_downloading, progress)
+            "tts_offline" -> context.getString(R.string.tts_download_status_downloading, progress)
             else -> context.getString(R.string.sv_download_status_downloading, progress)
         }
         notifyProgress(
@@ -1411,6 +1561,10 @@ class NotificationHandler(
             )
             "parakeet" -> context.getString(
                 R.string.pk_download_status_extracting_progress,
+                progress
+            )
+            "tts_offline" -> context.getString(
+                R.string.tts_download_status_extracting_progress,
                 progress
             )
             else -> context.getString(R.string.sv_download_status_extracting_progress, progress)
@@ -1572,6 +1726,13 @@ class NotificationHandler(
         "x_asr" -> context.getString(R.string.notif_x_asr_title_480ms)
         "firered_asr" -> context.getString(R.string.notif_fr_title_ctc_int8)
         "punctuation" -> context.getString(R.string.notif_punct_title)
+        "tts_offline" -> context.getString(
+            if (variant == "medium-int8") {
+                R.string.notif_tts_title_medium_int8
+            } else {
+                R.string.notif_tts_title_medium
+            }
+        )
         "funasr_nano" -> {
             if (com.brycewg.asrkb.asr.normalizeFunAsrNanoVariant(variant) == "mlt-int8") {
                 context.getString(R.string.notif_fn_title_mlt_nano_int8)

@@ -1,0 +1,63 @@
+<resources>
+    <!-- TTS 語音播報設定 -->
+    <string name="title_tts_settings">TTS 語音配置</string>
+    <string name="section_tts_feedback">播報設定</string>
+    <string name="section_tts_vendor">TTS 服務商</string>
+    <string name="section_tts_audition">試聽</string>
+
+    <!-- 播報開關與文案 -->
+    <string name="label_tts_enabled">啟用語音播報</string>
+    <string name="label_tts_speak_on_hit">分發命中確認</string>
+    <string name="label_tts_speak_on_miss">分發未命中提示</string>
+    <string name="label_tts_speak_on_error">辨識錯誤提示</string>
+    <string name="label_tts_speak_result">播報辨識結果</string>
+    <string name="label_tts_hit_template">命中確認文案</string>
+    <string name="label_tts_miss_template">未命中提示文案</string>
+    <string name="label_tts_error_template">錯誤提示文案</string>
+    <string name="tts_template_hint">支援佔位符：{rule}=規則名、{text}=辨識文字、{1}~{3}=正則擷取群組</string>
+    <string name="label_tts_speed">語速</string>
+
+    <!-- 服務商與本地模型 -->
+    <string name="label_tts_vendor">語音合成服務商</string>
+    <string name="tts_vendor_sherpa_offline">本地離線 (sherpa-onnx)</string>
+    <string name="label_tts_model_variant">模型版本</string>
+    <string name="tts_model_medium">曉雅 標準 (58 MB)</string>
+    <string name="tts_model_medium_int8">曉雅 標準 int8 (13 MB)</string>
+    <string name="label_tts_threads">執行緒數 (1-8)</string>
+    <string name="label_tts_preload">預先載入模型（首次播報更快）</string>
+    <string name="label_tts_keep_alive">播報後引擎常駐</string>
+    <string name="tts_keep_alive_immediate">立即卸載</string>
+    <string name="tts_keep_alive_1m">常駐 1 分鐘</string>
+    <string name="tts_keep_alive_5m">常駐 5 分鐘</string>
+    <string name="tts_keep_alive_15m">常駐 15 分鐘</string>
+    <string name="tts_keep_alive_forever">一直常駐</string>
+    <string name="tts_status_ready">模型已就緒</string>
+    <string name="tts_status_not_installed">TTS 模型未安裝，請先在設定中下載或匯入</string>
+    <string name="btn_tts_download">下載模型</string>
+    <string name="btn_tts_import">匯入模型</string>
+    <string name="btn_tts_clear">清除模型</string>
+    <string name="tts_download_started_in_bg">已在背景開始下載，請查看通知進度</string>
+    <string name="tts_download_status_downloading">下載中… %1$d%%</string>
+    <string name="tts_download_status_extracting_progress">解壓中… %1$d%%</string>
+    <string name="tts_download_status_done">TTS 模型安裝完成</string>
+    <string name="tts_download_status_failed">下載或解壓失敗</string>
+    <string name="tts_import_started_in_bg">已在背景開始匯入，請查看通知進度</string>
+    <string name="tts_import_success">TTS 模型匯入成功：%1$s</string>
+    <string name="tts_import_failed">TTS 模型匯入失敗：%1$s</string>
+    <string name="tts_clear_confirm_title">清除 TTS 模型？</string>
+    <string name="tts_clear_confirm_message">將刪除已下載的 TTS 模型檔案，之後可重新下載。是否繼續？</string>
+    <string name="tts_clear_done">TTS 模型已清除</string>
+    <string name="tts_clear_failed">清除失敗</string>
+    <string name="notif_tts_title_medium">TTS 模型（曉雅 標準）</string>
+    <string name="notif_tts_title_medium_int8">TTS 模型（曉雅 int8）</string>
+
+    <!-- 試聽 -->
+    <string name="label_tts_audition_text">試聽文字</string>
+    <string name="tts_audition_default_text">你好，我是語音助理。</string>
+    <string name="btn_tts_audition_play">立即試聽</string>
+    <string name="btn_tts_audition_stop">停止播放</string>
+
+    <!-- 首頁摘要 -->
+    <string name="home_summary_tts_format">已開啟 · %1$s</string>
+    <string name="home_summary_tts_model_missing">%1$s（模型未安裝）</string>
+</resources>

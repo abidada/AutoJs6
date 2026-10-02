@@ -60,9 +60,12 @@ internal class VoiceCommandDispatcher private constructor(appContext: Context) {
     @Volatile
     private var cachedRules: List<VoiceDispatchRule> = store.load()
 
-    /** 面板反馈槽（由交互层注入；调用发生在调用方线程）。 */
+    /**
+     * 面板反馈槽（由交互层注入；调用发生在调用方线程）。
+     * onHit 携带规则、整句识别文本与正则捕获组，供 TTS 命中确认模板渲染。
+     */
     @Volatile
-    var onHit: ((ruleName: String) -> Unit)? = null
+    var onHit: ((rule: VoiceDispatchRule, recognizedText: String, captured: List<String>) -> Unit)? = null
 
     @Volatile
     var onMiss: (() -> Unit)? = null
@@ -148,7 +151,7 @@ internal class VoiceCommandDispatcher private constructor(appContext: Context) {
 
             store.recordTrigger(rule.id, now)
             invalidateCache()
-            onHit?.invoke(rule.name)
+            onHit?.invoke(rule, trimmed, captured)
             rule.name
         } catch (t: Throwable) {
             // 分发器异常不影响识别与悬浮球（§7.3 错误隔离结论）

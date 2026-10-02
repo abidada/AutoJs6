@@ -25,6 +25,8 @@ import android.provider.Settings
 import android.util.Log
 import com.brycewg.asrkb.asr.OfflineSpeechDenoiserManager
 import com.brycewg.asrkb.asr.VadDetector
+import com.brycewg.asrkb.tts.OfflineTtsManager
+import com.brycewg.asrkb.tts.TtsPlaybackCoordinator
 import com.brycewg.asrkb.store.ApiLogStore
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.store.debug.DebugLogManager
@@ -177,6 +179,19 @@ object BibiLibrary {
         } catch (t: Throwable) {
             Log.w(TAG, "Failed to preload offline denoiser", t)
             DebugLogManager.logWarning(app, "asr", "denoiser_preload_failed", t)
+        }
+
+        // TTS 播报：初始化编排器；总开关开启且配置预加载时后台预热引擎（消除首次播报延迟）
+        try {
+            TtsPlaybackCoordinator.ensureInit(app)
+            val prefs = Prefs(app)
+            if (prefs.ttsEnabled && prefs.ttsPreloadEnabled) {
+                OfflineTtsManager.preloadAsync(app, prefs)
+                DebugLogManager.logBase(app, "tts", "tts_preload_started")
+            }
+        } catch (t: Throwable) {
+            Log.w(TAG, "Failed to init TTS", t)
+            DebugLogManager.logWarning(app, "tts", "tts_init_failed", t)
         }
 
         // 清理已移除的 Zipformer 模型文件（仅执行一次）

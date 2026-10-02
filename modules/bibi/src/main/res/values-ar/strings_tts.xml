@@ -1,0 +1,63 @@
+<resources>
+    <!-- إعدادات النطق الصوتي TTS -->
+    <string name="title_tts_settings">إعدادات صوت TTS</string>
+    <string name="section_tts_feedback">إعدادات النطق</string>
+    <string name="section_tts_vendor">مزود TTS</string>
+    <string name="section_tts_audition">تجربة الاستماع</string>
+
+    <!-- مفاتيح النطق ونصوصه -->
+    <string name="label_tts_enabled">تمكين النطق الصوتي</string>
+    <string name="label_tts_speak_on_hit">تأكيد عند مطابقة التوزيع</string>
+    <string name="label_tts_speak_on_miss">تنبيه عند عدم المطابقة</string>
+    <string name="label_tts_speak_on_error">تنبيه عند خطأ التعرف</string>
+    <string name="label_tts_speak_result">نطق نتيجة التعرف</string>
+    <string name="label_tts_hit_template">نص تأكيد المطابقة</string>
+    <string name="label_tts_miss_template">نص تنبيه عدم المطابقة</string>
+    <string name="label_tts_error_template">نص تنبيه الخطأ</string>
+    <string name="tts_template_hint">العناصر النائبة: {rule}=اسم القاعدة، {text}=النص المعترف به، {1}~{3}=مجموعات الالتقاط للتعابير النمطية</string>
+    <string name="label_tts_speed">سرعة الكلام</string>
+
+    <!-- المزود والنموذج المحلي -->
+    <string name="label_tts_vendor">مزود تركيب الكلام</string>
+    <string name="tts_vendor_sherpa_offline">محلي دون اتصال (sherpa-onnx)</string>
+    <string name="label_tts_model_variant">إصدار النموذج</string>
+    <string name="tts_model_medium">XiaoYa متوسط (58 م.ب)</string>
+    <string name="tts_model_medium_int8">XiaoYa متوسط int8 (13 م.ب)</string>
+    <string name="label_tts_threads">عدد الخيوط (1-8)</string>
+    <string name="label_tts_preload">تحميل النموذج مسبقًا (أسرع في أول نطق)</string>
+    <string name="label_tts_keep_alive">إبقاء المحرك بعد النطق</string>
+    <string name="tts_keep_alive_immediate">إلغاء التحميل فورًا</string>
+    <string name="tts_keep_alive_1m">الإبقاء لمدة دقيقة</string>
+    <string name="tts_keep_alive_5m">الإبقاء لمدة 5 دقائق</string>
+    <string name="tts_keep_alive_15m">الإبقاء لمدة 15 دقيقة</string>
+    <string name="tts_keep_alive_forever">إبقاء دائم</string>
+    <string name="tts_status_ready">النموذج جاهز</string>
+    <string name="tts_status_not_installed">نموذج TTS غير مثبت. يرجى تنزيله أو استيراده من الإعدادات</string>
+    <string name="btn_tts_download">تنزيل النموذج</string>
+    <string name="btn_tts_import">استيراد النموذج</string>
+    <string name="btn_tts_clear">مسح النموذج</string>
+    <string name="tts_download_started_in_bg">بدأ التنزيل في الخلفية. راجع تقدم الإشعارات</string>
+    <string name="tts_download_status_downloading">جارٍ التنزيل… %1$d%%</string>
+    <string name="tts_download_status_extracting_progress">جارٍ الاستخراج… %1$d%%</string>
+    <string name="tts_download_status_done">تم تثبيت نموذج TTS</string>
+    <string name="tts_download_status_failed">فشل التنزيل أو الاستخراج</string>
+    <string name="tts_import_started_in_bg">بدأ الاستيراد في الخلفية. راجع تقدم الإشعارات</string>
+    <string name="tts_import_success">تم استيراد نموذج TTS بنجاح: %1$s</string>
+    <string name="tts_import_failed">فشل استيراد نموذج TTS: %1$s</string>
+    <string name="tts_clear_confirm_title">مسح نموذج TTS؟</string>
+    <string name="tts_clear_confirm_message">سيتم حذف ملفات نموذج TTS التي تم تنزيلها. يمكنك إعادة التنزيل لاحقًا. هل تريد المتابعة؟</string>
+    <string name="tts_clear_done">تم مسح نموذج TTS</string>
+    <string name="tts_clear_failed">فشل المسح</string>
+    <string name="notif_tts_title_medium">نموذج TTS (XiaoYa متوسط)</string>
+    <string name="notif_tts_title_medium_int8">نموذج TTS (XiaoYa int8)</string>
+
+    <!-- تجربة الاستماع -->
+    <string name="label_tts_audition_text">نص التجربة</string>
+    <string name="tts_audition_default_text">你好，我是语音助手。</string>
+    <string name="btn_tts_audition_play">تشغيل الآن</string>
+    <string name="btn_tts_audition_stop">إيقاف التشغيل</string>
+
+    <!-- ملخص الصفحة الرئيسية -->
+    <string name="home_summary_tts_format">ممكّن · %1$s</string>
+    <string name="home_summary_tts_model_missing">%1$s (النموذج غير مثبت)</string>
+</resources>

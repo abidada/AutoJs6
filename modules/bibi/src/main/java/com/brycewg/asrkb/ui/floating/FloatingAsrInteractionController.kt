@@ -15,6 +15,7 @@ import com.brycewg.asrkb.asr.AsrErrorMessageMapper
 import com.brycewg.asrkb.asr.AsrVendor
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.store.debug.DebugLogManager
+import com.brycewg.asrkb.tts.TtsPlaybackCoordinator
 import com.brycewg.asrkb.ui.AsrVendorUi
 import com.brycewg.asrkb.ui.SettingsActivity
 import com.brycewg.asrkb.ui.floatingball.AsrSessionManager
@@ -166,13 +167,15 @@ internal class FloatingAsrInteractionController(
 
     private fun wireDispatcherFeedback() {
         val dispatcher = getDispatcher() ?: return
-        dispatcher.onHit = { ruleName ->
+        dispatcher.onHit = { rule, recognizedText, captured ->
             // 结论同步记录（分发在主线程执行），驻留评估可立即读取
             lastDispatchHit = true
             handler.post {
                 listeningPanel?.showFeedback(
-                    context.getString(R.string.voice_dispatch_feedback_hit, ruleName)
+                    context.getString(R.string.voice_dispatch_feedback_hit, rule.name)
                 )
+                // TTS 命中即播（决策 §3）；播报期间由开麦闸口推迟自动续听
+                speakDispatchFeedback(rule, recognizedText, captured)
             }
         }
         dispatcher.onMiss = {
@@ -181,8 +184,49 @@ internal class FloatingAsrInteractionController(
                 listeningPanel?.showFeedback(
                     context.getString(R.string.voice_dispatch_feedback_miss)
                 )
+                if (isTtsEnabled() && tryOrNull { prefs.ttsSpeakOnMiss } == true) {
+                    TtsPlaybackCoordinator.speak(
+                        context,
+                        tryOrNull { prefs.ttsMissTemplate } ?: ""
+                    )
+                }
             }
         }
+    }
+
+    /** TTS 是否开启（总开关）；关闭时所有播报与闸口延迟都不生效 */
+    private fun isTtsEnabled(): Boolean = try {
+        prefs.ttsEnabled
+    } catch (e: Throwable) {
+        false
+    }
+
+    private inline fun <T> tryOrNull(block: () -> T): T? = try {
+        block()
+    } catch (e: Throwable) {
+        null
+    }
+
+    /** 命中确认播报：规则级 ttsFeedback 优先（"none"=静音），否则全局模板 */
+    private fun speakDispatchFeedback(
+        rule: com.brycewg.asrkb.host.voice.VoiceDispatchRule,
+        recognizedText: String,
+        captured: List<String>
+    ) {
+        if (!isTtsEnabled() || tryOrNull { prefs.ttsSpeakOnHit } != true) return
+        val template = when (val override = rule.ttsFeedback?.trim()) {
+            null -> prefs.ttsHitTemplate
+            "none", "" -> return
+            else -> override
+        }
+        val message = template
+            .replace("{rule}", rule.name)
+            .replace("{text}", recognizedText)
+            .replace("{1}", captured.getOrNull(0) ?: "")
+            .replace("{2}", captured.getOrNull(1) ?: "")
+            .replace("{3}", captured.getOrNull(2) ?: "")
+        if (message.isBlank()) return
+        TtsPlaybackCoordinator.speak(context, message)
     }
 
     /**
@@ -253,8 +297,20 @@ internal class FloatingAsrInteractionController(
             ) {
                 return@Runnable
             }
-            transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
-            maybeScheduleAutoRestartAfterDispatch()
+            if (isTtsEnabled() && TtsPlaybackCoordinator.isBusy) {
+                // TTS 播报未结束：保持监听面板展示反馈，播完再回 READY 并续听
+                val wait = Runnable { /* 播报等待占位（runWhenIdle 内校验 token） */ }
+                postResultRunnable = wait
+                TtsPlaybackCoordinator.runWhenIdle {
+                    handler.post {
+                        if (postResultRunnable !== wait) return@post
+                        postResultRunnable = null
+                        transitionToReadyAndMaybeRestart()
+                    }
+                }
+                return@Runnable
+            }
+            transitionToReadyAndMaybeRestart()
         }
         postResultRunnable = runnable
         if (holdMs > 0L) {
@@ -262,6 +318,17 @@ internal class FloatingAsrInteractionController(
         } else {
             runnable.run()
         }
+    }
+
+    private fun transitionToReadyAndMaybeRestart() {
+        if (interactionMode != FloatingBallInteractionMode.LISTENING_PILL ||
+            stateMachine.isRecording ||
+            stateMachine.isProcessing
+        ) {
+            return
+        }
+        transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+        maybeScheduleAutoRestartAfterDispatch()
     }
 
     private fun maybeScheduleAutoRestartAfterDispatch() {
@@ -281,6 +348,9 @@ internal class FloatingAsrInteractionController(
     /**
      * 自动续听：READY 闪现后重开识别（正常轮次）；空结果续听则保持 LISTENING 直接重录。
      * 启动失败（麦克风释放慢等瞬时原因）自动重试一次；重试仍失败退回「发起语音」。
+     *
+     * TTS 开启且仍在播报时，重开麦推迟到播报结束（决策 §4：播放声音时不开麦监听）；
+     * TTS 关闭时行为与原版完全一致（100ms 后重开）。
      */
     private fun scheduleAutoRestart(isRetry: Boolean = false) {
         cancelPostResultRunnable()
@@ -290,18 +360,35 @@ internal class FloatingAsrInteractionController(
             val fromListening = interactionMode == FloatingBallInteractionMode.LISTENING_PILL
             val fromReady = interactionMode == FloatingBallInteractionMode.READY_PILL
             if (!fromListening && !fromReady) return@Runnable
-            if (startRecording()) {
-                if (fromReady) {
-                    transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+            if (isTtsEnabled() && TtsPlaybackCoordinator.isBusy) {
+                val wait = Runnable { /* 播报等待占位（runWhenIdle 内校验 token） */ }
+                postResultRunnable = wait
+                TtsPlaybackCoordinator.runWhenIdle {
+                    handler.post {
+                        if (postResultRunnable !== wait) return@post
+                        postResultRunnable = null
+                        startAutoRestart(fromListening, fromReady, isRetry)
+                    }
                 }
-            } else if (!isRetry) {
-                scheduleAutoRestart(isRetry = true)
-            } else if (fromListening) {
-                transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+                return@Runnable
             }
+            startAutoRestart(fromListening, fromReady, isRetry)
         }
         postResultRunnable = runnable
         handler.postDelayed(runnable, if (isRetry) AUTO_RETRY_DELAY_MS else AUTO_RESTART_DELAY_MS)
+    }
+
+    private fun startAutoRestart(fromListening: Boolean, fromReady: Boolean, isRetry: Boolean) {
+        if (stateMachine.isRecording || stateMachine.isProcessing) return
+        if (startRecording()) {
+            if (fromReady) {
+                transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+            }
+        } else if (!isRetry) {
+            scheduleAutoRestart(isRetry = true)
+        } else if (fromListening) {
+            transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
+        }
     }
 
     /** 出错续听（②③模式，无次数保护）：面板展示错误信息片刻后收起并重新聆听。 */
@@ -360,6 +447,7 @@ internal class FloatingAsrInteractionController(
         cancelAmplitudeDispatch()
         cancelShakeFeedbackStartRecording()
         cancelShakeFeedbackTone()
+        TtsPlaybackCoordinator.stopSpeaking()
         stopRecordingForeground()
         try {
             menuController.hideAll()
@@ -429,6 +517,9 @@ internal class FloatingAsrInteractionController(
         fromShake: Boolean = false
     ): Boolean {
         Log.d(tag, "startRecording called")
+
+        // 抢话优先：开麦前打断任何进行中的 TTS 播报（幂等，空闲时为 no-op）
+        TtsPlaybackCoordinator.stopSpeaking()
 
         // 新一轮识别：清掉会话结束决策/续听待办，重置本轮分发结论；用户启动恢复续听资格
         cancelPostResultRunnable()
@@ -876,6 +967,13 @@ internal class FloatingAsrInteractionController(
             // 识别完成即分发（总开关已移除，所有识别结果统一匹配规则）
             lastSessionHadText = text.isNotBlank()
             dispatchRecognizedText(text)
+            // 结果播报（默认关；YOYO/小爱式读结果）
+            if (isTtsEnabled() &&
+                text.isNotBlank() &&
+                tryOrNull { prefs.ttsSpeakResult } == true
+            ) {
+                TtsPlaybackCoordinator.speak(context, text)
+            }
         }
     }
 
@@ -1005,6 +1103,14 @@ internal class FloatingAsrInteractionController(
                 showToast(mapped)
             } else {
                 showToast(context.getString(R.string.floating_asr_error, message))
+            }
+
+            // 识别错误语音提示（默认开；不改变错误后的任何重启行为）
+            if (isTtsEnabled() && tryOrNull { prefs.ttsSpeakOnError } == true) {
+                TtsPlaybackCoordinator.speak(
+                    context,
+                    tryOrNull { prefs.ttsErrorTemplate } ?: ""
+                )
             }
 
             schedulePostErrorResetState()

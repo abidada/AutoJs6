@@ -745,6 +745,81 @@ class Prefs(context: Context) {
         get() = sp.getInt(KEY_DISPATCH_FEEDBACK_HOLD_SECONDS, DEFAULT_DISPATCH_FEEDBACK_HOLD_SECONDS)
         set(value) = sp.edit { putInt(KEY_DISPATCH_FEEDBACK_HOLD_SECONDS, value.coerceIn(0, 10)) }
 
+    // ==================== TTS 语音播报 ====================
+
+    // TTS 总开关：关闭时零行为变化（不加载引擎、不播报、监听逻辑与原版一致）
+    var ttsEnabled: Boolean
+        get() = sp.getBoolean(KEY_TTS_ENABLED, false)
+        set(value) = sp.edit { putBoolean(KEY_TTS_ENABLED, value) }
+
+    // TTS 服务商（当前仅本地离线 sherpa-onnx；在线供应商后续扩展）
+    var ttsVendorId: String
+        get() = sp.getString(KEY_TTS_VENDOR, "sherpa_offline") ?: "sherpa_offline"
+        set(value) = sp.edit { putString(KEY_TTS_VENDOR, value) }
+
+    // 本地 TTS 模型变体（medium / medium-int8）
+    var ttsModelVariant: String
+        get() = sp.getString(KEY_TTS_MODEL_VARIANT, "medium") ?: "medium"
+        set(value) = sp.edit { putString(KEY_TTS_MODEL_VARIANT, value.trim().ifBlank { "medium" }) }
+
+    // 合成语速（0.5-2.0）
+    var ttsSpeed: Float
+        get() = sp.getFloat(KEY_TTS_SPEED, DEFAULT_TTS_SPEED).coerceIn(TTS_SPEED_MIN, TTS_SPEED_MAX)
+        set(value) = sp.edit { putFloat(KEY_TTS_SPEED, value.coerceIn(TTS_SPEED_MIN, TTS_SPEED_MAX)) }
+
+    // 合成线程数（1-8）
+    var ttsNumThreads: Int
+        get() = sp.getInt(KEY_TTS_NUM_THREADS, 2).coerceIn(1, 8)
+        set(value) = sp.edit { putInt(KEY_TTS_NUM_THREADS, value.coerceIn(1, 8)) }
+
+    // 预加载：初始化时后台加载 TTS 引擎，消除首次播报延迟
+    var ttsPreloadEnabled: Boolean
+        get() = sp.getBoolean(KEY_TTS_PRELOAD_ENABLED, false)
+        set(value) = sp.edit { putBoolean(KEY_TTS_PRELOAD_ENABLED, value) }
+
+    // 播报结束后引擎常驻分钟数：0=立即卸载，-1=常驻，>0=闲置 N 分钟后卸载
+    var ttsKeepAliveMinutes: Int
+        get() = sp.getInt(KEY_TTS_KEEP_ALIVE_MINUTES, 5)
+        set(value) = sp.edit { putInt(KEY_TTS_KEEP_ALIVE_MINUTES, value) }
+
+    // 场景开关：分发命中确认（默认开）
+    var ttsSpeakOnHit: Boolean
+        get() = sp.getBoolean(KEY_TTS_SPEAK_ON_HIT, true)
+        set(value) = sp.edit { putBoolean(KEY_TTS_SPEAK_ON_HIT, value) }
+
+    // 场景开关：分发未命中提示（默认关）
+    var ttsSpeakOnMiss: Boolean
+        get() = sp.getBoolean(KEY_TTS_SPEAK_ON_MISS, false)
+        set(value) = sp.edit { putBoolean(KEY_TTS_SPEAK_ON_MISS, value) }
+
+    // 场景开关：识别错误提示（默认开）
+    var ttsSpeakOnError: Boolean
+        get() = sp.getBoolean(KEY_TTS_SPEAK_ON_ERROR, true)
+        set(value) = sp.edit { putBoolean(KEY_TTS_SPEAK_ON_ERROR, value) }
+
+    // 场景开关：播报识别结果文本（默认关）
+    var ttsSpeakResult: Boolean
+        get() = sp.getBoolean(KEY_TTS_SPEAK_RESULT, false)
+        set(value) = sp.edit { putBoolean(KEY_TTS_SPEAK_RESULT, value) }
+
+    // 命中确认文案模板，支持 {rule}=规则名、{text}=识别文本、{1}~{3}=正则捕获组
+    var ttsHitTemplate: String
+        get() = sp.getString(KEY_TTS_HIT_TEMPLATE, DEFAULT_TTS_HIT_TEMPLATE)?.takeIf { it.isNotBlank() }
+            ?: DEFAULT_TTS_HIT_TEMPLATE
+        set(value) = sp.edit { putString(KEY_TTS_HIT_TEMPLATE, value.trim()) }
+
+    // 未命中提示文案
+    var ttsMissTemplate: String
+        get() = sp.getString(KEY_TTS_MISS_TEMPLATE, DEFAULT_TTS_MISS_TEMPLATE)?.takeIf { it.isNotBlank() }
+            ?: DEFAULT_TTS_MISS_TEMPLATE
+        set(value) = sp.edit { putString(KEY_TTS_MISS_TEMPLATE, value.trim()) }
+
+    // 错误提示文案
+    var ttsErrorTemplate: String
+        get() = sp.getString(KEY_TTS_ERROR_TEMPLATE, DEFAULT_TTS_ERROR_TEMPLATE)?.takeIf { it.isNotBlank() }
+            ?: DEFAULT_TTS_ERROR_TEMPLATE
+        set(value) = sp.edit { putString(KEY_TTS_ERROR_TEMPLATE, value.trim()) }
+
     // 兼容旧备份键：原输入法 Hook 模块总开关（IME 桥接已移除，仅保留存储能力）
     var floatingImeBridgeEnabled: Boolean
         get() = sp.getBoolean(KEY_FLOATING_IME_BRIDGE_ENABLED, false)
@@ -2319,6 +2394,14 @@ class Prefs(context: Context) {
         const val DEFAULT_DISPATCH_FEEDBACK_HOLD_SECONDS = 2
         const val DISPATCH_FEEDBACK_HOLD_MIN_SECONDS = 0
         const val DISPATCH_FEEDBACK_HOLD_MAX_SECONDS = 10
+
+        // TTS 语音播报默认值与取值范围
+        const val DEFAULT_TTS_SPEED = 1.0f
+        const val TTS_SPEED_MIN = 0.5f
+        const val TTS_SPEED_MAX = 2.0f
+        const val DEFAULT_TTS_HIT_TEMPLATE = "好的"
+        const val DEFAULT_TTS_MISS_TEMPLATE = "未找到对应任务"
+        const val DEFAULT_TTS_ERROR_TEMPLATE = "识别失败，请重试"
 
         // 输入/点击触觉反馈等级（兼容旧开关）
         const val HAPTIC_FEEDBACK_LEVEL_OFF = 0

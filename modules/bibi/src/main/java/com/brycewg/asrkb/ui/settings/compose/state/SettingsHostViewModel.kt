@@ -127,6 +127,7 @@ class SettingsHostViewModel(
         BibiSettingsRoute.Floating -> 0
 
         BibiSettingsRoute.Asr,
+        BibiSettingsRoute.Tts,
         BibiSettingsRoute.Ai,
         BibiSettingsRoute.PromptSelection,
         BibiSettingsRoute.PromptSelectionPreview,

@@ -65,6 +65,10 @@ data class VoiceDispatchRule(
     val cooldownMs: Long = 0,
     val confirmBeforeRun: Boolean = false,
 
+    // ---- TTS 播报（命中确认文案）：null=用全局默认模板；"none"=该规则静音；其他=自定义模板 ----
+    // 模板占位符：{rule}=规则名、{text}=整句识别文本、{1}~{3}=正则捕获组
+    val ttsFeedback: String? = null,
+
     // ---- 统计 ----
     val createdAt: Long,
     val lastTriggeredAt: Long = 0,

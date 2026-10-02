@@ -32,6 +32,11 @@ sealed interface BibiSettingsRoute {
         override val id: String = "asr"
     }
 
+    /** TTS 语音配置（播报设置 / 服务商与本地模型 / 试听）。 */
+    data object Tts : BibiSettingsRoute {
+        override val id: String = "tts"
+    }
+
     data object Ai : BibiSettingsRoute {
         override val id: String = "ai"
     }
@@ -90,6 +95,7 @@ sealed interface BibiSettingsRoute {
             RecordingTest.id -> RecordingTest
             Floating.id -> Floating
             Asr.id -> Asr
+            Tts.id -> Tts
             Ai.id -> Ai
             PromptSelection.id -> PromptSelection
             PromptSelectionPreview.id -> PromptSelectionPreview

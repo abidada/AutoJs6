@@ -1,0 +1,63 @@
+<resources>
+    <!-- TTS speech broadcast settings -->
+    <string name="title_tts_settings">TTS Voice Settings</string>
+    <string name="section_tts_feedback">Speech Broadcast</string>
+    <string name="section_tts_vendor">TTS Provider</string>
+    <string name="section_tts_audition">Audition</string>
+
+    <!-- Broadcast toggles & templates -->
+    <string name="label_tts_enabled">Enable voice broadcast</string>
+    <string name="label_tts_speak_on_hit">Confirm on dispatch hit</string>
+    <string name="label_tts_speak_on_miss">Prompt on dispatch miss</string>
+    <string name="label_tts_speak_on_error">Prompt on recognition error</string>
+    <string name="label_tts_speak_result">Speak recognized result</string>
+    <string name="label_tts_hit_template">Hit confirmation text</string>
+    <string name="label_tts_miss_template">Miss prompt text</string>
+    <string name="label_tts_error_template">Error prompt text</string>
+    <string name="tts_template_hint">Placeholders: {rule} = rule name, {text} = recognized text, {1}–{3} = regex capture groups</string>
+    <string name="label_tts_speed">Speech rate</string>
+
+    <!-- Provider & local model -->
+    <string name="label_tts_vendor">Speech synthesis provider</string>
+    <string name="tts_vendor_sherpa_offline">Offline (sherpa-onnx)</string>
+    <string name="label_tts_model_variant">Model version</string>
+    <string name="tts_model_medium">XiaoYa medium (58 MB)</string>
+    <string name="tts_model_medium_int8">XiaoYa medium int8 (13 MB)</string>
+    <string name="label_tts_threads">Threads (1-8)</string>
+    <string name="label_tts_preload">Preload model (first broadcast faster)</string>
+    <string name="label_tts_keep_alive">Keep engine after broadcast</string>
+    <string name="tts_keep_alive_immediate">Unload immediately</string>
+    <string name="tts_keep_alive_1m">Keep 1 minute</string>
+    <string name="tts_keep_alive_5m">Keep 5 minutes</string>
+    <string name="tts_keep_alive_15m">Keep 15 minutes</string>
+    <string name="tts_keep_alive_forever">Keep alive</string>
+    <string name="tts_status_ready">Model ready</string>
+    <string name="tts_status_not_installed">TTS model not installed. Download or import it in settings</string>
+    <string name="btn_tts_download">Download model</string>
+    <string name="btn_tts_import">Import model</string>
+    <string name="btn_tts_clear">Clear model</string>
+    <string name="tts_download_started_in_bg">Started in background. See notification for progress</string>
+    <string name="tts_download_status_downloading">Downloading… %1$d%%</string>
+    <string name="tts_download_status_extracting_progress">Extracting… %1$d%%</string>
+    <string name="tts_download_status_done">TTS model installed</string>
+    <string name="tts_download_status_failed">Download or extract failed</string>
+    <string name="tts_import_started_in_bg">Started background import. See notification for progress</string>
+    <string name="tts_import_success">TTS model imported successfully: %1$s</string>
+    <string name="tts_import_failed">TTS model import failed: %1$s</string>
+    <string name="tts_clear_confirm_title">Clear TTS model?</string>
+    <string name="tts_clear_confirm_message">This will delete downloaded TTS model files. You can re-download later. Continue?</string>
+    <string name="tts_clear_done">TTS model cleared</string>
+    <string name="tts_clear_failed">Clear failed</string>
+    <string name="notif_tts_title_medium">TTS model (XiaoYa medium)</string>
+    <string name="notif_tts_title_medium_int8">TTS model (XiaoYa int8)</string>
+
+    <!-- Audition -->
+    <string name="label_tts_audition_text">Audition text</string>
+    <string name="tts_audition_default_text">你好，我是语音助手。</string>
+    <string name="btn_tts_audition_play">Play now</string>
+    <string name="btn_tts_audition_stop">Stop playing</string>
+
+    <!-- Home summary -->
+    <string name="home_summary_tts_format">Enabled · %1$s</string>
+    <string name="home_summary_tts_model_missing">%1$s (model not installed)</string>
+</resources>
