@@ -8,19 +8,28 @@
  */
 package com.brycewg.asrkb.ui.floating
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.InsetDrawable
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowManager
+import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.AsrResultBroadcaster
 import com.brycewg.asrkb.store.Prefs
@@ -42,6 +51,14 @@ internal class ListeningPanelHelper(
     private var panelView: View? = null
     private var textLabel: TextView? = null
     private var stopButton: TextView? = null
+    private var textScroll: FollowScrollView? = null
+    private var lastFinalText: String? = null
+
+    /** 自动跟底：用户上滑回看历史时暂停，滚回底部后恢复。 */
+    private var autoFollow = true
+
+    /** 文本区是否展开到更高的档位（点击顶部把手切换）。 */
+    private var expanded = false
 
     /** 停止按钮回调（由 FloatingAsrService 注入，等价单击「正在听...」胶囊）。 */
     var onStopClicked: (() -> Unit)? = null
@@ -52,6 +69,7 @@ internal class ListeningPanelHelper(
         }
 
         override fun onFinal(text: String) {
+            lastFinalText = text
             post { applyText(text.ifBlank { null }) }
         }
 
@@ -70,11 +88,14 @@ internal class ListeningPanelHelper(
         post {
             if (panelView != null) return@post
             try {
+                expanded = false
+                autoFollow = true
                 val view = buildPanel()
                 textLabel = view.findViewById(R.id.listeningPanelText)
                 stopButton = view.findViewById(R.id.listeningPanelStop)
                 windowManager.addView(view, buildLayoutParams())
                 panelView = view
+                lastFinalText = null
                 applyText(null)
                 AsrResultBroadcaster.add(resultListener)
             } catch (e: Throwable) {
@@ -91,6 +112,7 @@ internal class ListeningPanelHelper(
             panelView = null
             textLabel = null
             stopButton = null
+            textScroll = null
             try {
                 windowManager.removeView(view)
             } catch (e: Throwable) {
@@ -109,6 +131,16 @@ internal class ListeningPanelHelper(
 
     // ==================== 构建 ====================
 
+    private fun dp(v: Float): Int = (v * overlayContext.resources.displayMetrics.density + 0.5f).toInt()
+    private fun dp(v: Int): Int = dp(v.toFloat())
+
+    /** 文本区高度上限：预留按钮行/边距/导航栏避让，保证面板整体不超出屏幕。 */
+    private fun maxTextHeightPx(): Int {
+        val screenH = overlayContext.resources.displayMetrics.heightPixels
+        val usable = (screenH - dp(160)).coerceAtLeast(dp(120))
+        return if (expanded) usable else maxOf((usable * 0.55f).toInt(), dp(220))
+    }
+
     private fun buildLayoutParams(): WindowManager.LayoutParams = WindowManager.LayoutParams(
         WindowManager.LayoutParams.MATCH_PARENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
@@ -122,10 +154,6 @@ internal class ListeningPanelHelper(
 
     private fun buildPanel(): View {
         val theme = BibiViewThemes.resolve(overlayContext, prefs)
-        val density = overlayContext.resources.displayMetrics.density
-
-        fun dp(v: Float): Int = (v * density + 0.5f).toInt()
-        fun dp(v: Int): Int = dp(v.toFloat())
 
         val root = LinearLayout(overlayContext).apply {
             orientation = LinearLayout.VERTICAL
@@ -140,40 +168,92 @@ internal class ListeningPanelHelper(
             }
         }
 
-        // 顶部拖动把手条（纯视觉）
+        // 手势导航栏避让：窗口已被系统 fit 时回调为 0（不加双份留白），仅在面板真实压到导航栏时补偿
+        val baseBottomPadding = dp(16)
+        root.setOnApplyWindowInsetsListener { v, insets ->
+            val bottom = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                insets.getInsets(WindowInsets.Type.systemBars()).bottom
+            } else {
+                @Suppress("DEPRECATION")
+                insets.systemWindowInsetBottom
+            }
+            if (bottom > 0) {
+                v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, baseBottomPadding + bottom)
+            }
+            insets
+        }
+
+        // 顶部把手（视觉 4dp 条 + 20dp 触达区）：点击在限高/展开两档间切换，方便听写后通读全文
         root.addView(
             View(overlayContext).apply {
-                background = GradientDrawable().apply {
-                    setColor(HANDLE_BAR_COLOR)
-                    cornerRadius = dp(2f).toFloat()
-                }
-                layoutParams = LinearLayout.LayoutParams(dp(36), dp(4)).apply {
+                background = InsetDrawable(
+                    GradientDrawable().apply {
+                        setColor(HANDLE_BAR_COLOR)
+                        cornerRadius = dp(2f).toFloat()
+                    },
+                    0, dp(8), 0, dp(8)
+                )
+                layoutParams = LinearLayout.LayoutParams(dp(36), dp(20)).apply {
                     gravity = Gravity.CENTER_HORIZONTAL
+                }
+                setOnClickListener {
+                    expanded = !expanded
+                    textScroll?.let { s ->
+                        s.maxHeightPx = maxTextHeightPx()
+                        s.requestLayout()
+                        if (autoFollow) s.post { s.fullScroll(View.FOCUS_DOWN) }
+                    }
                 }
             }
         )
 
-        // 中央大字文本
-        root.addView(
+        // 识别文本区：限高 + 内部滚动，partial 流式刷新时自动跟底显示最新文字
+        val scroll = FollowScrollView(overlayContext, PANEL_BG_DARK).apply {
+            maxHeightPx = maxTextHeightPx()
+            isVerticalFadingEdgeEnabled = true
+            setFadingEdgeLength(dp(24))
+            atBottomListener = { atBottom -> autoFollow = atBottom }
+        }
+        scroll.addView(
             TextView(overlayContext).apply {
                 id = R.id.listeningPanelText
                 setTextColor(Color.WHITE)
                 textSize = 22f
                 typeface = Typeface.DEFAULT_BOLD
-                maxLines = 6
                 setLineSpacing(dp(2f).toFloat(), 1f)
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { topMargin = dp(14); bottomMargin = dp(14) }
+                layoutParams = ScrollView.LayoutParams(
+                    ScrollView.LayoutParams.MATCH_PARENT,
+                    ScrollView.LayoutParams.WRAP_CONTENT
+                )
             }
         )
+        root.addView(
+            scroll,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(14); bottomMargin = dp(14) }
+        )
+        textScroll = scroll
 
-        // 底部按钮行：停止（绿色「正在听」胶囊，居中）
+        // 底部按钮行：复制 / 停止 / 分享
         val row = LinearLayout(overlayContext).apply {
             orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
+            gravity = Gravity.CENTER_VERTICAL
         }
+
+        row.addView(
+            Button(overlayContext).apply {
+                id = R.id.listeningPanelCopy
+                text = context.getString(R.string.listening_panel_copy)
+                setTextColor(0xCCFFFFFF.toInt())
+                setBackgroundColor(Color.TRANSPARENT)
+                setOnClickListener { copyCurrentText() }
+                layoutParams = LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+                )
+            }
+        )
 
         row.addView(
             TextView(overlayContext).apply {
@@ -193,6 +273,19 @@ internal class ListeningPanelHelper(
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { marginStart = dp(8); marginEnd = dp(8) }
+            }
+        )
+
+        row.addView(
+            Button(overlayContext).apply {
+                id = R.id.listeningPanelShare
+                text = context.getString(R.string.listening_panel_share)
+                setTextColor(0xCCFFFFFF.toInt())
+                setBackgroundColor(Color.TRANSPARENT)
+                setOnClickListener { shareCurrentText() }
+                layoutParams = LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
                 )
             }
         )
@@ -213,5 +306,66 @@ internal class ListeningPanelHelper(
         val label = textLabel ?: return
         label.text = text ?: appContext.getString(R.string.listening_panel_placeholder)
         label.alpha = if (text == null) 0.55f else 1f
+        if (autoFollow) {
+            val scroll = textScroll ?: return
+            // post 到布局完成后滚动，否则刚 setText 的内容高度还未生效
+            scroll.post {
+                if (autoFollow) scroll.fullScroll(View.FOCUS_DOWN)
+            }
+        }
+    }
+
+    private fun copyCurrentText() {
+        val text = textLabel?.text?.toString().orEmpty()
+        try {
+            val cm = appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            cm.setPrimaryClip(ClipData.newPlainText("bibi_asr", text))
+            Toast.makeText(appContext, R.string.listening_panel_copied, Toast.LENGTH_SHORT).show()
+        } catch (e: Throwable) {
+            Log.w(TAG, "Failed to copy panel text", e)
+        }
+    }
+
+    private fun shareCurrentText() {
+        val text = textLabel?.text?.toString().orEmpty()
+        try {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, text)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            appContext.startActivity(Intent.createChooser(intent, null))
+        } catch (e: Throwable) {
+            Log.w(TAG, "Failed to share panel text", e)
+        }
+    }
+
+    /**
+     * 限高滚动容器：
+     * - onMeasure 先按内容自然测量，再钳制到 [maxHeightPx]，面板整体不超出屏幕；
+     * - onScrollChanged 判断是否已到底部，驱动自动跟底的暂停/恢复；
+     * - getSolidColor 用面板底色，渐隐边与背景融合。
+     */
+    private class FollowScrollView(
+        context: Context,
+        private val fadeColor: Int
+    ) : ScrollView(context) {
+
+        var maxHeightPx: Int = Int.MAX_VALUE
+        var atBottomListener: ((Boolean) -> Unit)? = null
+
+        override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
+            super.onScrollChanged(l, t, oldl, oldt)
+            atBottomListener?.invoke(!canScrollVertically(1))
+        }
+
+        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            if (measuredHeight > maxHeightPx) {
+                setMeasuredDimension(measuredWidth, maxHeightPx)
+            }
+        }
+
+        override fun getSolidColor(): Int = fadeColor
     }
 }

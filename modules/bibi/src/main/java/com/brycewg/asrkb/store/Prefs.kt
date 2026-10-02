@@ -1350,6 +1350,14 @@ class Prefs(context: Context) {
     // ElevenLabs凭证
     var elevenApiKey: String by stringPref(KEY_ELEVEN_API_KEY, "")
 
+    // 百度语音识别凭证（AppID 仅在部分接口/控制台场景需要，ApiKey+SecretKey 必填）
+    var baiduAppId: String by stringPref(KEY_BAIDU_APP_ID, "")
+    var baiduApiKey: String by stringPref(KEY_BAIDU_API_KEY, "")
+    var baiduSecretKey: String by stringPref(KEY_BAIDU_SECRET_KEY, "")
+
+    // 百度识别请求的用户标识（cuid），首次使用时生成并持久化
+    var baiduCuid: String by stringPref(KEY_BAIDU_CUID, "")
+
     // ElevenLabs：流式识别开关
     var elevenStreamingEnabled: Boolean
         get() = sp.getBoolean(KEY_ELEVEN_STREAMING_ENABLED, true)

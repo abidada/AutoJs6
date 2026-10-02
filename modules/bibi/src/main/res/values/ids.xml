@@ -51,6 +51,8 @@
     <item name="pillText" type="id" />
     <item name="listeningPanelText" type="id" />
     <item name="listeningPanelStop" type="id" />
+    <item name="listeningPanelCopy" type="id" />
+    <item name="listeningPanelShare" type="id" />
     <item name="groupMicStatus" type="id" />
     <item name="keyboardDragHandle" type="id" />
     <item name="keyboardDragHandleRow" type="id" />

@@ -41,6 +41,9 @@ internal class AsrOnlineSettingsFields(
     var elevenApiKey by mutableStateOf(prefs.elevenApiKey)
     var elevenStreaming by mutableStateOf(prefs.elevenStreamingEnabled)
     var elevenLanguageCode by mutableStateOf(prefs.elevenLanguageCode)
+    var baiduAppId by mutableStateOf(prefs.baiduAppId)
+    var baiduApiKey by mutableStateOf(prefs.baiduApiKey)
+    var baiduSecret by mutableStateOf(prefs.baiduSecretKey)
     var stepAudioApiKey by mutableStateOf(prefs.stepAudioApiKey)
     var stepAudioEndpoint by mutableStateOf(prefs.getEffectiveStepAudioAsrEndpoint())
     var stepAudioEndpointPreset by mutableStateOf(prefs.stepAudioEndpointPreset)
@@ -123,6 +126,9 @@ internal class AsrOnlineSettingsFields(
         elevenApiKey = prefs.elevenApiKey
         elevenStreaming = prefs.elevenStreamingEnabled
         elevenLanguageCode = prefs.elevenLanguageCode
+        baiduAppId = prefs.baiduAppId
+        baiduApiKey = prefs.baiduApiKey
+        baiduSecret = prefs.baiduSecretKey
         stepAudioApiKey = prefs.stepAudioApiKey
         stepAudioEndpoint = prefs.getEffectiveStepAudioAsrEndpoint()
         stepAudioEndpointPreset = prefs.stepAudioEndpointPreset
@@ -295,6 +301,21 @@ internal class AsrOnlineSettingsFields(
         onElevenLanguageChange = { value ->
             elevenLanguageCode = value
             prefs.elevenLanguageCode = value
+        },
+        baiduAppId = baiduAppId,
+        onBaiduAppIdChange = { value ->
+            baiduAppId = value
+            prefs.baiduAppId = value
+        },
+        baiduApiKey = baiduApiKey,
+        onBaiduApiKeyChange = { value ->
+            baiduApiKey = value
+            prefs.baiduApiKey = value
+        },
+        baiduSecret = baiduSecret,
+        onBaiduSecretChange = { value ->
+            baiduSecret = value
+            prefs.baiduSecretKey = value
         },
         stepAudioApiKey = stepAudioApiKey,
         onStepAudioApiKeyChange = { value ->

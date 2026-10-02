@@ -21,7 +21,8 @@ enum class AsrVendor(val id: String) {
     Parakeet("parakeet"),
     FireRedAsr("firered_asr"),
     XAsr("x_asr"),
-    MiMo("mimo");
+    MiMo("mimo"),
+    Baidu("baidu");
 
     companion object {
         fun fromId(id: String?): AsrVendor = AsrVendorRegistry.vendorFromIdOrNull(id) ?: Volc

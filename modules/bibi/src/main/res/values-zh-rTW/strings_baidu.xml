@@ -1,0 +1,18 @@
+<resources>
+    <string name="vendor_baidu">百度語音</string>
+    <string name="baidu_section_title">百度語音辨識</string>
+    <string name="label_baidu_app_id">百度 AppID（選填）</string>
+    <string name="label_baidu_api_key">百度 API Key</string>
+    <string name="label_baidu_secret">百度 Secret Key</string>
+    <string name="error_missing_baidu_keys">請先設定百度 API Key 與 Secret Key</string>
+    <string name="error_baidu_token_failed">取得百度 access_token 失敗，請檢查 API Key / Secret Key</string>
+    <string name="error_baidu_audio_quality">百度：音訊品質過差，請靠近麥克風清楚說話後重試</string>
+    <string name="error_baidu_auth_failed">百度鑑權失敗，請檢查 API Key / Secret Key</string>
+    <string name="error_baidu_server_busy">百度伺服器繁忙，請稍後重試</string>
+    <string name="error_baidu_qps_limit">百度請求並發超限，請稍後重試</string>
+    <string name="error_baidu_daily_limit">百度今日請求量已超限</string>
+    <string name="error_baidu_audio_too_long">百度：音訊過長，單次請求需在 60 秒內</string>
+    <string name="error_baidu_audio_too_short">百度：音訊過短，無法辨識</string>
+    <string name="error_baidu_audio_invalid">百度：音訊資料無效</string>
+    <string name="error_baidu_api_failed">百度辨識失敗（錯誤碼 %1$d：%2$s）</string>
+</resources>

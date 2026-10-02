@@ -1,0 +1,18 @@
+<resources>
+    <string name="vendor_baidu">Baidu</string>
+    <string name="baidu_section_title">Baidu Speech Recognition</string>
+    <string name="label_baidu_app_id">Baidu AppID (optional)</string>
+    <string name="label_baidu_api_key">Baidu API Key</string>
+    <string name="label_baidu_secret">Baidu Secret Key</string>
+    <string name="error_missing_baidu_keys">Please configure Baidu API Key and Secret Key first</string>
+    <string name="error_baidu_token_failed">Failed to obtain Baidu access_token, please check API Key / Secret Key</string>
+    <string name="error_baidu_audio_quality">Baidu: audio quality too poor, please speak clearly near the microphone and retry</string>
+    <string name="error_baidu_auth_failed">Baidu authentication failed, please check API Key / Secret Key</string>
+    <string name="error_baidu_server_busy">Baidu server is busy, please retry later</string>
+    <string name="error_baidu_qps_limit">Baidu request concurrency limit exceeded, please retry later</string>
+    <string name="error_baidu_daily_limit">Baidu daily request quota exceeded</string>
+    <string name="error_baidu_audio_too_long">Baidu: audio too long, a single request must be within 60 seconds</string>
+    <string name="error_baidu_audio_too_short">Baidu: audio too short to recognize</string>
+    <string name="error_baidu_audio_invalid">Baidu: invalid audio data</string>
+    <string name="error_baidu_api_failed">Baidu recognition failed (code %1$d: %2$s)</string>
+</resources>

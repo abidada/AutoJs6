@@ -55,6 +55,12 @@ internal fun CurrentAsrVendorConfig(
     onElevenStreamingChange: (Boolean) -> Unit,
     elevenLanguageCode: String,
     onElevenLanguageSelected: (String) -> Unit,
+    baiduAppId: String,
+    onBaiduAppIdChange: (String) -> Unit,
+    baiduApiKey: String,
+    onBaiduApiKeyChange: (String) -> Unit,
+    baiduSecret: String,
+    onBaiduSecretChange: (String) -> Unit,
     stepAudioApiKey: String,
     onStepAudioApiKeyChange: (String) -> Unit,
     stepAudioEndpoint: String,
@@ -251,6 +257,44 @@ internal fun CurrentAsrVendorConfig(
                 index = itemIndex,
                 count = itemCount,
                 onClick = { onOpenGuide(ELEVEN_ASR_GUIDE_URL) }
+            )
+        }
+
+        AsrVendor.Baidu -> {
+            var itemIndex = primaryIndexOffset
+            val itemCount = primaryGroupCount ?: 4
+            AsrTextField(
+                uiMode = uiMode,
+                value = baiduAppId,
+                onValueChange = onBaiduAppIdChange,
+                label = stringResource(R.string.label_baidu_app_id),
+                index = itemIndex++,
+                count = itemCount
+            )
+            AsrTextField(
+                uiMode = uiMode,
+                value = baiduApiKey,
+                onValueChange = onBaiduApiKeyChange,
+                label = stringResource(R.string.label_baidu_api_key),
+                password = true,
+                index = itemIndex++,
+                count = itemCount
+            )
+            AsrTextField(
+                uiMode = uiMode,
+                value = baiduSecret,
+                onValueChange = onBaiduSecretChange,
+                label = stringResource(R.string.label_baidu_secret),
+                password = true,
+                index = itemIndex++,
+                count = itemCount
+            )
+            AsrActionPreference(
+                id = "baidu_get_key_guide",
+                titleRes = R.string.btn_get_api_key_guide,
+                index = itemIndex,
+                count = itemCount,
+                onClick = { onOpenGuide(BAIDU_ASR_GUIDE_URL) }
             )
         }
 
@@ -1135,6 +1179,7 @@ internal fun currentOnlineAsrPrimaryItemCount(
 ): Int = when (selectedVendor) {
     AsrVendor.SiliconFlow -> 1
     AsrVendor.ElevenLabs -> 4
+    AsrVendor.Baidu -> 4
     AsrVendor.StepAudio -> stepAudioPrimaryItemCount(
         customEndpointVisible = stepAudioCustomEndpointVisible,
         customModelVisible = stepAudioCustomModelVisible
@@ -1304,6 +1349,8 @@ private const val GEMINI_ASR_GUIDE_URL =
     "https://bibidocs.brycewg.com/getting-started/asr-providers.html#gemini"
 private const val ELEVEN_ASR_GUIDE_URL =
     "https://bibidocs.brycewg.com/getting-started/asr-providers.html#elevenlabs"
+private const val BAIDU_ASR_GUIDE_URL =
+    "https://console.bce.baidu.com/ai/#/ai/speech/app/list"
 private const val COHERE_DASHBOARD_URL = "https://dashboard.cohere.com/api-keys"
 internal const val COHERE_CUSTOM_MODEL_OPTION_ID = "__custom__"
 private const val OPENROUTER_KEY_URL = "https://openrouter.ai/settings/keys"

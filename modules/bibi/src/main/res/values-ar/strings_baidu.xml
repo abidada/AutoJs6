@@ -1,0 +1,18 @@
+<resources>
+    <string name="vendor_baidu">بايدو</string>
+    <string name="baidu_section_title">التعرف على الكلام من بايدو</string>
+    <string name="label_baidu_app_id">معرّف تطبيق بايدو (اختياري)</string>
+    <string name="label_baidu_api_key">مفتاح API الخاص بايدو</string>
+    <string name="label_baidu_secret">المفتاح السري الخاص بايدو</string>
+    <string name="error_missing_baidu_keys">يرجى أولاً تكوين مفتاح API والمفتاح السري الخاصين بايدو</string>
+    <string name="error_baidu_token_failed">فشل الحصول على access_token من بايدو، يرجى التحقق من مفتاح API والمفتاح السري</string>
+    <string name="error_baidu_audio_quality">بايدو: جودة الصوت ضعيفة جداً، يرجى التحدث بوضوح بالقرب من الميكروفون ثم إعادة المحاولة</string>
+    <string name="error_baidu_auth_failed">فشل المصادقة مع بايدو، يرجى التحقق من مفتاح API والمفتاح السري</string>
+    <string name="error_baidu_server_busy">خادم بايدو مشغول، يرجى إعادة المحاولة لاحقاً</string>
+    <string name="error_baidu_qps_limit">تم تجاوز حد الطلبات المتزامنة لبايدو، يرجى إعادة المحاولة لاحقاً</string>
+    <string name="error_baidu_daily_limit">تم تجاوز حد الطلبات اليومي لبايدو</string>
+    <string name="error_baidu_audio_too_long">بايدو: الصوت طويل جداً، يجب ألا يتجاوز الطلب الواحد 60 ثانية</string>
+    <string name="error_baidu_audio_too_short">بايدو: الصوت قصير جداً ولا يمكن التعرف عليه</string>
+    <string name="error_baidu_audio_invalid">بايدو: بيانات الصوت غير صالحة</string>
+    <string name="error_baidu_api_failed">فشل التعرف على الكلام من بايدو (رمز الخطأ %1$d: %2$s)</string>
+</resources>

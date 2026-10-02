@@ -284,6 +284,18 @@ internal object AsrVendorRegistry {
                 AsrVendorDisplayTag.Accurate
             ),
             capabilities = localStreamingCapabilities()
+        ),
+        descriptor(
+            vendor = AsrVendor.Baidu,
+            displayNameResId = R.string.vendor_baidu,
+            pickerOrder = 18,
+            tags = listOf(
+                AsrVendorDisplayTag.Online,
+                AsrVendorDisplayTag.NonStreaming,
+                AsrVendorDisplayTag.ChineseDialect,
+                AsrVendorDisplayTag.Accurate
+            ),
+            capabilities = onlineFileCapabilities()
         )
     )
 

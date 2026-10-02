@@ -130,6 +130,7 @@ internal object CurrentAsrConstructionBaseline {
         AsrVendor.StepAudio -> file("StepAudioFileAsrEngine")
         AsrVendor.Zhipu -> file("ZhipuFileAsrEngine")
         AsrVendor.Cohere -> file("CohereFileAsrEngine")
+        AsrVendor.Baidu -> file("BaiduFileAsrEngine")
         AsrVendor.SenseVoice -> if (settings.pseudoStreamEnabled) {
             localPseudo("SenseVoicePseudoStreamAsrEngine")
         } else {
@@ -198,6 +199,7 @@ internal object CurrentAsrConstructionBaseline {
         AsrVendor.StepAudio -> pushAdapter("StepAudioFileAsrEngine")
         AsrVendor.Zhipu -> pushAdapter("ZhipuFileAsrEngine")
         AsrVendor.Cohere -> pushAdapter("CohereFileAsrEngine")
+        AsrVendor.Baidu -> pushAdapter("BaiduFileAsrEngine")
         AsrVendor.SenseVoice -> if (settings.pseudoStreamEnabled) {
             use(CurrentAsrEngineFamily.PushPcmPseudoStream, "SenseVoicePushPcmPseudoStreamAsrEngine")
         } else {
@@ -233,6 +235,7 @@ internal object CurrentAsrConstructionBaseline {
         AsrVendor.StepAudio,
         AsrVendor.Zhipu,
         AsrVendor.Cohere,
+        AsrVendor.Baidu,
         AsrVendor.FunAsrNano,
         AsrVendor.Qwen3Asr,
         AsrVendor.Parakeet -> false

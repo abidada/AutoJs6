@@ -1,0 +1,18 @@
+<resources>
+    <string name="vendor_baidu">Baidu</string>
+    <string name="baidu_section_title">Baidu 音声認識</string>
+    <string name="label_baidu_app_id">Baidu AppID（任意）</string>
+    <string name="label_baidu_api_key">Baidu API Key</string>
+    <string name="label_baidu_secret">Baidu Secret Key</string>
+    <string name="error_missing_baidu_keys">先に Baidu の API Key と Secret Key を設定してください</string>
+    <string name="error_baidu_token_failed">Baidu の access_token の取得に失敗しました。API Key / Secret Key を確認してください</string>
+    <string name="error_baidu_audio_quality">Baidu：音声品質が低すぎます。マイクに近づいてはっきり話してから再試行してください</string>
+    <string name="error_baidu_auth_failed">Baidu の認証に失敗しました。API Key / Secret Key を確認してください</string>
+    <string name="error_baidu_server_busy">Baidu サーバーが混み合っています。後でもう一度お試しください</string>
+    <string name="error_baidu_qps_limit">Baidu の同時リクエスト制限を超えました。後でもう一度お試しください</string>
+    <string name="error_baidu_daily_limit">Baidu の本日のリクエスト上限に達しました</string>
+    <string name="error_baidu_audio_too_long">Baidu：音声が長すぎます。1 回のリクエストは 60 秒以内にしてください</string>
+    <string name="error_baidu_audio_too_short">Baidu：音声が短すぎて認識できません</string>
+    <string name="error_baidu_audio_invalid">Baidu：音声データが無効です</string>
+    <string name="error_baidu_api_failed">Baidu 認識に失敗しました（エラーコード %1$d：%2$s）</string>
+</resources>

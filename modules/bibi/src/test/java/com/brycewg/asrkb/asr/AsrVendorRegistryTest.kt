@@ -65,7 +65,8 @@ class AsrVendorRegistryTest {
                 AsrVendor.Qwen3Asr,
                 AsrVendor.Parakeet,
                 AsrVendor.FireRedAsr,
-                AsrVendor.XAsr
+                AsrVendor.XAsr,
+                AsrVendor.Baidu
             ),
             AsrVendorRegistry.ordered().map { it.vendor }
         )
@@ -213,6 +214,13 @@ class AsrVendorRegistryTest {
                 AsrVendorDisplayTag.Local,
                 AsrVendorDisplayTag.Recommended,
                 AsrVendorDisplayTag.Streaming,
+                AsrVendorDisplayTag.Accurate
+            ),
+            AsrVendor.Baidu to metadata(
+                R.string.vendor_baidu,
+                AsrVendorDisplayTag.Online,
+                AsrVendorDisplayTag.NonStreaming,
+                AsrVendorDisplayTag.ChineseDialect,
                 AsrVendorDisplayTag.Accurate
             )
         )
@@ -396,7 +404,8 @@ class AsrVendorRegistryTest {
             "x-asr" to AsrVendor.XAsr,
             LEGACY_X_ASR_VENDOR_ID to AsrVendor.XAsr,
             "mimo" to AsrVendor.MiMo,
-            "mimo_asr" to AsrVendor.MiMo
+            "mimo_asr" to AsrVendor.MiMo,
+            "baidu" to AsrVendor.Baidu
         )
 
         aliases.forEach { (id, vendor) ->

@@ -182,6 +182,12 @@ internal fun AsrSettingsRouteContent(
                         onElevenLanguageSelected = { language ->
                             onlineState.onElevenLanguageChange(language)
                         },
+                        baiduAppId = onlineState.baiduAppId,
+                        onBaiduAppIdChange = onlineState.onBaiduAppIdChange,
+                        baiduApiKey = onlineState.baiduApiKey,
+                        onBaiduApiKeyChange = onlineState.onBaiduApiKeyChange,
+                        baiduSecret = onlineState.baiduSecret,
+                        onBaiduSecretChange = onlineState.onBaiduSecretChange,
                         stepAudioApiKey = onlineState.stepAudioApiKey,
                         onStepAudioApiKeyChange = onlineState.onStepAudioApiKeyChange,
                         stepAudioEndpoint = onlineState.stepAudioEndpoint,
@@ -357,6 +363,7 @@ private fun currentAsrVendorPrimaryItemCount(
 
     AsrVendor.SiliconFlow,
     AsrVendor.ElevenLabs,
+    AsrVendor.Baidu,
     AsrVendor.StepAudio,
     AsrVendor.Zhipu,
     AsrVendor.Cohere,

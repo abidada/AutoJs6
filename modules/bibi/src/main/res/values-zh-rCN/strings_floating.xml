@@ -180,6 +180,9 @@
     <string name="listening_panel_placeholder">说点什么…</string>
     <string name="listening_panel_listening">正在听…</string>
     <string name="listening_panel_error_prefix">识别出错：%1$s</string>
+    <string name="listening_panel_copy">复制</string>
+    <string name="listening_panel_share">分享</string>
+    <string name="listening_panel_copied">已复制</string>
     <string name="title_voice_dispatch">语音分发</string>
     <string name="title_voice_dispatch_rules">语音规则分发</string>
     <string name="title_voice_dispatch_new">新建规则</string>

@@ -40,6 +40,12 @@ internal object PrefsAsrVendorFields {
             VendorField.language(KEY_ELEVEN_LANGUAGE_CODE),
             VendorField.streamingToggle(KEY_ELEVEN_STREAMING_ENABLED, default = true)
         ),
+        // 百度短语音识别：ApiKey + SecretKey 换取 access_token；AppID 可选
+        AsrVendor.Baidu to listOf(
+            VendorField.credential(KEY_BAIDU_APP_ID, required = false),
+            VendorField.credential(KEY_BAIDU_API_KEY),
+            VendorField.credential(KEY_BAIDU_SECRET_KEY)
+        ),
         AsrVendor.OpenAI to listOf(
             VendorField.endpoint(
                 KEY_OA_ASR_ENDPOINT,
