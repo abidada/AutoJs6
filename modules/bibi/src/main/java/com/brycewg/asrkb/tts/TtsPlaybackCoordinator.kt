@@ -138,15 +138,26 @@ object TtsPlaybackCoordinator {
     }
 
     private fun playRequest(request: SpeakRequest): Boolean {
-        return try {
+        val startMs = android.os.SystemClock.elapsedRealtime()
+        var ok = false
+        try {
             val context = appContext ?: return false
             val prefs = Prefs(context)
             if (!request.bypassToggle && !prefs.ttsEnabled) {
                 Log.d(TAG, "TTS disabled, drop request (${request.text.length} chars)")
                 return false
             }
-            val engine = OfflineTtsManager.loadSync(context, prefs) ?: return false
-            var ok = false
+            val loadStartMs = android.os.SystemClock.elapsedRealtime()
+            val engine = OfflineTtsManager.loadSync(context, prefs)
+            val engineLoadMs = android.os.SystemClock.elapsedRealtime() - loadStartMs
+            if (engine == null) {
+                com.brycewg.asrkb.store.debug.DebugLogManager.log(
+                    "tts",
+                    "speak_no_engine",
+                    data = mapOf("engineLoadMs" to engineLoadMs)
+                )
+                return false
+            }
             engine.speak(request.text, prefs.ttsSpeed, object : TtsSpeakCallback {
                 override fun onDone() {
                     ok = true
@@ -157,10 +168,25 @@ object TtsPlaybackCoordinator {
                     ok = false
                 }
             })
-            ok
+            return ok
         } catch (t: Throwable) {
             Log.e(TAG, "TTS playback failed", t)
-            false
+            return false
+        } finally {
+            val totalMs = android.os.SystemClock.elapsedRealtime() - startMs
+            try {
+                com.brycewg.asrkb.store.debug.DebugLogManager.log(
+                    "tts",
+                    "speak_done",
+                    data = mapOf(
+                        "chars" to request.text.length,
+                        "ms" to totalMs,
+                        "ok" to ok
+                    )
+                )
+            } catch (_: Throwable) {
+            }
+            Log.d(TAG, "playRequest finished in ${totalMs}ms ok=$ok (${request.text.length} chars)")
         }
     }
 

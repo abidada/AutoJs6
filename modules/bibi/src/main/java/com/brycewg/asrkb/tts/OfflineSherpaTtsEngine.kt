@@ -36,6 +36,12 @@ internal class OfflineSherpaTtsEngine private constructor(
         /** 播完等待上限（正常短播报几秒内结束；超时兜底防止工作线程卡死） */
         private const val DRAIN_TIMEOUT_MS = 30_000
 
+        /** 播放头连续无进展的判定轮数（6 × 50ms = 300ms 无进展即视为播完） */
+        private const val DRAIN_STAGNANT_POLLS = 6
+
+        /** 写入停滞保护上限（缓冲满且系统侧长时间不消费时抛错，防工作线程卡死） */
+        private const val WRITE_STALL_TIMEOUT_MS = 5_000L
+
         @Volatile private var classLoadFailed: Boolean = false
 
         fun create(context: Context, modelFiles: TtsLocalModelCatalog.ModelFiles, numThreads: Int): OfflineSherpaTtsEngine? {
@@ -268,10 +274,16 @@ internal class OfflineSherpaTtsEngine private constructor(
         var offset = 0
         // 非阻塞写入 + 轮询：WRITE_BLOCKING 在 stop() 暂停轨道后会永久阻塞，
         // 非阻塞写配合 cancelled 检查保证打断能立刻从写循环里退出
+        var stallMs = 0L
         while (offset < shorts.size && !cancelled) {
             val written = t.write(shorts, offset, shorts.size - offset, AudioTrack.WRITE_NON_BLOCKING)
             if (written < 0) throw IllegalStateException("AudioTrack write failed: $written")
             if (written == 0) {
+                // 缓冲满且长时间无进展（轨道被系统暂停/路由异常）：防永久卡死
+                stallMs += 10L
+                if (stallMs > WRITE_STALL_TIMEOUT_MS) {
+                    throw IllegalStateException("AudioTrack write stalled (no drain in ${WRITE_STALL_TIMEOUT_MS}ms)")
+                }
                 try {
                     Thread.sleep(10)
                 } catch (_: InterruptedException) {
@@ -279,6 +291,7 @@ internal class OfflineSherpaTtsEngine private constructor(
                 }
                 continue
             }
+            stallMs = 0L
             offset += written
         }
     }
@@ -286,15 +299,22 @@ internal class OfflineSherpaTtsEngine private constructor(
     /**
      * 等待缓冲播完再返回：stop() 后 playbackHeadPosition 追平写入帧数即播完。
      * onDone 必须晚于声音结束，否则开麦闸口会在尾音期间放行重开麦克风。
+     *
+     * 注意：部分机型 stop() 后会直接丢弃剩余缓冲，播放头停在写入总数之下不再推进；
+     * 因此除总时长兜底外，还以「播放头连续 ~300ms 无进展」作为播完判据，
+     * 否则每次播报都会白等满 DRAIN_TIMEOUT_MS。
      */
     private fun drainTrack(t: AudioTrack) {
+        val total = writtenFrames
+        if (total <= 0L) return
         try {
             t.stop()
         } catch (t2: Throwable) {
             Log.w(TAG, "Failed to drain audio track", t2)
             return
         }
-        val total = writtenFrames
+        var lastHead = -1L
+        var stagnantPolls = 0
         var waited = 0
         while (!cancelled && waited < DRAIN_TIMEOUT_MS) {
             val head = try {
@@ -303,6 +323,12 @@ internal class OfflineSherpaTtsEngine private constructor(
                 break
             }
             if (head >= total) break
+            stagnantPolls = if (head == lastHead) stagnantPolls + 1 else 0
+            if (stagnantPolls >= DRAIN_STAGNANT_POLLS) {
+                Log.d(TAG, "Drain finished by head stall (head=$head total=$total)")
+                break
+            }
+            lastHead = head
             try {
                 Thread.sleep(50)
                 waited += 50
