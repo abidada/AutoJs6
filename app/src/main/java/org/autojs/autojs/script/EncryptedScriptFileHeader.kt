@@ -16,15 +16,21 @@ object EncryptedScriptFileHeader {
 
     @JvmStatic
     fun getHeaderFlags(file: File): Short {
-        val fis = FileInputStream(file)
-        val bytes = ByteArray(BLOCK_SIZE)
-        if (fis.read(bytes) < BLOCK_SIZE) {
-            return FLAG_INVALID_FILE
+        // Always close the stream on all return paths; previously the FileInputStream
+        // leaked on every script execution-mode detection, causing a CloseGuard warning
+        // ("A resource failed to call close") after each script run.
+        // zh-CN: 所有返回路径都必须关闭流; 此前每次脚本执行模式检测都会泄漏一个 FileInputStream,
+        // 导致每次脚本运行后出现 CloseGuard 告警 ("A resource failed to call close").
+        FileInputStream(file).use { fis ->
+            val bytes = ByteArray(BLOCK_SIZE)
+            if (fis.read(bytes) < BLOCK_SIZE) {
+                return FLAG_INVALID_FILE
+            }
+            if (!isValidFile(bytes)) {
+                return FLAG_INVALID_FILE
+            }
+            return (bytes[BLOCK.size].toShort() * 256 + bytes[BLOCK.size + 1]).toShort()
         }
-        if (!isValidFile(bytes)) {
-            return FLAG_INVALID_FILE
-        }
-        return (bytes[BLOCK.size].toShort() * 256 + bytes[BLOCK.size + 1]).toShort()
     }
 
     @JvmStatic

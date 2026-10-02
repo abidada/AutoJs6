@@ -14,6 +14,7 @@ import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Display;
 import android.view.Surface;
@@ -73,6 +74,10 @@ public class ScreenCapturer {
     private final Options mOptions;
     private ImageReader mImageReader;
     private MediaProjection mMediaProjection;
+    // Callback registered on Android 14+ (required before createVirtualDisplay),
+    // kept as a field so it can be unregistered exactly once in release().
+    // zh-CN: Android 14+ 要求 createVirtualDisplay 前必须已注册回调, 保存引用以便 release 时反注册.
+    private MediaProjection.Callback mMediaProjectionCallback;
     private VirtualDisplay mVirtualDisplay;
     private OnScreenCaptureAvailableListener mOnScreenCaptureAvailableListener;
     private int mDetectedOrientation;
@@ -80,6 +85,10 @@ public class ScreenCapturer {
     private int mPixelFormat = PixelFormat.RGBA_8888;
     private volatile boolean mImageAvailable = false;
     private boolean mShouldRefreshVirtualDisplayOnNextCapture = false;
+    // Idempotency guard for release(): it may be invoked both explicitly on engine exit
+    // and again later via finalize(); the second call must be a no-op.
+    // zh-CN: release 幂等保护: 引擎退出时会显式释放, 之后 finalize 可能再次触发, 二次调用必须无效.
+    private volatile boolean mReleased = false;
 
     public ScreenCapturer(Context context, Intent data, Options options, Handler handler) {
         mOptions = options;
@@ -248,10 +257,19 @@ public class ScreenCapturer {
     private void initVirtualDisplay(int width, int height, int screenDensity) {
         refreshImageReader(width, height);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            mMediaProjection.registerCallback(new MediaProjection.Callback() {
+        // Android 14+ requires a callback to be registered before createVirtualDisplay.
+        // Register exactly once on the MAIN looper: the script servant looper may be
+        // recycled (on engine exit) before MediaProjection#stop dispatches onStop,
+        // which previously caused "sending message to a Handler on a dead thread" warnings.
+        // zh-CN:
+        // Android 14+ 要求 createVirtualDisplay 前必须已注册回调.
+        // 必须只注册一次, 且挂载到主线程 Looper: 脚本 servant Looper 可能在
+        // MediaProjection#stop 派发 onStop 之前已被回收 (引擎退出), 此前会导致死线程告警.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && mMediaProjectionCallback == null) {
+            mMediaProjectionCallback = new MediaProjection.Callback() {
                 /* Empty body. */
-            }, mHandler);
+            };
+            mMediaProjection.registerCallback(mMediaProjectionCallback, new Handler(Looper.getMainLooper()));
         }
 
         mVirtualDisplay = mMediaProjection.createVirtualDisplay(
@@ -464,19 +482,41 @@ public class ScreenCapturer {
         }
     }
 
+    /**
+     * Release all capture resources. Idempotent: repeated calls are no-ops.
+     * zh-CN: 释放全部截屏资源. 幂等: 重复调用为无效操作.
+     */
     public void release() {
-        if (mMediaProjection != null) {
-            mMediaProjection.stop();
-            mMediaProjection = null;
-        }
+        if (mReleased) return;
+        mReleased = true;
+
+        // Release the display pipeline first, then stop the projection itself.
+        // Stopping the projection while a VirtualDisplay is still attached may leave
+        // the pipeline in an inconsistent state (and can leak the last acquired frame).
+        // zh-CN: 先释放显示管线 (VirtualDisplay/ImageReader/帧), 最后停止投屏本身.
+        // 投屏仍在挂载 VirtualDisplay 时直接 stop 可能导致管线状态不一致 (并泄漏最后获取的帧).
         if (mVirtualDisplay != null) {
             mVirtualDisplay.release();
+            mVirtualDisplay = null;
         }
         if (mImageReader != null) {
             mImageReader.close();
+            mImageReader = null;
         }
         if (mUnderUsingImage != null) {
             mUnderUsingImage.close();
+            mUnderUsingImage = null;
+        }
+        if (mMediaProjection != null) {
+            // Unregister the callback before stop() so the (empty) onStop dispatch
+            // can never reach an already-torn-down handler.
+            // zh-CN: stop() 之前先反注册回调, 避免 (空实现的) onStop 派发到已销毁的 handler.
+            if (mMediaProjectionCallback != null) {
+                mMediaProjection.unregisterCallback(mMediaProjectionCallback);
+                mMediaProjectionCallback = null;
+            }
+            mMediaProjection.stop();
+            mMediaProjection = null;
         }
 
         // Unregister display listener to avoid leaks.
