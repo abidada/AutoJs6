@@ -260,6 +260,20 @@ open class ExplorerView : ThemeColorSwipeRefreshLayout, SwipeRefreshLayout.OnRef
         mRefreshDisposable = null
     }
 
+    /**
+     * Unregister this view (and its project toolbar) from the explorer event bus; idempotent.
+     * Must be called when the view is discarded: onDetachedFromWindow alone misses views that
+     * were registered by setExplorer() before ever being attached and then discarded.
+     * zh-CN: 从事件总线注销本视图与项目工具栏 (幂等). setExplorer 可能先于 attach 注册,
+     * 若视图未经完整 attach/detach 周期即被丢弃, onDetachedFromWindow 不会触发, 需在销毁时显式调用.
+     */
+    fun unregisterEventListener() {
+        mExplorer?.unregisterChangeListener(this)
+        if (this::mProjectToolbar.isInitialized) {
+            Explorers.workspace().unregisterChangeListener(mProjectToolbar)
+        }
+    }
+
     override fun onRefresh() {
         currentPageState.scrollY = 0
         mExplorer?.notifyChildrenChanged(currentPage)

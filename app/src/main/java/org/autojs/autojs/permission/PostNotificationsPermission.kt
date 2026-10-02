@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.afollestad.materialdialogs.MaterialDialog
 import org.autojs.autojs.core.pref.Pref
 import org.autojs.autojs.runtime.api.Permissions
@@ -153,6 +155,15 @@ class PostNotificationsPermission(override val context: Context) : PermissionIte
         @JvmStatic
         fun setPostNotificationsResultCallback(activity: FragmentActivity, callback: (Boolean) -> Unit) {
             postNotificationsResultCallbackCache[activity] = callback
+            // The callback is usually removed when fired; if it never fires, the entry
+            // would pin the activity forever. Remove it on destroy as a guarantee.
+            // zh-CN: 回调触发时会被移除; 若一直未触发, 条目会永久钉住 activity, 销毁时兜底移除.
+            activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
+                override fun onDestroy(owner: LifecycleOwner) {
+                    postNotificationsResultCallbackCache.remove(activity)
+                    owner.lifecycle.removeObserver(this)
+                }
+            })
         }
 
     }

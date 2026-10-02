@@ -7,7 +7,9 @@ import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import org.autojs.autojs.permission.PostNotificationsPermission
 import org.autojs.autojs.util.IntentUtils.startSafely
 import org.autojs.autojs.util.RomUtils
@@ -88,6 +90,15 @@ class Permissions(private val context: Context) {
                 }
             }.also { launcher ->
                 requestMultiplePermissionsLauncherCache[activity] = launcher
+                // The launcher holds the activity strongly, so the weak key would never
+                // become stale by itself; the entry must be removed explicitly.
+                // zh-CN: launcher 强持有 activity, 弱键永远不会自行失效, 必须在销毁时显式移除.
+                activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
+                    override fun onDestroy(owner: LifecycleOwner) {
+                        requestMultiplePermissionsLauncherCache.remove(activity)
+                        owner.lifecycle.removeObserver(this)
+                    }
+                })
             }
         }
 

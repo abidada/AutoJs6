@@ -218,6 +218,11 @@ object Pref {
     }
 
     @JvmStatic
+    fun unregisterOnSharedPreferenceChangeListener(listener: OnSharedPreferenceChangeListener) {
+        sPref.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
+    @JvmStatic
     fun refreshLastUpdatesCheckedTimestamp() = updateTimestamp(R.string.key_last_updates_checked)
 
     @JvmStatic

@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.Gravity
@@ -128,6 +129,16 @@ class MainActivity : BaseActivity(), DelegateHost, HostActivity {
     private var mSearchViewItem: SearchViewItem? = null
     private val mA11yTool = AccessibilityTool(this)
 
+    // Held as a field so it can be unregistered in onDestroy; the lambda captures
+    // this Activity and the prefs singleton would otherwise pin it forever.
+    // zh-CN: 监听器捕获了 Activity 且共享偏好是进程级单例, 必须在销毁时注销, 否则泄漏.
+    private val mKeepScreenOnPrefListener =
+        SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == key(R.string.key_keep_screen_on_when_in_foreground)) {
+                ViewUtils.configKeepScreenOnWhenInForeground(this)
+            }
+        }
+
     private val isCurrentPageDocs: Boolean
         get() {
             val pageTitle = mPagerAdapter.getPageTitle(mViewPager.currentItem)
@@ -173,11 +184,7 @@ class MainActivity : BaseActivity(), DelegateHost, HostActivity {
             onBackPressedDispatcher.addCallback(this, mBackPressedCallback)
         }
 
-        Pref.registerOnSharedPreferenceChangeListener { _, key ->
-            if (key == key(R.string.key_keep_screen_on_when_in_foreground)) {
-                ViewUtils.configKeepScreenOnWhenInForeground(this)
-            }
-        }
+        Pref.registerOnSharedPreferenceChangeListener(mKeepScreenOnPrefListener)
 
         Permissions.registerRequestMultiplePermissionsLauncher(this)
 
@@ -470,6 +477,7 @@ class MainActivity : BaseActivity(), DelegateHost, HostActivity {
 
     override fun onDestroy() {
         super.onDestroy()
+        Pref.unregisterOnSharedPreferenceChangeListener(mKeepScreenOnPrefListener)
         mSearchViewItem = null
     }
 

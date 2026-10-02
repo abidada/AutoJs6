@@ -207,6 +207,7 @@ class ExplorerFragment : ViewPagerFragment(0), OnFloatingActionButtonClickListen
 
     override fun onDestroyView() {
         super.onDestroyView()
+        mExplorerView?.unregisterEventListener()
         mExplorerView = null
         mFloatingActionMenu = null
     }

@@ -128,7 +128,11 @@ public class Explorer {
     }
 
     public void unregisterChangeListener(Object subscriber) {
-        mEventBus.unregister(subscriber);
+        // Idempotent: callers may unregister on both view-detach and fragment-teardown paths.
+        // zh-CN: 幂等注销; 视图 detach 与 Fragment 销毁两条路径都会调用, 未注册时直接注销会抛异常.
+        if (mEventBus.isRegistered(subscriber)) {
+            mEventBus.unregister(subscriber);
+        }
     }
 
 }
