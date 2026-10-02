@@ -12,10 +12,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +26,6 @@ import androidx.compose.material.icons.automirrored.rounded.Help
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.BarChart
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.History
@@ -40,13 +37,6 @@ import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.VolumeUp
-import androidx.compose.material.icons.rounded.WorkspacePremium
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -59,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -79,11 +68,6 @@ import com.brycewg.asrkb.ui.settings.compose.model.SettingsSection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import top.yukonga.miuix.kmp.basic.Card as MiuixCard
-import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
-import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
-import top.yukonga.miuix.kmp.basic.Text as MiuixText
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun SettingsHomeScreen(
@@ -103,7 +87,6 @@ fun SettingsHomeScreen(
         mutableStateOf(SettingsHomeSnapshot.placeholder(context))
     }
     var hasRecentApiErrors by remember { mutableStateOf(false) }
-    var showProPromo by remember { mutableStateOf(!prefs.proPromoShown) }
     var refreshToken by remember { mutableStateOf(0) }
     val pagerState = rememberPagerState(
         initialPage = selectedTab,
@@ -147,7 +130,6 @@ fun SettingsHomeScreen(
         }
     }
     LaunchedEffect(refreshToken) {
-        showProPromo = !prefs.proPromoShown
         val loaded = withContext(Dispatchers.IO) {
             SettingsHomeLoadedState(
                 snapshot = SettingsHomeSnapshot.fromPrefs(context, prefs),
@@ -229,20 +211,6 @@ fun SettingsHomeScreen(
                 onClick = { onPushRoute(BibiSettingsRoute.Search) },
                 modifier = searchBarPadding.fillMaxWidth()
             )
-            if (showProPromo) {
-                ProPromoHomeCard(
-                    uiMode = uiMode,
-                    onOpen = {
-                        prefs.proPromoShown = true
-                        showProPromo = false
-                        onPushRoute(BibiSettingsRoute.Paywall)
-                    },
-                    onDismiss = {
-                        prefs.proPromoShown = true
-                        showProPromo = false
-                    }
-                )
-            }
             HorizontalPager(
                 state = pagerState,
                 beyondViewportPageCount = 0,
@@ -272,90 +240,6 @@ fun SettingsHomeScreen(
                         contentPadding = listContentPadding
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProPromoHomeCard(uiMode: BibiUiMode, onOpen: () -> Unit, onDismiss: () -> Unit) {
-    val modifier = Modifier
-        .fillMaxWidth()
-        .padding(
-            start = SettingsLayoutMetrics.PageHorizontalPadding,
-            top = SettingsLayoutMetrics.PageVerticalPadding,
-            end = SettingsLayoutMetrics.PageHorizontalPadding
-        )
-    when (uiMode) {
-        BibiUiMode.Material -> Card(
-            onClick = onOpen,
-            modifier = modifier,
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-        ) {
-            ProPromoHomeCardContent(uiMode, onDismiss)
-        }
-
-        BibiUiMode.Miuix -> MiuixCard(modifier = modifier) {
-            ProPromoHomeCardContent(uiMode, onDismiss, onOpen)
-        }
-    }
-}
-
-@Composable
-private fun ProPromoHomeCardContent(
-    uiMode: BibiUiMode,
-    onDismiss: () -> Unit,
-    onOpen: (() -> Unit)? = null
-) {
-    val dismissLabel = stringResource(R.string.pro_paywall_home_dismiss)
-    Row(
-        modifier = Modifier.padding(start = 16.dp, end = 4.dp, top = 12.dp, bottom = 12.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-    ) {
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .then(if (onOpen != null) Modifier.clickable(onClick = onOpen) else Modifier),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-        ) {
-            when (uiMode) {
-                BibiUiMode.Material -> Icon(Icons.Rounded.WorkspacePremium, contentDescription = null)
-                BibiUiMode.Miuix -> MiuixIcon(Icons.Rounded.WorkspacePremium, contentDescription = null)
-            }
-            Column(modifier = Modifier.padding(horizontal = 12.dp)) {
-                when (uiMode) {
-                    BibiUiMode.Material -> {
-                        Text(
-                            stringResource(R.string.pro_paywall_home_title),
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-                        )
-                        Text(
-                            stringResource(R.string.pro_paywall_home_summary),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-
-                    BibiUiMode.Miuix -> {
-                        MiuixText(
-                            stringResource(R.string.pro_paywall_home_title),
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-                        )
-                        MiuixText(
-                            stringResource(R.string.pro_paywall_home_summary),
-                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                            style = MiuixTheme.textStyles.footnote1
-                        )
-                    }
-                }
-            }
-        }
-        when (uiMode) {
-            BibiUiMode.Material -> IconButton(onClick = onDismiss) {
-                Icon(Icons.Rounded.Close, contentDescription = dismissLabel)
-            }
-
-            BibiUiMode.Miuix -> MiuixIconButton(onClick = onDismiss) {
-                MiuixIcon(Icons.Rounded.Close, contentDescription = dismissLabel)
             }
         }
     }

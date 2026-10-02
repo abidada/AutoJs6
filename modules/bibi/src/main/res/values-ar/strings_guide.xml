@@ -74,9 +74,8 @@
     <string name="onboarding_privacy_hint">لن يُرفع نص التعرّف أو محتوى شخصي. يمكن تغيير ذلك في أي وقت.</string>
 
     <string name="onboarding_links_title">معلومات ذات صلة</string>
-    <string name="onboarding_links_desc">تعرّف أكثر على المشروع والإصدارات المتاحة.</string>
+    <string name="onboarding_links_desc">تعرّف أكثر على المشروع.</string>
     <string name="onboarding_links_project">فتح صفحة المشروع</string>
     <string name="onboarding_links_website">فتح موقع المشروع</string>
     <string name="onboarding_links_docs">فتح الوثائق</string>
-    <string name="onboarding_links_pro">تعرّف على Pro</string>
 </resources>

@@ -74,9 +74,8 @@
     <string name="onboarding_privacy_hint">不会上传识别文本和个人内容，后续可随时在设置中更改。</string>
 
     <string name="onboarding_links_title">相关信息</string>
-    <string name="onboarding_links_desc">查看项目主页、文档和 Pro 版本介绍。</string>
+    <string name="onboarding_links_desc">查看项目主页和文档。</string>
     <string name="onboarding_links_project">查看项目主页</string>
     <string name="onboarding_links_website">查看项目官网</string>
     <string name="onboarding_links_docs">查看项目文档</string>
-    <string name="onboarding_links_pro">了解 Pro</string>
 </resources>

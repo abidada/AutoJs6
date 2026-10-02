@@ -30,11 +30,9 @@ import com.brycewg.asrkb.asr.AsrVendor
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.BaseActivity
 import com.brycewg.asrkb.ui.DownloadSourceOption
-import com.brycewg.asrkb.ui.SettingsActivity
 import com.brycewg.asrkb.ui.floating.floatingInputNeedsAccessibility
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsTheme
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.setup.compose.OnboardingAsrChoice
@@ -99,8 +97,7 @@ class OnboardingGuideActivity : BaseActivity() {
                     onDataCollectionChange = ::updateDataCollectionEnabled,
                     onOpenProject = { openUrl(getString(R.string.about_project_url)) },
                     onOpenWebsite = { openUrl(getString(R.string.about_website_url)) },
-                    onOpenDocs = { openUrl(getString(R.string.about_docs_url)) },
-                    onOpenPro = ::showProPromo
+                    onOpenDocs = { openUrl(getString(R.string.about_docs_url)) }
                 )
                 OnboardingDialogHost(
                     state = onboardingDialog,
@@ -297,20 +294,6 @@ class OnboardingGuideActivity : BaseActivity() {
         messageDismissAction = null
         messageDialogState.value = null
         dismissAction?.invoke()
-    }
-
-    private fun showProPromo() {
-        try {
-            startActivity(
-                Intent(this, SettingsActivity::class.java).putExtra(
-                    SettingsActivity.EXTRA_INITIAL_ROUTE,
-                    BibiSettingsRoute.Paywall.id
-                )
-            )
-            prefs.proPromoShown = true
-        } catch (t: Throwable) {
-            Log.e(TAG, "Failed to open Pro paywall", t)
-        }
     }
 
     private fun finishOnboarding() {

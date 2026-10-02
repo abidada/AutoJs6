@@ -142,13 +142,7 @@ private fun SettingsRouteContent(
         BibiSettingsRoute.About -> AboutSettingsScreen(
             uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
-            onOpenPro = { onPushRoute(BibiSettingsRoute.Paywall) },
             actions = actions
-        )
-
-        BibiSettingsRoute.Paywall -> ProPaywallScreen(
-            uiMode = uiState.uiMode,
-            onBack = { onPopRoute() }
         )
 
         BibiSettingsRoute.UsageStats -> UsageStatsSettingsScreen(

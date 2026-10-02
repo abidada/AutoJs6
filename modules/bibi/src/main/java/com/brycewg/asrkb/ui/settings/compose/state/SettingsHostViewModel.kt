@@ -138,7 +138,6 @@ class SettingsHostViewModel(
         BibiSettingsRoute.Backup,
         BibiSettingsRoute.Other,
         BibiSettingsRoute.About,
-        BibiSettingsRoute.Paywall,
         BibiSettingsRoute.UsageStats,
         BibiSettingsRoute.Search,
         BibiSettingsRoute.Home -> 2

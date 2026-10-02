@@ -75,9 +75,8 @@
     <string name="onboarding_privacy_hint">認識テキストや個人情報は送信されません。設定でいつでも変更できます。</string>
 
     <string name="onboarding_links_title">関連情報</string>
-    <string name="onboarding_links_desc">プロジェクト情報、ドキュメント、Pro 版の紹介を確認できます。</string>
+    <string name="onboarding_links_desc">プロジェクト情報やドキュメントを確認できます。</string>
     <string name="onboarding_links_project">プロジェクトページを開く</string>
     <string name="onboarding_links_website">公式サイトを開く</string>
     <string name="onboarding_links_docs">ドキュメントを開く</string>
-    <string name="onboarding_links_pro">Pro 版を知る</string>
 </resources>

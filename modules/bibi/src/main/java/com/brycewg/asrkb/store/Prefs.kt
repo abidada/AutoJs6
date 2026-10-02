@@ -2116,11 +2116,6 @@ class Prefs(context: Context) {
         get() = sp.getBoolean(KEY_SHOWN_ONBOARDING_GUIDE_V2_ONCE, false)
         set(value) = sp.edit { putBoolean(KEY_SHOWN_ONBOARDING_GUIDE_V2_ONCE, value) }
 
-    // Pro 版首页提示是否已处理
-    var proPromoShown: Boolean
-        get() = sp.getBoolean(KEY_PRO_PROMO_SHOWN, false)
-        set(value) = sp.edit { putBoolean(KEY_PRO_PROMO_SHOWN, value) }
-
     // 隐私：关闭识别历史记录
     var disableAsrHistory: Boolean
         get() = sp.getBoolean(KEY_DISABLE_ASR_HISTORY, false)

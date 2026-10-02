@@ -186,8 +186,7 @@ internal fun OnboardingLinksPage(
     contentPadding: PaddingValues = SettingsLayoutMetrics.PageContentPadding,
     onOpenProject: () -> Unit,
     onOpenWebsite: () -> Unit,
-    onOpenDocs: () -> Unit,
-    onOpenPro: () -> Unit
+    onOpenDocs: () -> Unit
 ) {
     OnboardingPage(uiMode = uiMode, modifier = modifier, contentPadding = contentPadding) {
         OnboardingHeader(
@@ -212,12 +211,6 @@ internal fun OnboardingLinksPage(
             icon = Icons.Rounded.Description,
             uiMode = uiMode,
             onClick = onOpenDocs
-        )
-        LinkButton(
-            text = stringResource(R.string.onboarding_links_pro),
-            icon = Icons.Rounded.Stars,
-            uiMode = uiMode,
-            onClick = onOpenPro
         )
     }
 }

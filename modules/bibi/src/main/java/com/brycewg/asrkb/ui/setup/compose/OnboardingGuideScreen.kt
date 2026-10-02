@@ -67,8 +67,7 @@ internal fun OnboardingGuideScreen(
     onDataCollectionChange: (Boolean) -> Unit,
     onOpenProject: () -> Unit,
     onOpenWebsite: () -> Unit,
-    onOpenDocs: () -> Unit,
-    onOpenPro: () -> Unit
+    onOpenDocs: () -> Unit
 ) {
     val pagerState = rememberPagerState(pageCount = { PAGE_COUNT })
     val scope = rememberCoroutineScope()
@@ -135,8 +134,7 @@ internal fun OnboardingGuideScreen(
                     contentPadding = contentPadding,
                     onOpenProject = onOpenProject,
                     onOpenWebsite = onOpenWebsite,
-                    onOpenDocs = onOpenDocs,
-                    onOpenPro = onOpenPro
+                    onOpenDocs = onOpenDocs
                 )
             }
         }

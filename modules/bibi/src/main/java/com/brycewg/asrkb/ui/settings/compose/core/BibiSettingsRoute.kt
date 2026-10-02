@@ -67,10 +67,6 @@ sealed interface BibiSettingsRoute {
         override val id: String = "about"
     }
 
-    data object Paywall : BibiSettingsRoute {
-        override val id: String = "paywall"
-    }
-
     data object UsageStats : BibiSettingsRoute {
         override val id: String = "usage_stats"
     }
@@ -103,7 +99,6 @@ sealed interface BibiSettingsRoute {
             Backup.id -> Backup
             Other.id -> Other
             About.id -> About
-            Paywall.id -> Paywall
             UsageStats.id -> UsageStats
             Search.id -> Search
             History.id -> History

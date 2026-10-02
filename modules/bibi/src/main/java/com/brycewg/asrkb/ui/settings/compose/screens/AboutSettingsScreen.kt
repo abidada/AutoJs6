@@ -17,7 +17,6 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.OpenInBrowser
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.StopCircle
-import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +42,6 @@ import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
 fun AboutSettingsScreen(
     uiMode: BibiUiMode,
     onBack: () -> Unit,
-    onOpenPro: () -> Unit,
     actions: SettingsActionController
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -107,12 +105,6 @@ fun AboutSettingsScreen(
                             titleRes = R.string.about_open_docs,
                             icon = Icons.AutoMirrored.Rounded.Article,
                             onClick = { actions.openUrl(R.string.about_docs_url) }
-                        ),
-                        SettingsEntry.Action(
-                            id = "about_pro",
-                            titleRes = R.string.about_btn_learn_pro,
-                            icon = Icons.Rounded.WorkspacePremium,
-                            onClick = onOpenPro
                         )
                     )
                 }

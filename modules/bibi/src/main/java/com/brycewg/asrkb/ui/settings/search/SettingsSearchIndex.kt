@@ -393,7 +393,6 @@ object SettingsSearchIndex {
         item(R.string.about_open_github)
         item(R.string.about_open_website)
         item(R.string.about_open_docs)
-        item(R.string.about_btn_learn_pro, null, "pro")
         item(R.string.about_view_full_licenses, R.string.about_acknowledgements_title)
         item(R.string.btn_debug_export, R.string.about_debug_title)
     }

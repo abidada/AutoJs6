@@ -74,9 +74,8 @@
     <string name="onboarding_privacy_hint">No recognition text or personal content will be uploaded. This can be changed anytime.</string>
 
     <string name="onboarding_links_title">Related Information</string>
-    <string name="onboarding_links_desc">Learn more about the project and available editions.</string>
+    <string name="onboarding_links_desc">Learn more about the project.</string>
     <string name="onboarding_links_project">Open Project Page</string>
     <string name="onboarding_links_website">Open Project Website</string>
     <string name="onboarding_links_docs">Open Documentation</string>
-    <string name="onboarding_links_pro">Learn About Pro</string>
 </resources>
