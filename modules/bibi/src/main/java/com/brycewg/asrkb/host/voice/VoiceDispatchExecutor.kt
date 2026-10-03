@@ -28,20 +28,42 @@ internal object VoiceDispatchExecutor {
     @Volatile
     var onResult: ((rule: VoiceDispatchRule, ok: Boolean, message: String?) -> Unit)? = null
 
+    /**
+     * 测试执行结果槽（规则管理页「测试」按钮注入；与语音链路互不干扰）。
+     * 测试触发不写规则统计（不经过 maybeDispatch）。
+     */
+    @Volatile
+    var onTestResult: ((rule: VoiceDispatchRule, ok: Boolean, message: String?) -> Unit)? = null
+
     /** 定时任务绑定写回（分发器注入：写规则存储 + 失效缓存），语音重建任务后更新绑定 id。 */
     @Volatile
     var bindTimedTask: ((ruleId: String, taskId: Long) -> Unit)? = null
 
     fun execute(context: Context, rule: VoiceDispatchRule, args: String) {
         try {
-            dispatch(context, rule, args)
+            dispatch(context, rule, args, onResult)
         } catch (t: Throwable) {
             Log.e(TAG, "dispatch execute failed: rule=${rule.name}", t)
         }
     }
 
-    /** 统一结果出口：交互层回调 + 持久日志（B5 排障口径）。 */
-    private fun report(context: Context, rule: VoiceDispatchRule, ok: Boolean, message: String?) {
+    /** 规则管理页「测试」直连执行：与语音命中同一执行面，结果走 [onTestResult]。 */
+    fun executeForTest(context: Context, rule: VoiceDispatchRule) {
+        try {
+            dispatch(context, rule, "", onTestResult)
+        } catch (t: Throwable) {
+            Log.e(TAG, "dispatch test execute failed: rule=${rule.name}", t)
+        }
+    }
+
+    /** 统一结果出口：结果槽回调 + 持久日志（B5 排障口径）。 */
+    private fun report(
+        context: Context,
+        rule: VoiceDispatchRule,
+        ok: Boolean,
+        message: String?,
+        sink: ((rule: VoiceDispatchRule, ok: Boolean, message: String?) -> Unit)?
+    ) {
         try {
             DebugLogManager.logPersistent(
                 context,
@@ -57,12 +79,17 @@ internal object VoiceDispatchExecutor {
             )
         } catch (_: Throwable) {
         }
-        onResult?.invoke(rule, ok, message)
+        sink?.invoke(rule, ok, message)
     }
 
-    private fun dispatch(context: Context, rule: VoiceDispatchRule, args: String) {
+    private fun dispatch(
+        context: Context,
+        rule: VoiceDispatchRule,
+        args: String,
+        sink: ((rule: VoiceDispatchRule, ok: Boolean, message: String?) -> Unit)?
+    ) {
         when (rule.dispatchType) {
-            VoiceDispatchType.SCRIPT -> executeScript(context, rule)
+            VoiceDispatchType.SCRIPT -> executeScript(context, rule, sink)
 
             // 其余三型为 v2 后续阶段接入点，保持日志桩
             VoiceDispatchType.AUTOMATION,
@@ -72,17 +99,21 @@ internal object VoiceDispatchExecutor {
         }
     }
 
-    private fun executeScript(context: Context, rule: VoiceDispatchRule) {
+    private fun executeScript(
+        context: Context,
+        rule: VoiceDispatchRule,
+        sink: ((rule: VoiceDispatchRule, ok: Boolean, message: String?) -> Unit)?
+    ) {
         val bridge = ScriptHost.bridge
         if (bridge == null) {
             Log.w(TAG, "no host script bridge registered; skip script execution")
-            report(context, rule, false, context.getString(R.string.voice_dispatch_script_failed))
+            report(context, rule, false, context.getString(R.string.voice_dispatch_script_failed), sink)
             return
         }
         when (rule.scriptExecMode) {
-            ScriptExecMode.IMMEDIATE -> executeImmediate(context, rule, bridge)
-            ScriptExecMode.LOOP -> executeLoop(context, rule, bridge)
-            ScriptExecMode.TIMED -> executeTimed(context, rule, bridge)
+            ScriptExecMode.IMMEDIATE -> executeImmediate(context, rule, bridge, sink)
+            ScriptExecMode.LOOP -> executeLoop(context, rule, bridge, sink)
+            ScriptExecMode.TIMED -> executeTimed(context, rule, bridge, sink)
         }
     }
 
@@ -90,11 +121,12 @@ internal object VoiceDispatchExecutor {
     private fun executeImmediate(
         context: Context,
         rule: VoiceDispatchRule,
-        bridge: BibiHostScriptBridge
+        bridge: BibiHostScriptBridge,
+        sink: ((rule: VoiceDispatchRule, ok: Boolean, message: String?) -> Unit)?
     ) {
         if (!bridge.exists(rule.payload)) {
             Log.w(TAG, "script not found: ${rule.payload}")
-            report(context, rule, false, context.getString(R.string.voice_dispatch_script_missing))
+            report(context, rule, false, context.getString(R.string.voice_dispatch_script_missing), sink)
             return
         }
         val ok = bridge.runScript(rule.payload)
@@ -103,7 +135,8 @@ internal object VoiceDispatchExecutor {
             context,
             rule,
             ok,
-            if (ok) null else context.getString(R.string.voice_dispatch_script_failed)
+            if (ok) null else context.getString(R.string.voice_dispatch_script_failed),
+            sink
         )
     }
 
@@ -114,18 +147,19 @@ internal object VoiceDispatchExecutor {
     private fun executeLoop(
         context: Context,
         rule: VoiceDispatchRule,
-        bridge: BibiHostScriptBridge
+        bridge: BibiHostScriptBridge,
+        sink: ((rule: VoiceDispatchRule, ok: Boolean, message: String?) -> Unit)?
     ) {
         if (!bridge.exists(rule.payload)) {
             Log.w(TAG, "script not found: ${rule.payload}")
-            report(context, rule, false, context.getString(R.string.voice_dispatch_script_missing))
+            report(context, rule, false, context.getString(R.string.voice_dispatch_script_missing), sink)
             return
         }
         if (Prefs(context).voiceDispatchDuplicatePolicy == Prefs.VoiceDuplicatePolicy.REFUSE &&
             bridge.isScriptRunning(rule.payload)
         ) {
             Log.i(TAG, "loop refused: already running path=${rule.payload}")
-            report(context, rule, false, context.getString(R.string.voice_dispatch_loop_running))
+            report(context, rule, false, context.getString(R.string.voice_dispatch_loop_running), sink)
             return
         }
         val ok = bridge.runRepeatedly(
@@ -142,7 +176,8 @@ internal object VoiceDispatchExecutor {
             when {
                 ok -> context.getString(R.string.voice_dispatch_loop_started)
                 else -> context.getString(R.string.voice_dispatch_script_failed)
-            }
+            },
+            sink
         )
     }
 
@@ -154,17 +189,18 @@ internal object VoiceDispatchExecutor {
     private fun executeTimed(
         context: Context,
         rule: VoiceDispatchRule,
-        bridge: BibiHostScriptBridge
+        bridge: BibiHostScriptBridge,
+        sink: ((rule: VoiceDispatchRule, ok: Boolean, message: String?) -> Unit)?
     ) {
         val snapshot = rule.timedTaskSnapshot
         if (snapshot == null) {
             Log.w(TAG, "timed rule has no snapshot: rule=${rule.name}")
-            report(context, rule, false, context.getString(R.string.voice_dispatch_timed_not_configured))
+            report(context, rule, false, context.getString(R.string.voice_dispatch_timed_not_configured), sink)
             return
         }
         if (!bridge.exists(rule.payload)) {
             Log.w(TAG, "script not found: ${rule.payload}")
-            report(context, rule, false, context.getString(R.string.voice_dispatch_script_missing))
+            report(context, rule, false, context.getString(R.string.voice_dispatch_script_missing), sink)
             return
         }
         val existing = bridge.findTimedTaskByIdentity(rule.payload, snapshot.millis, snapshot.timeFlag)
@@ -172,12 +208,12 @@ internal object VoiceDispatchExecutor {
             Prefs(context).voiceDispatchDuplicatePolicy == Prefs.VoiceDuplicatePolicy.REFUSE
         ) {
             Log.i(TAG, "timed refused: identical task exists id=${existing.taskId}")
-            report(context, rule, false, context.getString(R.string.voice_dispatch_timed_already_set))
+            report(context, rule, false, context.getString(R.string.voice_dispatch_timed_already_set), sink)
             return
         }
         val newId = bridge.createTimedTask(rule.payload, snapshot.millis, snapshot.timeFlag, snapshot.delayMs)
         if (newId <= 0L) {
-            report(context, rule, false, context.getString(R.string.voice_dispatch_timed_failed))
+            report(context, rule, false, context.getString(R.string.voice_dispatch_timed_failed), sink)
             return
         }
         Log.i(TAG, "timed created: id=$newId path=${rule.payload}")
@@ -187,6 +223,6 @@ internal object VoiceDispatchExecutor {
         } catch (t: Throwable) {
             Log.w(TAG, "bind timed task failed", t)
         }
-        report(context, rule, true, context.getString(R.string.voice_dispatch_timed_set))
+        report(context, rule, true, context.getString(R.string.voice_dispatch_timed_set), sink)
     }
 }

@@ -76,6 +76,13 @@ class PrivilegedKeepAliveJobService : JobService() {
                         "exit" to result.exitCode
                     )
                 )
+
+                // 特权环境是唤醒服务最强的兜底通道：Job 拉起进程后顺带纠偏（幂等、退避节流）
+                try {
+                    com.brycewg.asrkb.wake.WakeWatchdog.ensure(this@PrivilegedKeepAliveJobService)
+                } catch (t: Throwable) {
+                    Log.w(TAG, "wake watchdog ensure failed", t)
+                }
             } catch (t: Throwable) {
                 Log.w(TAG, "privileged keep-alive job failed", t)
                 DebugLogManager.logPersistent(

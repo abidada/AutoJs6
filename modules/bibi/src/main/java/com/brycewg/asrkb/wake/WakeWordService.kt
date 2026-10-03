@@ -3,7 +3,9 @@
  *
  * - 命中唤醒词 → 拉起 FloatingAsrService(ACTION_WAKE_TRIGGERED)，悬浮球直接进入「正在听」；
  * - 与识别互斥：AsrRecordingState.active 时释放自身 AudioRecord 并重建流，识别结束后恢复；
- * - 「仅充电时启用」按偏好在循环内门控；
+ * - 自愈：权限缺失/引擎失败/音频打开失败等一律不退出服务，循环内退避重试并向
+ *   WakeServiceState 上报状态与心跳，供设置页如实显示与看门狗（WakeWatchdog）健康判定；
+ * - 运行中再次收到 ACTION_START 触发原地重建（拆引擎与音频流后循环内自动重装）；
  * - Android 14+ 不允许从 BOOT_COMPLETED 拉起麦克风前台服务，开机自启失败时静默忽略（需手动开启）。
  *
  * 归属模块：wake
@@ -40,6 +42,12 @@ internal class WakeWordService : Service() {
         private const val RECORD_SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION
         private const val CHUNK_SAMPLES = 1600 // 100ms @16kHz
 
+        /** 自愈重试退避（引擎重建/权限轮询）；音频打开失败固定 1s 重试 */
+        private val RETRY_DELAYS_MS = longArrayOf(10_000L, 30_000L, 60_000L)
+
+        /** 连续读失败达到该次数即重建音频流（配合 50ms 退避约 1s） */
+        private const val READ_ERROR_RECREATE_THRESHOLD = 20
+
         const val ACTION_START = "com.brycewg.asrkb.action.WAKE_WORD_START"
         const val ACTION_STOP = "com.brycewg.asrkb.action.WAKE_WORD_STOP"
 
@@ -72,6 +80,9 @@ internal class WakeWordService : Service() {
                 }
             }
         }
+
+        internal fun retryDelayMs(attempt: Int): Long =
+            RETRY_DELAYS_MS[attempt.coerceIn(0, RETRY_DELAYS_MS.lastIndex)]
     }
 
     private lateinit var prefs: Prefs
@@ -81,6 +92,10 @@ internal class WakeWordService : Service() {
 
     @Volatile
     private var running = false
+
+    /** 看门狗/重复 start 请求的原地重建标记：循环内拆掉引擎与音频流后自动重装 */
+    @Volatile
+    private var rebuildRequested = false
 
     private var lastHitElapsedMs = 0L
 
@@ -130,7 +145,13 @@ internal class WakeWordService : Service() {
                     stopSelf()
                     return START_NOT_STICKY
                 }
-                startLoop()
+                if (running) {
+                    // 服务已在运行（看门狗纠偏/唤醒词变更后的重复 start）：原地重建
+                    Log.d(TAG, "already running; rebuild requested")
+                    rebuildRequested = true
+                } else {
+                    startLoop()
+                }
             }
         }
         return START_STICKY
@@ -142,13 +163,14 @@ internal class WakeWordService : Service() {
             loopThread?.interrupt()
         } catch (_: Throwable) {
         }
-        loopThread = null
-        releaseAudio()
         try {
-            engine?.close()
+            loopThread?.join(1_000)
         } catch (_: Throwable) {
         }
-        engine = null
+        loopThread = null
+        releaseAudio()
+        closeEngine()
+        WakeServiceState.reset()
         super.onDestroy()
     }
 
@@ -158,6 +180,7 @@ internal class WakeWordService : Service() {
         if (running) return
         Log.d(TAG, "wake loop starting")
         running = true
+        WakeServiceState.update(WakeServiceState.Status.Starting)
         val thread = Thread({ loop() }, "wake-word-loop")
         thread.priority = Thread.MIN_PRIORITY
         loopThread = thread
@@ -165,32 +188,26 @@ internal class WakeWordService : Service() {
     }
 
     private fun loop() {
-        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) !=
-            android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.w(TAG, "Missing RECORD_AUDIO permission; stopping wake service")
-            running = false
-            stopSelf()
-            return
-        }
-
-        try {
-            engine = createEngine()
-        } catch (t: Throwable) {
-            Log.e(TAG, "Failed to create wake engine; stopping", t)
-            running = false
-            stopSelf()
-            return
-        }
-        Log.d(TAG, "wake engine created OK; opening AudioRecord")
-
         val chunk = ShortArray(CHUNK_SAMPLES)
         var record: AudioRecord? = null
+        var retryAttempt = 0
+        var readErrors = 0
 
         while (running && prefs.wakeWordEnabled) {
+            WakeServiceState.beat()
             try {
+                if (rebuildRequested) {
+                    rebuildRequested = false
+                    releaseAudio()
+                    record = null
+                    closeEngine()
+                    retryAttempt = 0
+                    Log.d(TAG, "loop rebuilt")
+                }
+
                 if (AsrRecordingState.active) {
                     // 识别会话进行中：让出麦克风，结束后重建流恢复监听
+                    WakeServiceState.update(WakeServiceState.Status.Yielding)
                     releaseAudio()
                     record = null
                     engine?.recreateStream()
@@ -199,17 +216,76 @@ internal class WakeWordService : Service() {
                 }
 
                 if (record == null) {
+                    // 自愈路径：权限缺失/引擎失败/音频打开失败均不退出服务，退避重试
+                    if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) !=
+                        android.content.pm.PackageManager.PERMISSION_GRANTED
+                    ) {
+                        WakeServiceState.update(
+                            WakeServiceState.Status.Retrying,
+                            WakeServiceState.FailReason.Permission
+                        )
+                        val delay = retryDelayMs(retryAttempt)
+                        Log.w(TAG, "RECORD_AUDIO not granted; retry in ${delay}ms")
+                        Thread.sleep(delay)
+                        retryAttempt++
+                        continue
+                    }
+
+                    if (engine == null) {
+                        try {
+                            engine = createEngine()
+                        } catch (t: Throwable) {
+                            WakeServiceState.update(
+                                WakeServiceState.Status.Retrying,
+                                WakeServiceState.FailReason.Engine
+                            )
+                            val delay = retryDelayMs(retryAttempt)
+                            Log.w(TAG, "Failed to create wake engine; retry in ${delay}ms", t)
+                            Thread.sleep(delay)
+                            retryAttempt++
+                            continue
+                        }
+                        Log.d(TAG, "wake engine created OK")
+                    }
+
                     record = openAudioRecord()
                     if (record == null) {
+                        WakeServiceState.update(
+                            WakeServiceState.Status.Retrying,
+                            WakeServiceState.FailReason.Audio
+                        )
                         Log.w(TAG, "AudioRecord open failed; retry in 1s")
                         Thread.sleep(1_000)
                         continue
                     }
                     Log.d(TAG, "AudioRecord opened; listening")
+                    WakeServiceState.update(WakeServiceState.Status.Listening)
+                    retryAttempt = 0
                 }
 
                 val n = record.read(chunk, 0, chunk.size, AudioRecord.READ_BLOCKING)
-                if (n <= 0) continue
+                if (n <= 0) {
+                    // 持续读失败（麦克风被系统异常抢占等）：退避后重建音频流，避免热循环与永久卡死
+                    readErrors++
+                    if (readErrors >= READ_ERROR_RECREATE_THRESHOLD) {
+                        Log.w(TAG, "AudioRecord persistent read failure; recreating stream")
+                        WakeServiceState.update(
+                            WakeServiceState.Status.Retrying,
+                            WakeServiceState.FailReason.Audio
+                        )
+                        releaseAudio()
+                        record = null
+                        readErrors = 0
+                    } else {
+                        try {
+                            Thread.sleep(50)
+                        } catch (_: InterruptedException) {
+                            break
+                        }
+                    }
+                    continue
+                }
+                readErrors = 0
 
                 val samples = FloatArray(n) { chunk[it] / 32768.0f }
                 engine?.acceptWaveform(samples)
@@ -230,6 +306,12 @@ internal class WakeWordService : Service() {
                 break
             } catch (t: Throwable) {
                 Log.w(TAG, "Wake loop error", t)
+                WakeServiceState.update(
+                    WakeServiceState.Status.Retrying,
+                    WakeServiceState.FailReason.Unknown
+                )
+                releaseAudio()
+                record = null
                 try {
                     Thread.sleep(500)
                 } catch (_: InterruptedException) {
@@ -239,7 +321,7 @@ internal class WakeWordService : Service() {
         }
 
         releaseAudio()
-        record = null
+        WakeServiceState.update(WakeServiceState.Status.Idle)
     }
 
     private fun triggerWakeRecognition() {
@@ -278,6 +360,7 @@ internal class WakeWordService : Service() {
                 return null
             }
             record.startRecording()
+            audioRecord = record
             record
         } catch (t: Throwable) {
             Log.w(TAG, "Failed to open AudioRecord for wake loop", t)
@@ -299,6 +382,15 @@ internal class WakeWordService : Service() {
     }
 
     // ==================== 引擎装配 ====================
+
+    private fun closeEngine() {
+        val e = engine ?: return
+        engine = null
+        try {
+            e.close()
+        } catch (_: Throwable) {
+        }
+    }
 
     private fun createEngine(): KwsWakeEngine {
         val selected = try {

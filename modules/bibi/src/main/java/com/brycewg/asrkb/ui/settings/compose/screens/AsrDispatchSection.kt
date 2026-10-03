@@ -1,5 +1,6 @@
 /**
- * Compose ASR 设置页的语音分发区块：分发识别继续 + 重复命中策略 + 分发反馈展示时长。
+ * Compose ASR 设置页的语音分发区块：分发识别继续 + 分发反馈展示时长。
+ * 重复命中策略已移至「语音分发」规则管理页顶部。
  * 自包含状态（直读写 Prefs），不经过 AsrSettingsViewModel。
  *
  * 归属模块：ui/settings/compose/screens
@@ -19,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.KEY_DISPATCH_CONTINUE_MODE
-import com.brycewg.asrkb.store.KEY_DISPATCH_DUPLICATE_POLICY
 import com.brycewg.asrkb.store.KEY_DISPATCH_FEEDBACK_HOLD_SECONDS
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
@@ -32,7 +32,6 @@ internal fun AsrDispatchSection(
     prefs: Prefs
 ) {
     var continueMode by remember { mutableStateOf(prefs.dispatchContinueMode) }
-    var duplicatePolicy by remember { mutableStateOf(prefs.voiceDispatchDuplicatePolicy) }
     var feedbackSeconds by remember { mutableIntStateOf(prefs.dispatchFeedbackHoldSeconds) }
     val secUnit = stringResource(R.string.time_unit_second)
 
@@ -41,8 +40,6 @@ internal fun AsrDispatchSection(
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
                 KEY_DISPATCH_CONTINUE_MODE -> continueMode = prefs.dispatchContinueMode
-                KEY_DISPATCH_DUPLICATE_POLICY ->
-                    duplicatePolicy = prefs.voiceDispatchDuplicatePolicy
                 KEY_DISPATCH_FEEDBACK_HOLD_SECONDS ->
                     feedbackSeconds = prefs.dispatchFeedbackHoldSeconds
             }
@@ -71,33 +68,11 @@ internal fun AsrDispatchSection(
             ),
             selectedOptionId = continueMode.id,
             index = 0,
-            count = 3,
+            count = 2,
             onSelectedOptionChange = { id ->
                 val mode = Prefs.DispatchContinueMode.fromId(id)
                 continueMode = mode
                 prefs.dispatchContinueMode = mode
-            }
-        )
-        AsrDropdownPreference(
-            id = "dispatch_duplicate_policy",
-            titleRes = R.string.label_voice_duplicate_policy,
-            options = listOf(
-                DropdownOption(
-                    Prefs.VoiceDuplicatePolicy.REFUSE.id,
-                    stringResource(R.string.voice_duplicate_policy_refuse)
-                ),
-                DropdownOption(
-                    Prefs.VoiceDuplicatePolicy.FORWARD.id,
-                    stringResource(R.string.voice_duplicate_policy_forward)
-                )
-            ),
-            selectedOptionId = duplicatePolicy.id,
-            index = 1,
-            count = 3,
-            onSelectedOptionChange = { id ->
-                val policy = Prefs.VoiceDuplicatePolicy.fromId(id)
-                duplicatePolicy = policy
-                prefs.voiceDispatchDuplicatePolicy = policy
             }
         )
         AsrSliderPreference(
@@ -110,8 +85,8 @@ internal fun AsrDispatchSection(
                 Prefs.DISPATCH_FEEDBACK_HOLD_MIN_SECONDS - 1,
             uiMode = uiMode,
             highlightId = "dispatch_feedback_hold",
-            index = 2,
-            count = 3,
+            index = 1,
+            count = 2,
             onValueChange = { value ->
                 val seconds = value.roundToInt().coerceIn(
                     Prefs.DISPATCH_FEEDBACK_HOLD_MIN_SECONDS,

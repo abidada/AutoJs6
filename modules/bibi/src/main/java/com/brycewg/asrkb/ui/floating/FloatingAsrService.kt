@@ -248,6 +248,12 @@ class FloatingAsrService : Service() {
         }
         Log.d(TAG, "onStartCommand: action=${intent?.action}, floatingAsrEnabled=$enabled")
 
+        // 事件驱动看门狗：悬浮球交互顺带纠偏语音唤醒服务（幂等、退避节流，异常静默）
+        try {
+            com.brycewg.asrkb.wake.WakeWatchdog.ensure(this)
+        } catch (_: Throwable) {
+        }
+
         when (intent?.action) {
             ACTION_SHOW -> {
                 if (enabled && !overlayPermissionGate.hasPermission()) {

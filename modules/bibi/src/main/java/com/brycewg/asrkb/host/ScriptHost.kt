@@ -9,15 +9,21 @@
  */
 package com.brycewg.asrkb.host
 
-/** 可执行脚本条目（脚本选择器列表用）。 */
+/** 目录/脚本条目（脚本选择器浏览器模式用）。 */
 data class BibiScriptInfo(
-    /** 文件名（含扩展名，如 "11.js"） */
+    /** 文件名（含扩展名，如 "11.js"；文件夹为目录名） */
     val name: String,
     /** 绝对路径（规则 payload 直接可用） */
     val path: String,
     /** 相对工作目录的目录（"" 表示工作目录根），展示用 */
     val relativeDir: String,
-    val lastModified: Long
+    val lastModified: Long,
+    /** true=文件夹（浏览器模式可进入），false=文件 */
+    val isDirectory: Boolean = false,
+    /** 文件大小（字节；文件夹为 0） */
+    val size: Long = 0,
+    /** 是否为可执行脚本（.js/.auto；文件夹恒为 false） */
+    val isScript: Boolean = false
 )
 
 /** 循环运行参数（与文件列表「循环运行」弹窗语义一致）。 */
@@ -43,6 +49,15 @@ interface BibiHostScriptBridge {
      * 调用方自行安排线程（扫描含 IO）。
      */
     fun listScripts(): List<BibiScriptInfo>
+
+    /** 当前工作目录绝对路径（浏览器选择器根目录）。 */
+    fun workingDirectory(): String
+
+    /**
+     * 列出目录的直接子项（文件夹 + 全部文件），不递归。
+     * [dirPath] 必须位于工作目录内；文件夹在前、按名称排序。
+     */
+    fun listDirectory(dirPath: String): List<BibiScriptInfo>
 
     /**
      * 执行脚本，与文件列表「运行按钮」同链路（工作目录=脚本父目录）。

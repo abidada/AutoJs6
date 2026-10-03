@@ -21,6 +21,7 @@ import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.store.debug.DebugLogManager
 import com.brycewg.asrkb.ui.AsrVendorUi
+import com.brycewg.asrkb.wake.WakeWatchdog
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -40,12 +41,16 @@ class FloatingKeepAliveService : Service() {
     private val notificationStateLock = Any()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var notificationRefreshJob: Job? = null
+    private var wakeWatchdogJob: Job? = null
 
     companion object {
         private const val TAG = "FloatingKeepAliveSvc"
         private const val CHANNEL_ID = "floating_keep_alive"
         private const val NOTIFICATION_ID = 4101
         private const val NOTIFICATION_REFRESH_INTERVAL_MS = 60_000L
+
+        /** 语音唤醒看门狗检查周期 */
+        private const val WAKE_WATCHDOG_INTERVAL_MS = 60_000L
         private const val TOKEN_PREFS = "floating_keep_alive_auth"
         private const val TOKEN_KEY = "caller_token"
         const val EXTRA_CALLER_TOKEN = "com.brycewg.asrkb.extra.FLOATING_KEEP_ALIVE_TOKEN"
@@ -118,6 +123,7 @@ class FloatingKeepAliveService : Service() {
                 DebugLogManager.logPersistent(this, "keepalive", "service_stop")
                 keepAliveStarted = false
                 stopNotificationRefreshLoop()
+                stopWakeWatchdogLoop()
                 clearNotificationSafely()
                 stopSelf()
                 return START_NOT_STICKY
@@ -145,6 +151,7 @@ class FloatingKeepAliveService : Service() {
                 if (keepAliveStarted && intent?.action == ACTION_START) {
                     updateNotification()
                     startNotificationRefreshLoop()
+                    startWakeWatchdogLoop()
                     DebugLogManager.logPersistent(
                         this,
                         "keepalive",
@@ -190,15 +197,17 @@ class FloatingKeepAliveService : Service() {
                 "fgsType" to fgsType
             )
         )
-        keepAliveStarted = false
-        stopNotificationRefreshLoop()
-        clearNotificationSafely()
-        stopSelf(startId)
-    }
+            keepAliveStarted = false
+            stopNotificationRefreshLoop()
+            stopWakeWatchdogLoop()
+            clearNotificationSafely()
+            stopSelf(startId)
+        }
 
     override fun onDestroy() {
         keepAliveStarted = false
         stopNotificationRefreshLoop()
+        stopWakeWatchdogLoop()
         serviceScope.cancel()
         clearNotificationSafely()
         super.onDestroy()
@@ -237,10 +246,12 @@ class FloatingKeepAliveService : Service() {
             )
             keepAliveStarted = false
             stopNotificationRefreshLoop()
+            stopWakeWatchdogLoop()
             stopSelf()
             return
         }
         startNotificationRefreshLoop()
+        startWakeWatchdogLoop()
     }
 
     private fun localizedContext(): Context = LocaleHelper.wrap(this)
@@ -310,6 +321,26 @@ class FloatingKeepAliveService : Service() {
     private fun stopNotificationRefreshLoop() {
         notificationRefreshJob?.cancel()
         notificationRefreshJob = null
+    }
+
+    /** 语音唤醒看门狗：开关开启期间周期纠偏唤醒服务（幂等、退避节流，见 WakeWatchdog） */
+    private fun startWakeWatchdogLoop() {
+        if (wakeWatchdogJob?.isActive == true) return
+        wakeWatchdogJob = serviceScope.launch {
+            while (isActive) {
+                delay(WAKE_WATCHDOG_INTERVAL_MS)
+                try {
+                    WakeWatchdog.ensure(applicationContext)
+                } catch (t: Throwable) {
+                    Log.w(TAG, "wake watchdog tick failed", t)
+                }
+            }
+        }
+    }
+
+    private fun stopWakeWatchdogLoop() {
+        wakeWatchdogJob?.cancel()
+        wakeWatchdogJob = null
     }
 
     private fun updateNotification() {

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import com.brycewg.asrkb.ui.settings.compose.components.settingsFeatureExplainer
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
+import com.brycewg.asrkb.wake.WakeServiceState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -114,6 +116,9 @@ fun FloatingSettingsScreen(
     var messageDialog by remember { mutableStateOf<SettingsMessageDialogState?>(null) }
     val latestPastePackages by rememberUpdatedState(pastePackages)
     val latestSettingsLoaded by rememberUpdatedState(settingsLoaded)
+
+    // 语音唤醒服务实况：开关与副标题的数据源（见 wake_word 条目）
+    val wakeServiceState by WakeServiceState.state.collectAsState()
 
     fun applySnapshot(snapshot: FloatingSettingsPrefsSnapshot) {
         if (uiState != snapshot.uiState) uiState = snapshot.uiState
@@ -336,7 +341,14 @@ fun FloatingSettingsScreen(
 
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_RESUME -> syncAsrToggleAfterPermissions()
+                Lifecycle.Event.ON_RESUME -> {
+                    syncAsrToggleAfterPermissions()
+                    // 入口纠偏：开关开着但唤醒服务未运行/不健康时自动拉起（幂等、退避节流）
+                    try {
+                        com.brycewg.asrkb.wake.WakeWatchdog.ensure(appContext)
+                    } catch (_: Throwable) {
+                    }
+                }
                 Lifecycle.Event.ON_PAUSE -> flushPackageEditsAsync()
                 else -> Unit
             }
@@ -702,11 +714,28 @@ fun FloatingSettingsScreen(
             }
 
             item("wake_word") {
+                // 开关显示服务实况而非偏好值：Idle 灭，其余（启动中/监听/自愈/让位）亮
+                val wakeStatus = wakeServiceState.status
+                val wakeSwitchOn = wakeStatus != WakeServiceState.Status.Idle
+                val wakeSummary = when (wakeStatus) {
+                    WakeServiceState.Status.Retrying -> stringResource(
+                        when (wakeServiceState.failReason) {
+                            WakeServiceState.FailReason.Permission -> R.string.wake_status_waiting_permission
+                            WakeServiceState.FailReason.Engine -> R.string.wake_status_engine_retry
+                            WakeServiceState.FailReason.Audio -> R.string.wake_status_waiting_audio
+                            WakeServiceState.FailReason.Unknown, null -> R.string.wake_status_recovering
+                        }
+                    )
+                    WakeServiceState.Status.Idle ->
+                        if (uiState.wakeWordEnabled) stringResource(R.string.wake_status_not_running) else null
+                    else -> null
+                }
                 FloatingSection(uiMode = uiMode, titleRes = R.string.section_wake_word) {
                     FloatingExplainedSwitch(
                         id = "wake_word_enabled",
                         titleRes = R.string.label_wake_word_enabled,
-                        checked = uiState.wakeWordEnabled,
+                        checked = wakeSwitchOn,
+                        summary = wakeSummary,
                         onToggle = { target ->
                             if (target &&
                                 androidx.core.content.ContextCompat.checkSelfPermission(
@@ -733,7 +762,7 @@ fun FloatingSettingsScreen(
                         index = 0,
                         count = 2
                     )
-                    if (uiState.wakeWordEnabled) {
+                    if (wakeSwitchOn) {
                         FloatingValuePreference(
                             titleRes = R.string.label_wake_word_selected,
                             value = if (prefs.wakeWordSelected.isBlank()) {

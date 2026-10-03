@@ -173,14 +173,16 @@ internal fun FloatingExplainedSwitch(
     checked: Boolean,
     onToggle: (Boolean) -> Unit,
     index: Int = 0,
-    count: Int = 1
+    count: Int = 1,
+    summary: String? = null
 ) {
     SettingsPreference(
         entry = SettingsEntry.Switch(
             id = id,
             titleRes = titleRes,
             checked = checked,
-            onCheckedChange = onToggle
+            onCheckedChange = onToggle,
+            summary = summary
         ),
         index = index,
         count = count

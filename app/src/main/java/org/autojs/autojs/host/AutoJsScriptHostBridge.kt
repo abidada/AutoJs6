@@ -32,18 +32,47 @@ object AutoJsScriptHostBridge : BibiHostScriptBridge {
         rootDir.walkTopDown().forEach { file ->
             // FILE_FILTER 同时放行目录，这里只收脚本文件
             if (file.isFile && Scripts.FILE_FILTER.accept(file)) {
-                val relative = file.relativeToOrSelf(rootDir).invariantSeparatorsPath
                 result.add(
-                    BibiScriptInfo(
-                        name = file.name,
-                        path = file.absolutePath,
-                        relativeDir = relative.substringBeforeLast('/', ""),
-                        lastModified = file.lastModified()
-                    )
+                    file.toScriptInfo(rootDir)
                 )
             }
         }
         return result.sortedWith(compareBy({ it.relativeDir }, { it.name }))
+    }
+
+    override fun workingDirectory(): String = WorkingDirectoryUtils.path
+
+    override fun listDirectory(dirPath: String): List<BibiScriptInfo> = try {
+        val rootDir = File(WorkingDirectoryUtils.path)
+        val dir = File(dirPath)
+        if (!dir.isDirectory || !dir.canonicalPath.startsWith(rootDir.canonicalPath)) {
+            emptyList()
+        } else {
+            dir.listFiles()
+                ?.map { it.toScriptInfo(rootDir) }
+                ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
+                .orEmpty()
+        }
+    } catch (t: Throwable) {
+        emptyList()
+    }
+
+    private fun File.toScriptInfo(rootDir: File): BibiScriptInfo {
+        val isDir = isDirectory
+        val relativeParent = try {
+            parentFile?.relativeToOrSelf(rootDir)?.invariantSeparatorsPath ?: ""
+        } catch (_: Throwable) {
+            ""
+        }
+        return BibiScriptInfo(
+            name = name,
+            path = absolutePath,
+            relativeDir = relativeParent,
+            lastModified = lastModified(),
+            isDirectory = isDir,
+            size = if (isDir) 0L else length(),
+            isScript = !isDir && Scripts.FILE_FILTER.accept(this)
+        )
     }
 
     override fun runScript(path: String): Boolean = try {
