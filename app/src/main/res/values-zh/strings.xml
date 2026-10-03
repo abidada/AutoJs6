@@ -1346,6 +1346,7 @@
     <string name="text_timed_task">定时任务</string>
     <string name="text_timed_task_backend_title">定时任务调度引擎</string>
     <string name="text_timed_task_timing">定时</string>
+    <string name="text_set_as_voice_rule">设为语音规则</string>
     <string name="text_title">标题</string>
     <string name="text_to_be_chosen">待选择</string>
     <string name="text_toggle_all">全选切换</string>

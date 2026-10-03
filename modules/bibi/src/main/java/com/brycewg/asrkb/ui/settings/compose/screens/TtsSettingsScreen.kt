@@ -1,8 +1,10 @@
 /**
- * Compose TTS 语音配置页：播报设置 / TTS 服务商（本地模型管理）/ 试听。
+ * Compose TTS 语音配置页：播报设置 / TTS 服务商（本地模型管理或 CloneTTS HTTP 服务）/ 试听。
  *
- * 自包含状态（直读写 Prefs），不经过 AsrSettingsViewModel；模型下载/导入/清除
+ * 自包含状态（直读写 Prefs），不经过 AsrSettingsViewModel；本地模型下载/导入/清除
  * 复用 ModelDownloadService（modelType=tts_offline），就绪检查走 TtsLocalModelCatalog。
+ * 服务商按 TtsVendor 分支渲染：sherpa_offline 显示模型管理，clonetts 显示服务地址/
+ * 音色/测试连接，互不混杂。
  *
  * 归属模块：ui/settings/compose/screens
  */
@@ -22,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +34,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
+import com.brycewg.asrkb.tts.CloneTtsVoices
 import com.brycewg.asrkb.tts.TtsLocalModelCatalog
 import com.brycewg.asrkb.tts.TtsPlaybackCoordinator
 import com.brycewg.asrkb.tts.TtsVendor
@@ -71,7 +75,11 @@ fun TtsSettingsScreen(
     var ttsEnabled by remember { mutableStateOf(prefs.ttsEnabled) }
     var speed by remember { mutableStateOf(prefs.ttsSpeed) }
 
-    // ---- 服务商/模型状态 ----
+    // ---- 服务商状态 ----
+    var vendorId by remember { mutableStateOf(prefs.ttsVendorId) }
+    val isCloneTtsVendor = TtsVendor.fromId(vendorId) == TtsVendor.CloneTts
+
+    // ---- 本地模型状态 ----
     var variant by remember { mutableStateOf(prefs.ttsModelVariant) }
     var voiceSid by remember {
         mutableStateOf(
@@ -91,6 +99,13 @@ fun TtsSettingsScreen(
     // 需轮询刷新就绪状态（与 AsrSettingsScreen 的 2.5s×120 轮询模式一致）
     var operationPending by remember { mutableStateOf(false) }
 
+    // ---- CloneTTS 状态 ----
+    var cloneTtsBaseUrl by remember { mutableStateOf(prefs.ttsCloneTtsBaseUrl) }
+    var cloneTtsVoice by remember { mutableStateOf(prefs.ttsCloneTtsVoice) }
+    var cloneTtsVoices by remember { mutableStateOf<List<CloneTtsVoices.VoiceInfo>>(emptyList()) }
+    var cloneTtsVoiceLoadFailed by remember { mutableStateOf(false) }
+    var cloneTtsTesting by remember { mutableStateOf(false) }
+
     // ---- 试听状态 ----
     var auditionText by remember { mutableStateOf("") }
     var auditionBusy by remember { mutableStateOf(false) }
@@ -98,6 +113,32 @@ fun TtsSettingsScreen(
     var downloadRequest by remember { mutableStateOf<TtsDownloadRequest?>(null) }
     var pendingImportVariant by remember { mutableStateOf<String?>(null) }
     var clearDialog by remember { mutableStateOf<SettingsMessageDialogState?>(null) }
+
+    // 音色列表缓存回显：服务未开时下拉仍显示上次成功拉取的列表
+    LaunchedEffect(Unit) {
+        val cached = prefs.ttsCloneTtsVoiceListCache
+        if (cached.isNotBlank()) {
+            val list = CloneTtsVoices.parse(cached)
+            if (list.isNotEmpty()) cloneTtsVoices = list
+        }
+    }
+
+    // 切到 CloneTTS 服务商时自动拉取音色列表；失败且无缓存时提示手动输入
+    val currentCloneTtsBaseUrl by rememberUpdatedState(cloneTtsBaseUrl)
+    LaunchedEffect(vendorId) {
+        if (TtsVendor.fromId(vendorId) != TtsVendor.CloneTts) return@LaunchedEffect
+        val json = runCatching {
+            withContext(Dispatchers.IO) { CloneTtsVoices.fetchJson(currentCloneTtsBaseUrl) }
+        }.getOrNull()
+        val fetched = json?.let { CloneTtsVoices.parse(it) }.orEmpty()
+        if (json != null && fetched.isNotEmpty()) {
+            cloneTtsVoices = fetched
+            cloneTtsVoiceLoadFailed = false
+            prefs.ttsCloneTtsVoiceListCache = json
+        } else if (cloneTtsVoices.isEmpty()) {
+            cloneTtsVoiceLoadFailed = true
+        }
+    }
 
     fun refreshModelReady() {
         scope.launch(Dispatchers.IO) {
@@ -146,6 +187,10 @@ fun TtsSettingsScreen(
                 operationStatus = context.getString(R.string.tts_import_failed, it.message ?: "")
             }
         }
+    }
+
+    fun showToast(message: String) {
+        android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
     }
 
     TtsScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
@@ -208,6 +253,7 @@ fun TtsSettingsScreen(
                     uiMode = uiMode,
                     context = context,
                     prefs = prefs,
+                    vendorId = vendorId,
                     variant = variant,
                     voiceSid = voiceSid,
                     numThreads = numThreads,
@@ -215,6 +261,15 @@ fun TtsSettingsScreen(
                     keepAliveMinutes = keepAliveMinutes,
                     modelReady = modelReady,
                     operationStatus = operationStatus,
+                    cloneTtsBaseUrl = cloneTtsBaseUrl,
+                    cloneTtsVoices = cloneTtsVoices,
+                    cloneTtsVoice = cloneTtsVoice,
+                    cloneTtsTesting = cloneTtsTesting,
+                    cloneTtsVoiceLoadFailed = cloneTtsVoiceLoadFailed,
+                    onVendorChange = { selected ->
+                        vendorId = selected
+                        prefs.ttsVendorId = selected
+                    },
                     onVariantChange = { selected ->
                         variant = selected
                         prefs.ttsModelVariant = selected
@@ -265,6 +320,50 @@ fun TtsSettingsScreen(
                                 }
                             }
                         )
+                    },
+                    onCloneTtsBaseUrlChange = {
+                        cloneTtsBaseUrl = it
+                        prefs.ttsCloneTtsBaseUrl = it
+                    },
+                    onCloneTtsVoiceChange = {
+                        cloneTtsVoice = it
+                        prefs.ttsCloneTtsVoice = it
+                    },
+                    onCloneTtsTest = {
+                        if (!cloneTtsTesting) {
+                            scope.launch {
+                                cloneTtsTesting = true
+                                val json = runCatching {
+                                    withContext(Dispatchers.IO) { CloneTtsVoices.fetchJson(cloneTtsBaseUrl) }
+                                }
+                                cloneTtsTesting = false
+                                json.onSuccess { body ->
+                                    val list = CloneTtsVoices.parse(body)
+                                    if (list.isNotEmpty()) {
+                                        cloneTtsVoices = list
+                                        cloneTtsVoiceLoadFailed = false
+                                        prefs.ttsCloneTtsVoiceListCache = body
+                                        showToast(
+                                            context.getString(R.string.tts_clone_tts_test_ok, list.size)
+                                        )
+                                    } else {
+                                        showToast(
+                                            context.getString(
+                                                R.string.tts_clone_tts_test_failed,
+                                                context.getString(R.string.tts_clone_tts_test_invalid)
+                                            )
+                                        )
+                                    }
+                                }.onFailure { t ->
+                                    showToast(
+                                        context.getString(
+                                            R.string.tts_clone_tts_test_failed,
+                                            t.message ?: ""
+                                        )
+                                    )
+                                }
+                            }
+                        }
                     }
                 )
             }
@@ -277,6 +376,7 @@ fun TtsSettingsScreen(
                     text = auditionText,
                     busy = auditionBusy,
                     modelReady = modelReady,
+                    isCloneTts = isCloneTtsVendor,
                     onTextChange = { auditionText = it },
                     onPlay = {
                         val textToSpeak = auditionText.ifBlank {
@@ -289,12 +389,19 @@ fun TtsSettingsScreen(
                             bypassToggle = true,
                             onFinished = { success ->
                                 auditionBusy = false
-                                if (!success && !TtsLocalModelCatalog.isModelReady(context, prefs.ttsModelVariant)) {
-                                    android.widget.Toast.makeText(
-                                        context,
-                                        R.string.tts_status_not_installed,
-                                        android.widget.Toast.LENGTH_SHORT
-                                    ).show()
+                                if (success) return@speak
+                                when {
+                                    isCloneTtsVendor -> showToast(
+                                        context.getString(R.string.tts_clone_tts_audition_failed)
+                                    )
+
+                                    !TtsLocalModelCatalog.isModelReady(context, prefs.ttsModelVariant) -> {
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            R.string.tts_status_not_installed,
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }
                             }
                         )
@@ -378,6 +485,8 @@ private fun TtsVendorSection(
     uiMode: BibiUiMode,
     context: android.content.Context,
     prefs: Prefs,
+    vendorId: String,
+    // 本地离线（sherpa-onnx）
     variant: String,
     voiceSid: Int,
     numThreads: Int,
@@ -385,6 +494,13 @@ private fun TtsVendorSection(
     keepAliveMinutes: Int,
     modelReady: Boolean,
     operationStatus: String?,
+    // CloneTTS（HTTP 服务）
+    cloneTtsBaseUrl: String,
+    cloneTtsVoices: List<CloneTtsVoices.VoiceInfo>,
+    cloneTtsVoice: String,
+    cloneTtsTesting: Boolean,
+    cloneTtsVoiceLoadFailed: Boolean,
+    onVendorChange: (String) -> Unit,
     onVariantChange: (String) -> Unit,
     onVoiceSidChange: (Int) -> Unit,
     onNumThreadsChange: (Int) -> Unit,
@@ -392,113 +508,182 @@ private fun TtsVendorSection(
     onKeepAliveChange: (Int) -> Unit,
     onDownload: (String) -> Unit,
     onImport: (String) -> Unit,
-    onClear: () -> Unit
+    onClear: () -> Unit,
+    onCloneTtsBaseUrlChange: (String) -> Unit,
+    onCloneTtsVoiceChange: (String) -> Unit,
+    onCloneTtsTest: () -> Unit
 ) {
     AsrSection(uiMode = uiMode, titleRes = R.string.section_tts_vendor) {
+        val isCloneTts = TtsVendor.fromId(vendorId) == TtsVendor.CloneTts
         var itemIndex = 0
-        val spec = TtsLocalModelCatalog.variantSpec(variant)
-        val showVoicePicker = spec.voices.size > 1
-        val itemCount = 5 + if (showVoicePicker) 1 else 0
-        AsrDropdownPreference(
-            id = "tts_vendor",
-            titleRes = R.string.label_tts_vendor,
-            options = TtsVendor.ordered().map { vendor ->
-                DropdownOption(vendor.id, context.getString(vendor.displayNameResId))
-            },
-            selectedOptionId = TtsVendor.fromId(prefs.ttsVendorId).id,
-            index = itemIndex++,
-            count = itemCount,
-            onSelectedOptionChange = { prefs.ttsVendorId = it }
-        )
-        AsrDropdownPreference(
-            id = "tts_model_variant",
-            titleRes = R.string.label_tts_model_variant,
-            options = TtsLocalModelCatalog.variants.map { s ->
-                DropdownOption(s.id, context.getString(s.labelRes))
-            },
-            selectedOptionId = TtsLocalModelCatalog.normalizeVariant(variant),
-            index = itemIndex++,
-            count = itemCount,
-            onSelectedOptionChange = onVariantChange
-        )
-        if (showVoicePicker) {
+        if (isCloneTts) {
+            // CloneTTS：服务商 + 服务地址 + 音色（下拉或手动输入） + 测试连接
+            val itemCount = 4
             AsrDropdownPreference(
-                id = "tts_voice",
-                titleRes = R.string.label_tts_voice,
-                options = spec.voices.map { voice ->
-                    DropdownOption(
-                        voice.sid.toString(),
-                        TtsLocalModelCatalog.voiceLabel(context, spec.id, voice.sid)
-                    )
+                id = "tts_vendor",
+                titleRes = R.string.label_tts_vendor,
+                options = TtsVendor.ordered().map { vendor ->
+                    DropdownOption(vendor.id, context.getString(vendor.displayNameResId))
                 },
-                selectedOptionId = voiceSid.toString(),
+                selectedOptionId = TtsVendor.fromId(vendorId).id,
                 index = itemIndex++,
                 count = itemCount,
-                onSelectedOptionChange = { value ->
-                    value.toIntOrNull()?.let(onVoiceSidChange)
-                }
+                onSelectedOptionChange = onVendorChange
             )
-        }
-        AsrSliderPreference(
-            titleRes = R.string.label_tts_threads,
-            valueLabel = { it.toInt().toString() },
-            value = numThreads.toFloat(),
-            valueRange = 1f..8f,
-            steps = 6,
-            uiMode = uiMode,
-            index = itemIndex++,
-            count = itemCount,
-            onValueChange = { onNumThreadsChange(it.toInt()) }
-        )
-        AsrSwitchPreference(
-            id = "tts_preload",
-            titleRes = R.string.label_tts_preload,
-            checked = preload,
-            index = itemIndex++,
-            count = itemCount,
-            onCheckedChange = { checked ->
-                onPreloadChange(checked)
-                if (checked) {
-                    TtsPlaybackCoordinator.ensureInit(context)
-                    com.brycewg.asrkb.tts.OfflineTtsManager.preloadAsync(context, prefs)
-                }
-            }
-        )
-        AsrDropdownPreference(
-            id = "tts_keep_alive",
-            titleRes = R.string.label_tts_keep_alive,
-            options = ttsKeepAliveOptions(context),
-            selectedOptionId = keepAliveMinutes.toString(),
-            index = itemIndex,
-            count = itemCount,
-            onSelectedOptionChange = { value -> onKeepAliveChange(value.toIntOrNull() ?: 5) }
-        )
-
-        // 模型状态与操作（下载/导入/清除）
-        val status = operationStatus
-            ?: stringResource(if (modelReady) R.string.tts_status_ready else R.string.tts_status_not_installed)
-        AsrBodyText(uiMode = uiMode, text = status)
-        SettingsActionButtonRow(uiMode = uiMode) {
-            if (modelReady) {
-                SettingsActionButton(
+            AsrTextField(
+                uiMode = uiMode,
+                value = cloneTtsBaseUrl,
+                onValueChange = onCloneTtsBaseUrlChange,
+                label = stringResource(R.string.label_tts_clone_tts_base_url),
+                index = itemIndex++,
+                count = itemCount
+            )
+            if (cloneTtsVoices.isEmpty()) {
+                // 列表不可用（服务未开/未拉取）：手动输入别名兜底，留空跟随默认音色
+                AsrTextField(
                     uiMode = uiMode,
-                    text = stringResource(R.string.btn_tts_clear),
-                    onClick = onClear,
-                    modifier = Modifier.weight(1f)
+                    value = cloneTtsVoice,
+                    onValueChange = onCloneTtsVoiceChange,
+                    label = stringResource(R.string.label_tts_clone_tts_voice_manual),
+                    index = itemIndex++,
+                    count = itemCount
                 )
             } else {
-                SettingsActionButton(
-                    uiMode = uiMode,
-                    text = stringResource(R.string.btn_tts_download),
-                    onClick = { onDownload(TtsLocalModelCatalog.normalizeVariant(variant)) },
-                    modifier = Modifier.weight(1f)
+                val voiceOptions = buildList {
+                    add(DropdownOption("", context.getString(R.string.tts_clone_tts_voice_default)))
+                    cloneTtsVoices.forEach { voice ->
+                        add(DropdownOption(voice.alias, voice.label))
+                    }
+                }
+                AsrDropdownPreference(
+                    id = "tts_clone_tts_voice",
+                    titleRes = R.string.label_tts_voice,
+                    options = voiceOptions,
+                    selectedOptionId = if (voiceOptions.any { it.id == cloneTtsVoice }) cloneTtsVoice else "",
+                    index = itemIndex++,
+                    count = itemCount,
+                    onSelectedOptionChange = onCloneTtsVoiceChange
                 )
-                SettingsActionButton(
+            }
+            if (cloneTtsVoiceLoadFailed) {
+                AsrBodyText(
                     uiMode = uiMode,
-                    text = stringResource(R.string.btn_tts_import),
-                    onClick = { onImport(TtsLocalModelCatalog.normalizeVariant(variant)) },
-                    modifier = Modifier.weight(1f)
+                    text = stringResource(R.string.tts_clone_tts_voice_load_failed)
                 )
+            }
+            AsrActionPreference(
+                id = "tts_clone_tts_test",
+                titleRes = if (cloneTtsTesting) R.string.tts_clone_tts_testing else R.string.btn_tts_clone_tts_test,
+                index = itemIndex,
+                count = itemCount,
+                onClick = onCloneTtsTest
+            )
+        } else {
+            // 本地离线：模型变体/音色/线程数/预加载/常驻 + 模型状态与操作
+            val spec = TtsLocalModelCatalog.variantSpec(variant)
+            val showVoicePicker = spec.voices.size > 1
+            val itemCount = 5 + if (showVoicePicker) 1 else 0
+            AsrDropdownPreference(
+                id = "tts_vendor",
+                titleRes = R.string.label_tts_vendor,
+                options = TtsVendor.ordered().map { vendor ->
+                    DropdownOption(vendor.id, context.getString(vendor.displayNameResId))
+                },
+                selectedOptionId = TtsVendor.fromId(vendorId).id,
+                index = itemIndex++,
+                count = itemCount,
+                onSelectedOptionChange = onVendorChange
+            )
+            AsrDropdownPreference(
+                id = "tts_model_variant",
+                titleRes = R.string.label_tts_model_variant,
+                options = TtsLocalModelCatalog.variants.map { s ->
+                    DropdownOption(s.id, context.getString(s.labelRes))
+                },
+                selectedOptionId = TtsLocalModelCatalog.normalizeVariant(variant),
+                index = itemIndex++,
+                count = itemCount,
+                onSelectedOptionChange = onVariantChange
+            )
+            if (showVoicePicker) {
+                AsrDropdownPreference(
+                    id = "tts_voice",
+                    titleRes = R.string.label_tts_voice,
+                    options = spec.voices.map { voice ->
+                        DropdownOption(
+                            voice.sid.toString(),
+                            TtsLocalModelCatalog.voiceLabel(context, spec.id, voice.sid)
+                        )
+                    },
+                    selectedOptionId = voiceSid.toString(),
+                    index = itemIndex++,
+                    count = itemCount,
+                    onSelectedOptionChange = { value ->
+                        value.toIntOrNull()?.let(onVoiceSidChange)
+                    }
+                )
+            }
+            AsrSliderPreference(
+                titleRes = R.string.label_tts_threads,
+                valueLabel = { it.toInt().toString() },
+                value = numThreads.toFloat(),
+                valueRange = 1f..8f,
+                steps = 6,
+                uiMode = uiMode,
+                index = itemIndex++,
+                count = itemCount,
+                onValueChange = { onNumThreadsChange(it.toInt()) }
+            )
+            AsrSwitchPreference(
+                id = "tts_preload",
+                titleRes = R.string.label_tts_preload,
+                checked = preload,
+                index = itemIndex++,
+                count = itemCount,
+                onCheckedChange = { checked ->
+                    onPreloadChange(checked)
+                    if (checked) {
+                        TtsPlaybackCoordinator.ensureInit(context)
+                        com.brycewg.asrkb.tts.OfflineTtsManager.preloadAsync(context, prefs)
+                    }
+                }
+            )
+            AsrDropdownPreference(
+                id = "tts_keep_alive",
+                titleRes = R.string.label_tts_keep_alive,
+                options = ttsKeepAliveOptions(context),
+                selectedOptionId = keepAliveMinutes.toString(),
+                index = itemIndex,
+                count = itemCount,
+                onSelectedOptionChange = { value -> onKeepAliveChange(value.toIntOrNull() ?: 5) }
+            )
+
+            // 模型状态与操作（下载/导入/清除）
+            val status = operationStatus
+                ?: stringResource(if (modelReady) R.string.tts_status_ready else R.string.tts_status_not_installed)
+            AsrBodyText(uiMode = uiMode, text = status)
+            SettingsActionButtonRow(uiMode = uiMode) {
+                if (modelReady) {
+                    SettingsActionButton(
+                        uiMode = uiMode,
+                        text = stringResource(R.string.btn_tts_clear),
+                        onClick = onClear,
+                        modifier = Modifier.weight(1f)
+                    )
+                } else {
+                    SettingsActionButton(
+                        uiMode = uiMode,
+                        text = stringResource(R.string.btn_tts_download),
+                        onClick = { onDownload(TtsLocalModelCatalog.normalizeVariant(variant)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    SettingsActionButton(
+                        uiMode = uiMode,
+                        text = stringResource(R.string.btn_tts_import),
+                        onClick = { onImport(TtsLocalModelCatalog.normalizeVariant(variant)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
@@ -512,6 +697,7 @@ private fun TtsAuditionSection(
     text: String,
     busy: Boolean,
     modelReady: Boolean,
+    isCloneTts: Boolean,
     onTextChange: (String) -> Unit,
     onPlay: () -> Unit
 ) {
@@ -534,7 +720,7 @@ private fun TtsAuditionSection(
             onClick = {
                 if (busy || TtsPlaybackCoordinator.isBusy) {
                     TtsPlaybackCoordinator.stopSpeaking()
-                } else if (modelReady || TtsLocalModelCatalog.isModelReady(context, prefs.ttsModelVariant)) {
+                } else if (isCloneTts || modelReady || TtsLocalModelCatalog.isModelReady(context, prefs.ttsModelVariant)) {
                     onPlay()
                 } else {
                     android.widget.Toast.makeText(

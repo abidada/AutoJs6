@@ -14,7 +14,10 @@ import com.brycewg.asrkb.R
 
 enum class TtsVendor(val id: String, @param:StringRes val displayNameResId: Int) {
     /** 本地离线合成（sherpa-onnx OfflineTts，vits-piper 系列） */
-    SherpaOffline("sherpa_offline", R.string.tts_vendor_sherpa_offline);
+    SherpaOffline("sherpa_offline", R.string.tts_vendor_sherpa_offline),
+
+    /** CloneTTS 本地/局域网 HTTP 服务（同机 127.0.0.1 或局域网地址，克隆音色） */
+    CloneTts("clonetts", R.string.tts_vendor_clonetts);
 
     companion object {
         fun fromId(id: String?): TtsVendor =

@@ -37,6 +37,9 @@ object TtsPlaybackCoordinator {
     private var playing: Boolean = false
     private val idleListeners = mutableListOf<() -> Unit>()
 
+    /** 当前占用工作线程的引擎（stopSpeaking 需跨线程打断 HTTP 请求等资源） */
+    @Volatile private var activeEngine: TtsEngine? = null
+
     private class SpeakRequest(
         val text: String,
         val bypassToggle: Boolean,
@@ -95,6 +98,7 @@ object TtsPlaybackCoordinator {
             pending = null
         }
         OfflineTtsManager.stopPlaying()
+        activeEngine?.stop()
     }
 
     /**
@@ -148,7 +152,27 @@ object TtsPlaybackCoordinator {
                 return false
             }
             val loadStartMs = android.os.SystemClock.elapsedRealtime()
-            val engine = OfflineTtsManager.loadSync(context, prefs)
+            // 服务商分发：clonetts 走 HTTP 引擎（无状态、即建即用），其余走本地离线
+            val sid: Int
+            val engine: TtsEngine? = when (TtsVendor.fromId(prefs.ttsVendorId)) {
+                TtsVendor.CloneTts -> {
+                    sid = 0
+                    CloneTtsHttpEngine(context, prefs.ttsCloneTtsBaseUrl, prefs.ttsCloneTtsVoice)
+                }
+
+                else -> {
+                    val local = OfflineTtsManager.loadSync(context, prefs)
+                    // 音色 sid：按当前变体取存储值，脏数据/未设置回落变体默认音色
+                    sid = try {
+                        val variant = TtsLocalModelCatalog.normalizeVariant(prefs.ttsModelVariant)
+                        TtsLocalModelCatalog.resolveVoiceSid(variant, prefs.ttsVoiceSid(variant))
+                    } catch (t: Throwable) {
+                        Log.w(TAG, "Failed to resolve tts voice sid", t)
+                        0
+                    }
+                    local
+                }
+            }
             val engineLoadMs = android.os.SystemClock.elapsedRealtime() - loadStartMs
             if (engine == null) {
                 com.brycewg.asrkb.store.debug.DebugLogManager.log(
@@ -158,24 +182,21 @@ object TtsPlaybackCoordinator {
                 )
                 return false
             }
-            // 音色 sid：按当前变体取存储值，脏数据/未设置回落变体默认音色
-            val sid = try {
-                val variant = TtsLocalModelCatalog.normalizeVariant(prefs.ttsModelVariant)
-                TtsLocalModelCatalog.resolveVoiceSid(variant, prefs.ttsVoiceSid(variant))
-            } catch (t: Throwable) {
-                Log.w(TAG, "Failed to resolve tts voice sid", t)
-                0
-            }
-            engine.speak(request.text, sid, prefs.ttsSpeed, object : TtsSpeakCallback {
-                override fun onDone() {
-                    ok = true
-                }
+            activeEngine = engine
+            try {
+                engine.speak(request.text, sid, prefs.ttsSpeed, object : TtsSpeakCallback {
+                    override fun onDone() {
+                        ok = true
+                    }
 
-                override fun onError(message: String) {
-                    Log.w(TAG, "TTS speak error: $message")
-                    ok = false
-                }
-            })
+                    override fun onError(message: String) {
+                        Log.w(TAG, "TTS speak error: $message")
+                        ok = false
+                    }
+                })
+            } finally {
+                if (activeEngine === engine) activeEngine = null
+            }
             return ok
         } catch (t: Throwable) {
             Log.e(TAG, "TTS playback failed", t)

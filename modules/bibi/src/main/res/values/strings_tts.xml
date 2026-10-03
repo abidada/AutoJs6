@@ -60,6 +60,19 @@
     <string name="tts_clear_done">TTS model cleared</string>
     <string name="tts_clear_failed">Clear failed</string>
 
+    <!-- CloneTTS HTTP provider -->
+    <string name="tts_vendor_clonetts">CloneTTS (HTTP service)</string>
+    <string name="label_tts_clone_tts_base_url">Server address</string>
+    <string name="tts_clone_tts_voice_default">Default (follow CloneTTS current voice)</string>
+    <string name="label_tts_clone_tts_voice_manual">Voice alias (manual; blank = default)</string>
+    <string name="btn_tts_clone_tts_test">Test connection</string>
+    <string name="tts_clone_tts_testing">Testing…</string>
+    <string name="tts_clone_tts_test_ok">Connected. %1$d voices available</string>
+    <string name="tts_clone_tts_test_failed">Connection failed: %1$s</string>
+    <string name="tts_clone_tts_test_invalid">Response not recognized</string>
+    <string name="tts_clone_tts_voice_load_failed">Voice list unavailable. You can enter the voice alias manually</string>
+    <string name="tts_clone_tts_audition_failed">CloneTTS broadcast failed. Check that the HTTP service is running</string>
+
     <!-- Audition -->
     <string name="label_tts_audition_text">Audition text</string>
     <string name="tts_audition_default_text">你好，我是语音助手。</string>

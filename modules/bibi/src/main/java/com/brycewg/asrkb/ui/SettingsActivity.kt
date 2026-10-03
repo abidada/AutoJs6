@@ -64,6 +64,9 @@ class SettingsActivity : BaseActivity() {
     companion object {
         private const val TAG = "SettingsActivity"
         const val EXTRA_INITIAL_ROUTE = "extra_initial_settings_route"
+
+        /** 随 [EXTRA_INITIAL_ROUTE] 一起传入的一次性路由参数（如待建规则的脚本路径）。 */
+        const val EXTRA_ROUTE_ARG = "extra_initial_route_arg"
     }
 
     // 一键设置状态机
@@ -78,6 +81,7 @@ class SettingsActivity : BaseActivity() {
 
     private val systemActionDialogState = mutableStateOf<SettingsMessageDialogState?>(null)
     private val pendingInitialRoute = mutableStateOf<BibiSettingsRoute?>(null)
+    private val pendingInitialRouteArg = mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,24 +97,28 @@ class SettingsActivity : BaseActivity() {
         updateCoordinator = SettingsUpdateCoordinator(this)
 
         val actionController = SettingsActionController(this)
-        val coldStartRoute = if (savedInstanceState == null) {
-            consumeInitialRouteExtra(intent)
-        } else {
-            null
+        var coldStartRoute: BibiSettingsRoute? = null
+        var coldStartRouteArg: String? = null
+        if (savedInstanceState == null) {
+            val consumed = consumeInitialRouteExtra(intent)
+            coldStartRoute = consumed.first
+            coldStartRouteArg = consumed.second
         }
         setContent {
             val viewModel: SettingsHostViewModel = viewModel(
                 factory = remember {
-                    settingsHostViewModelFactory(application, coldStartRoute)
+                    settingsHostViewModelFactory(application, coldStartRoute, coldStartRouteArg)
                 }
             )
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val routeToOpen = pendingInitialRoute.value
+            val routeToOpenArg = pendingInitialRouteArg.value
 
             LaunchedEffect(routeToOpen) {
                 routeToOpen?.let { route ->
-                    viewModel.openExternalRoute(route)
+                    viewModel.openExternalRoute(route, routeToOpenArg)
                     pendingInitialRoute.value = null
+                    pendingInitialRouteArg.value = null
                 }
             }
 
@@ -129,6 +137,7 @@ class SettingsActivity : BaseActivity() {
                         onPushRoute = viewModel::push,
                         onOpenRoute = viewModel::openRoute,
                         onPopRoute = viewModel::pop,
+                        onConsumeRouteArg = viewModel::consumeRouteArg,
                         onSetUiMode = viewModel::setUiMode,
                         onSetThemeMode = viewModel::setThemeMode,
                         actions = actionController
@@ -162,22 +171,28 @@ class SettingsActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        pendingInitialRoute.value = consumeInitialRouteExtra(intent)
+        val consumed = consumeInitialRouteExtra(intent)
+        pendingInitialRoute.value = consumed.first
+        pendingInitialRouteArg.value = consumed.second
     }
 
     private fun settingsHostViewModelFactory(
         application: Application,
-        initialRoute: BibiSettingsRoute?
+        initialRoute: BibiSettingsRoute?,
+        initialRouteArg: String?
     ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = SettingsHostViewModel(application, initialRoute) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            SettingsHostViewModel(application, initialRoute, initialRouteArg) as T
     }
 
-    private fun consumeInitialRouteExtra(intent: Intent?): BibiSettingsRoute? {
+    private fun consumeInitialRouteExtra(intent: Intent?): Pair<BibiSettingsRoute?, String?> {
         val route = BibiSettingsRoute.fromId(intent?.getStringExtra(EXTRA_INITIAL_ROUTE))
-            ?: return null
+            ?: return null to null
+        val arg = intent?.getStringExtra(EXTRA_ROUTE_ARG)
         intent?.removeExtra(EXTRA_INITIAL_ROUTE)
-        return route
+        intent?.removeExtra(EXTRA_ROUTE_ARG)
+        return route to arg
     }
 
     override fun onResume() {

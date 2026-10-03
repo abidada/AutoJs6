@@ -45,6 +45,7 @@ fun SettingsRootScreen(
     onPushRoute: (BibiSettingsRoute) -> Unit,
     onOpenRoute: (BibiSettingsRoute, String?) -> Unit,
     onPopRoute: () -> Boolean,
+    onConsumeRouteArg: () -> Unit,
     onSetUiMode: (BibiUiMode) -> Unit,
     onSetThemeMode: (String) -> Unit,
     actions: SettingsActionController
@@ -95,6 +96,7 @@ fun SettingsRootScreen(
                     onPushRoute = onPushRoute,
                     onOpenRoute = onOpenRoute,
                     onPopRoute = onPopRoute,
+                    onConsumeRouteArg = onConsumeRouteArg,
                     onSetUiMode = onSetUiMode,
                     onSetThemeMode = onSetThemeMode,
                     actions = actions
@@ -125,6 +127,7 @@ private fun SettingsRouteContent(
     onPushRoute: (BibiSettingsRoute) -> Unit,
     onOpenRoute: (BibiSettingsRoute, String?) -> Unit,
     onPopRoute: () -> Boolean,
+    onConsumeRouteArg: () -> Unit,
     onSetUiMode: (BibiUiMode) -> Unit,
     onSetThemeMode: (String) -> Unit,
     actions: SettingsActionController
@@ -219,6 +222,8 @@ private fun SettingsRouteContent(
 
         BibiSettingsRoute.VoiceDispatch -> VoiceDispatchRoute(
             uiMode = uiState.uiMode,
+            presetScriptPath = uiState.routeArg,
+            onConsumePreset = onConsumeRouteArg,
             onBack = { onPopRoute() }
         )
 

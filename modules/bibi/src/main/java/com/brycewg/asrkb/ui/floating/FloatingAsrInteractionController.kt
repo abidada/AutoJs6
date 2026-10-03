@@ -221,6 +221,22 @@ internal class FloatingAsrInteractionController(
                 if (isTtsEnabled()) TtsPlaybackCoordinator.speak(context, message)
             }
         }
+        // v2 执行面结果：成功静默（与运行按钮一致）；失败 toast + 面板/胶囊提示
+        dispatcher.onExecutionResult = { _, ok, message ->
+            if (!ok) {
+                handler.post {
+                    val text = message ?: context.getString(R.string.voice_dispatch_script_failed)
+                    showToast(text)
+                    if (currentResultDisplayMode() == ResultDisplayMode.CAPSULE) {
+                        viewManager.setPillContent(
+                            context.getString(R.string.floating_pill_dispatch_fail)
+                        )
+                    } else {
+                        listeningPanel?.showFeedback(text)
+                    }
+                }
+            }
+        }
     }
 
     /** TTS 是否开启（总开关）；关闭时所有播报与闸口延迟都不生效 */

@@ -21,7 +21,7 @@ enum class VoiceMatchType {
 
 @Serializable
 enum class VoiceDispatchType {
-    /** 分发到 AutoJs6 单独脚本（payload=脚本路径） */
+    /** 分发到 AutoJs6 单独脚本（payload=脚本路径；执行方式=立即/循环/定时） */
     SCRIPT,
 
     /** 简单脚本命令/自动化片段（payload=JS 片段） */
@@ -31,11 +31,36 @@ enum class VoiceDispatchType {
     NATIVE,
 
     /** 常用安卓 API（payload=API 名） */
-    ANDROID_API,
-
-    /** 脚本循环定时执行（payload=定时任务标识） */
-    SCHEDULE
+    ANDROID_API
 }
+
+/**
+ * 执行脚本类型的执行方式（定稿方案：立即/循环/定时均归属 SCRIPT 分发类型）。
+ */
+@Serializable
+enum class ScriptExecMode {
+    /** 立即执行一次（与文件列表运行按钮同链路） */
+    IMMEDIATE,
+
+    /** 循环运行（与文件列表「循环运行」弹窗同链路，参数存于规则） */
+    LOOP,
+
+    /** 定时任务（与文件列表「定时任务」同链路；B4 阶段接入执行） */
+    TIMED
+}
+
+/**
+ * 定时任务参数快照（scriptExecMode=TIMED）：任务可被用户在任务页删除，
+ * 规则保存快照以便语音再次命中时按原参数重建（与任务页配置同链路）。
+ */
+@Serializable
+data class TimedTaskSnapshot(
+    /** 触发时间（重复任务=当天时点的毫秒；一次性任务=具体时间戳），语义同 TimedTask.millis */
+    val millis: Long,
+    /** 重复标志：0=一次性；0x7F=每天；按位=星期（语义同 TimedTask.timeFlag） */
+    val timeFlag: Long,
+    val delayMs: Long = 0
+)
 
 @Serializable
 data class VoiceDispatchRule(
@@ -55,6 +80,20 @@ data class VoiceDispatchRule(
     val dispatchType: VoiceDispatchType,
     /** 脚本路径 / JS 命令片段 / 内置命令名 / API 名 / 定时任务标识 */
     val payload: String,
+
+    /** 执行方式（仅 dispatchType=SCRIPT 时生效） */
+    val scriptExecMode: ScriptExecMode = ScriptExecMode.IMMEDIATE,
+
+    /** 循环运行参数（scriptExecMode=LOOP 时生效；语义与循环运行弹窗一致） */
+    val loopTimes: Int = 1,
+    val loopDelayMs: Long = 0,
+    val loopIntervalMs: Long = 0,
+
+    /** 已绑定的定时任务 id（scriptExecMode=TIMED；任务被删后语音命中可重建并更新此 id） */
+    val timedTaskId: Long? = null,
+
+    /** 定时任务参数快照（scriptExecMode=TIMED；任务不存在时可按此重建） */
+    val timedTaskSnapshot: TimedTaskSnapshot? = null,
 
     /** 附加参数模板，支持占位符 {text}=整句识别文本、{1}=正则捕获组1 */
     val argsTemplate: String? = null,

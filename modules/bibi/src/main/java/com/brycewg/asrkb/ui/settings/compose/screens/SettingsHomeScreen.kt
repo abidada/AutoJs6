@@ -504,6 +504,12 @@ private fun ttsSummary(context: Context, prefs: Prefs): String {
 }
 
 private fun ttsVariantSummary(context: Context, prefs: Prefs): String {
+    // CloneTTS 为 HTTP 服务商，无本地模型概念，直接展示服务商名
+    if (com.brycewg.asrkb.tts.TtsVendor.fromId(prefs.ttsVendorId) ==
+        com.brycewg.asrkb.tts.TtsVendor.CloneTts
+    ) {
+        return context.getString(com.brycewg.asrkb.tts.TtsVendor.CloneTts.displayNameResId)
+    }
     val ready = com.brycewg.asrkb.tts.TtsLocalModelCatalog.isModelReady(
         context,
         prefs.ttsModelVariant

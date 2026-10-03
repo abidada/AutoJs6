@@ -21,6 +21,9 @@
         android:id="@+id/action_timed_task"
         android:title="@string/text_timed_task" />
     <item
+        android:id="@+id/action_voice_dispatch_rule"
+        android:title="@string/text_set_as_voice_rule" />
+    <item
         android:id="@+id/action_create_shortcut"
         android:title="@string/text_send_shortcut" />
     <item

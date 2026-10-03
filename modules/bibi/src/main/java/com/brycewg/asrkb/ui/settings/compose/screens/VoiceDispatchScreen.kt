@@ -75,11 +75,24 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 internal fun VoiceDispatchRoute(
     uiMode: BibiUiMode,
+    presetScriptPath: String?,
+    onConsumePreset: () -> Unit,
     onBack: () -> Unit
 ) {
     // editing 与 ruleId 分开：ruleId == null 既表示「新建」，不能同时用来表示「不在编辑」
     var editing by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     var editingRuleId by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
+
+    // 文件列表「设为语音规则」深链：打开新建规则页并预填脚本路径（一次性）
+    var preset by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
+    androidx.compose.runtime.LaunchedEffect(presetScriptPath) {
+        val path = presetScriptPath ?: return@LaunchedEffect
+        preset = path
+        editingRuleId = null
+        editing = true
+        onConsumePreset()
+    }
+
     if (!editing) {
         VoiceDispatchScreen(
             uiMode = uiMode,
@@ -90,7 +103,15 @@ internal fun VoiceDispatchRoute(
             }
         )
     } else {
-        VoiceDispatchRuleEditScreen(uiMode = uiMode, ruleId = editingRuleId, onBack = { editing = false })
+        VoiceDispatchRuleEditScreen(
+            uiMode = uiMode,
+            ruleId = editingRuleId,
+            presetScriptPath = preset.takeIf { editingRuleId == null },
+            onBack = {
+                editing = false
+                preset = null
+            }
+        )
     }
 }
 
@@ -171,7 +192,7 @@ internal fun VoiceDispatchScreen(
                                             R.string.voice_dispatch_test_hit,
                                             rule.priority,
                                             rule.name,
-                                            rule.dispatchType.name,
+                                            dispatchTypeLabel(rule),
                                             rule.payload
                                         )
                                     }
@@ -237,6 +258,20 @@ internal fun VoiceDispatchScreen(
     }
 }
 
+/** 分发类型展示名：执行脚本类型附加执行方式标识（LOOP/TIMED）。 */
+private fun dispatchTypeLabel(rule: com.brycewg.asrkb.host.voice.VoiceDispatchRule): String =
+    when {
+        rule.dispatchType == com.brycewg.asrkb.host.voice.VoiceDispatchType.SCRIPT &&
+            rule.scriptExecMode == com.brycewg.asrkb.host.voice.ScriptExecMode.LOOP ->
+            "${rule.dispatchType.name}(LOOP)"
+
+        rule.dispatchType == com.brycewg.asrkb.host.voice.VoiceDispatchType.SCRIPT &&
+            rule.scriptExecMode == com.brycewg.asrkb.host.voice.ScriptExecMode.TIMED ->
+            "${rule.dispatchType.name}(TIMED)"
+
+        else -> rule.dispatchType.name
+    }
+
 @Composable
 private fun VoiceDispatchRuleItem(
     uiMode: BibiUiMode,
@@ -262,7 +297,8 @@ private fun VoiceDispatchRuleItem(
             com.brycewg.asrkb.host.voice.VoiceMatchType.REGEX ->
                 context.getString(R.string.voice_dispatch_match_regex)
         }
-        "$matchLabel \"$patternText\" → ${rule.dispatchType.name} ${rule.payload}"
+        val typeLabel = dispatchTypeLabel(rule)
+        "$matchLabel \"$patternText\" → $typeLabel ${rule.payload}"
     }
     val timeText = remember(rule.lastTriggeredAt) {
         if (rule.lastTriggeredAt <= 0L) {

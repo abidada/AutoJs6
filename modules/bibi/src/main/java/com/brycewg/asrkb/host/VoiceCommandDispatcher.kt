@@ -13,11 +13,12 @@ package com.brycewg.asrkb.host
 
 import android.content.Context
 import android.util.Log
+import com.brycewg.asrkb.host.voice.VoiceDispatchExecutor
 import com.brycewg.asrkb.host.voice.VoiceDispatchRule
 import com.brycewg.asrkb.host.voice.VoiceDispatchRuleStore
 import com.brycewg.asrkb.host.voice.VoiceMatchType
 
-internal class VoiceCommandDispatcher private constructor(appContext: Context) {
+internal class VoiceCommandDispatcher private constructor(private val appContext: Context) {
 
     companion object {
         private const val TAG = "VoiceDispatch"
@@ -56,6 +57,22 @@ internal class VoiceCommandDispatcher private constructor(appContext: Context) {
 
     private val store = VoiceDispatchRuleStore(appContext)
 
+    init {
+        // 语音重建定时任务后把新任务 id 写回规则（绑定自愈）
+        VoiceDispatchExecutor.bindTimedTask = { ruleId, taskId ->
+            try {
+                val rules = store.load()
+                val idx = rules.indexOfFirst { it.id == ruleId }
+                if (idx >= 0) {
+                    store.save(rules.toMutableList().also { it[idx] = it[idx].copy(timedTaskId = taskId) })
+                    invalidateCache()
+                }
+            } catch (t: Throwable) {
+                Log.w(TAG, "bind timed task write-back failed", t)
+            }
+        }
+    }
+
     /** 规则缓存（写后失效；读取方并发安全）。 */
     @Volatile
     private var cachedRules: List<VoiceDispatchRule> = store.load()
@@ -69,6 +86,13 @@ internal class VoiceCommandDispatcher private constructor(appContext: Context) {
 
     @Volatile
     var onMiss: ((recognizedText: String) -> Unit)? = null
+
+    /** 执行结果反馈槽（v2 执行面）：message 为空表示成功且静默。 */
+    var onExecutionResult: ((rule: VoiceDispatchRule, ok: Boolean, message: String?) -> Unit)?
+        get() = VoiceDispatchExecutor.onResult
+        set(value) {
+            VoiceDispatchExecutor.onResult = value
+        }
 
     /** 规则增删改后调用，使缓存失效重载。 */
     fun invalidateCache() {
@@ -142,7 +166,7 @@ internal class VoiceCommandDispatcher private constructor(appContext: Context) {
                 return null
             }
 
-            // v1 执行桩：仅打印四元组日志（v2 以真实执行面替换本段，流程不变）
+            // 四元组日志保留（排查入口），真实执行由 v2 执行面按类型转发
             val args = renderArgs(rule.argsTemplate, trimmed, captured)
             Log.i(
                 TAG,
@@ -152,6 +176,7 @@ internal class VoiceCommandDispatcher private constructor(appContext: Context) {
             store.recordTrigger(rule.id, now)
             invalidateCache()
             onHit?.invoke(rule, trimmed, captured)
+            VoiceDispatchExecutor.execute(appContext, rule, args)
             rule.name
         } catch (t: Throwable) {
             // 分发器异常不影响识别与悬浮球（§7.3 错误隔离结论）

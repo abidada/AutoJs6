@@ -95,6 +95,8 @@ class App : MultiDexApplication() {
                 BibiLibrary.consolePrinter = { line ->
                     runCatching { AutoJs.instance.globalConsole.println(Log.INFO, line) }
                 }
+                // 语音分发执行面（v2）：脚本列表/执行经宿主桥接，走与文件列表运行按钮同链路
+                com.brycewg.asrkb.host.ScriptHost.bridge = org.autojs.autojs.host.AutoJsScriptHostBridge
                 BibiLibrary.init(this, BibiHostPermissionRouterImpl)
             }
         }

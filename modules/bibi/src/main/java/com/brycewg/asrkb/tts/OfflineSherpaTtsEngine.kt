@@ -4,7 +4,7 @@
  * - 与 asr 包同构，全部走反射调用 com.k2fsa.sherpa.onnx（软依赖，缺类不崩溃）；
  * - 优先 generateWithCallback 边合成边播（首字延迟最低），签名不可用时退回
  *   generate 整段生成后播放；
- * - 音频焦点：播报前申请瞬时 MAY_DUCK（压低媒体音），结束即释放；
+ * - 播放/焦点/打断统一委托 TtsStreamPlayer（与 CloneTtsHttpEngine 共用）；
  * - 打断：stop() 置位后回调返回 0，JNI 侧停止生成并返回已完成的部分音频。
  *
  * 线程契约：speak/stop 仅由 TtsPlaybackCoordinator 的单一工作线程调用。
@@ -15,14 +15,7 @@ package com.brycewg.asrkb.tts
 
 import android.content.Context
 import android.content.res.AssetManager
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
-import android.media.AudioFormat
-import android.media.AudioManager
-import android.media.AudioTrack
-import android.os.Build
 import android.util.Log
-import java.io.File
 import kotlin.jvm.functions.Function1
 
 internal class OfflineSherpaTtsEngine private constructor(
@@ -32,15 +25,6 @@ internal class OfflineSherpaTtsEngine private constructor(
 ) : TtsEngine {
     companion object {
         private const val TAG = "OfflineSherpaTts"
-
-        /** 播完等待上限（正常短播报几秒内结束；超时兜底防止工作线程卡死） */
-        private const val DRAIN_TIMEOUT_MS = 30_000
-
-        /** 播放头连续无进展的判定轮数（6 × 50ms = 300ms 无进展即视为播完） */
-        private const val DRAIN_STAGNANT_POLLS = 6
-
-        /** 写入停滞保护上限（缓冲满且系统侧长时间不消费时抛错，防工作线程卡死） */
-        private const val WRITE_STALL_TIMEOUT_MS = 5_000L
 
         /** 预热合成文本（只合成不播放，取最短常用音节即可） */
         private const val WARMUP_TEXT = "好"
@@ -150,24 +134,11 @@ internal class OfflineSherpaTtsEngine private constructor(
         }
     }
 
-    private val audioManager: AudioManager? =
-        context.getSystemService(AudioManager::class.java)
-
-    private val audioAttrs: AudioAttributes = AudioAttributes.Builder()
-        .setUsage(AudioAttributes.USAGE_ASSISTANT)
-        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-        .build()
-
     @Volatile private var speaking: Boolean = false
 
     @Volatile private var cancelled: Boolean = false
 
-    @Volatile private var track: AudioTrack? = null
-
-    @Volatile private var focusRequest: AudioFocusRequest? = null
-
-    /** 本轮已写入 AudioTrack 的帧数（用于播完等待，见 [drainTrack]） */
-    @Volatile private var writtenFrames: Long = 0L
+    @Volatile private var player: TtsStreamPlayer? = null
 
     val sampleRate: Int = try {
         (ttsClass.getMethod("sampleRate").invoke(ttsInstance) as? Int) ?: 22050
@@ -183,40 +154,32 @@ internal class OfflineSherpaTtsEngine private constructor(
         }
         speaking = true
         cancelled = false
-        writtenFrames = 0L
         val clampedSpeed = speed.coerceIn(0.5f, 2.0f)
-        var acquiredFocus = false
         try {
-            acquiredFocus = requestFocus()
-            val t = buildTrack()
-            track = t
-            t.play()
+            val p = TtsStreamPlayer(context, sampleRate)
+            player = p
+            p.start()
             try {
-                generateStreaming(text, sid, clampedSpeed)
+                generateStreaming(text, sid, clampedSpeed, p)
             } catch (streamingFailure: Throwable) {
                 Log.w(TAG, "generateWithCallback unavailable, fallback to generate", streamingFailure)
-                generateAll(text, sid, clampedSpeed)
+                generateAll(text, sid, clampedSpeed, p)
             }
-            drainTrack(t)
+            p.drain()
             callback.onDone()
         } catch (t: Throwable) {
             Log.e(TAG, "TTS speak failed", t)
             callback.onError(t.message ?: t.javaClass.simpleName)
         } finally {
-            releaseTrack()
-            if (acquiredFocus) abandonFocus()
+            player?.release()
+            player = null
             speaking = false
         }
     }
 
     override fun stop() {
         cancelled = true
-        try {
-            track?.pause()
-            track?.flush()
-        } catch (t: Throwable) {
-            Log.w(TAG, "Failed to stop audio track", t)
-        }
+        player?.cancel()
     }
 
     /**
@@ -264,15 +227,14 @@ internal class OfflineSherpaTtsEngine private constructor(
     // ==================== 合成 ====================
 
     /**
-     * 流式合成：回调写入 AudioTrack；返回 0 停止生成。
+     * 流式合成：回调经共享播放器写入 AudioTrack；返回 0 停止生成。
      * @return 是否成功发起并完成合成（打断视为完成）
      */
-    private fun generateStreaming(text: String, sid: Int, speed: Float): Boolean {
-        val t = track ?: throw IllegalStateException("AudioTrack not ready")
+    private fun generateStreaming(text: String, sid: Int, speed: Float, p: TtsStreamPlayer): Boolean {
         val callback = object : Function1<FloatArray, Int> {
             override fun invoke(chunk: FloatArray): Int {
                 if (cancelled) return 0
-                if (chunk.isNotEmpty()) writeChunk(t, chunk)
+                if (chunk.isNotEmpty()) p.write(toPcm16(chunk))
                 return 1
             }
         }
@@ -288,8 +250,7 @@ internal class OfflineSherpaTtsEngine private constructor(
     }
 
     /** 整段生成后播放（generateWithCallback 不可用时的兜底路径） */
-    private fun generateAll(text: String, sid: Int, speed: Float): Boolean {
-        val t = track ?: throw IllegalStateException("AudioTrack not ready")
+    private fun generateAll(text: String, sid: Int, speed: Float, p: TtsStreamPlayer): Boolean {
         val method = ttsClass.getMethod(
             "generate",
             String::class.java,
@@ -299,32 +260,12 @@ internal class OfflineSherpaTtsEngine private constructor(
         val audio = method.invoke(ttsInstance, text, sid, speed) ?: return false
         val samples = audio.javaClass.getMethod("getSamples").invoke(audio) as? FloatArray
         if (samples == null || samples.isEmpty()) return false
-        if (!cancelled) writeChunk(t, samples)
+        if (!cancelled) p.write(toPcm16(samples))
         return true
     }
 
-    // ==================== 播放 ====================
-
-    private fun buildTrack(): AudioTrack {
-        val minBuffer = AudioTrack.getMinBufferSize(
-            sampleRate,
-            AudioFormat.CHANNEL_OUT_MONO,
-            AudioFormat.ENCODING_PCM_16BIT
-        )
-        val format = AudioFormat.Builder()
-            .setSampleRate(sampleRate)
-            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-            .build()
-        return AudioTrack.Builder()
-            .setAudioAttributes(audioAttrs)
-            .setAudioFormat(format)
-            .setBufferSizeInBytes(maxOf(minBuffer * 2, 8192))
-            .setTransferMode(AudioTrack.MODE_STREAM)
-            .build()
-    }
-
-    private fun writeChunk(t: AudioTrack, chunk: FloatArray) {
+    /** [-1,1] 浮点样本 → 16bit PCM 样本 */
+    private fun toPcm16(chunk: FloatArray): ShortArray {
         val shorts = ShortArray(chunk.size)
         var i = 0
         while (i < chunk.size) {
@@ -332,128 +273,6 @@ internal class OfflineSherpaTtsEngine private constructor(
             shorts[i] = (f * 32767f).toInt().toShort()
             i++
         }
-        writtenFrames += shorts.size
-        var offset = 0
-        // 非阻塞写入 + 轮询：WRITE_BLOCKING 在 stop() 暂停轨道后会永久阻塞，
-        // 非阻塞写配合 cancelled 检查保证打断能立刻从写循环里退出
-        var stallMs = 0L
-        while (offset < shorts.size && !cancelled) {
-            val written = t.write(shorts, offset, shorts.size - offset, AudioTrack.WRITE_NON_BLOCKING)
-            if (written < 0) throw IllegalStateException("AudioTrack write failed: $written")
-            if (written == 0) {
-                // 缓冲满且长时间无进展（轨道被系统暂停/路由异常）：防永久卡死
-                stallMs += 10L
-                if (stallMs > WRITE_STALL_TIMEOUT_MS) {
-                    throw IllegalStateException("AudioTrack write stalled (no drain in ${WRITE_STALL_TIMEOUT_MS}ms)")
-                }
-                try {
-                    Thread.sleep(10)
-                } catch (_: InterruptedException) {
-                    break
-                }
-                continue
-            }
-            stallMs = 0L
-            offset += written
-        }
-    }
-
-    /**
-     * 等待缓冲播完再返回：stop() 后 playbackHeadPosition 追平写入帧数即播完。
-     * onDone 必须晚于声音结束，否则开麦闸口会在尾音期间放行重开麦克风。
-     *
-     * 注意：部分机型 stop() 后会直接丢弃剩余缓冲，播放头停在写入总数之下不再推进；
-     * 因此除总时长兜底外，还以「播放头连续 ~300ms 无进展」作为播完判据，
-     * 否则每次播报都会白等满 DRAIN_TIMEOUT_MS。
-     */
-    private fun drainTrack(t: AudioTrack) {
-        val total = writtenFrames
-        if (total <= 0L) return
-        try {
-            t.stop()
-        } catch (t2: Throwable) {
-            Log.w(TAG, "Failed to drain audio track", t2)
-            return
-        }
-        var lastHead = -1L
-        var stagnantPolls = 0
-        var waited = 0
-        while (!cancelled && waited < DRAIN_TIMEOUT_MS) {
-            val head = try {
-                t.playbackHeadPosition.toLong() and 0xffffffffL
-            } catch (_: Throwable) {
-                break
-            }
-            if (head >= total) break
-            stagnantPolls = if (head == lastHead) stagnantPolls + 1 else 0
-            if (stagnantPolls >= DRAIN_STAGNANT_POLLS) {
-                Log.d(TAG, "Drain finished by head stall (head=$head total=$total)")
-                break
-            }
-            lastHead = head
-            try {
-                Thread.sleep(50)
-                waited += 50
-            } catch (_: InterruptedException) {
-                break
-            }
-        }
-    }
-
-    private fun releaseTrack() {
-        val t = track
-        track = null
-        if (t == null) return
-        try {
-            t.stop()
-        } catch (_: Throwable) {
-        }
-        try {
-            t.release()
-        } catch (t2: Throwable) {
-            Log.w(TAG, "Failed to release audio track", t2)
-        }
-    }
-
-    // ==================== 音频焦点 ====================
-
-    private fun requestFocus(): Boolean = try {
-        val am = audioManager ?: return true
-        val granted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val request = AudioFocusRequest.Builder(
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
-            )
-                .setAudioAttributes(audioAttrs)
-                .build()
-            focusRequest = request
-            am.requestAudioFocus(request)
-        } else {
-            @Suppress("DEPRECATION")
-            am.requestAudioFocus(
-                null,
-                AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
-            )
-        }
-        granted == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-    } catch (t: Throwable) {
-        Log.w(TAG, "Failed to request tts audio focus", t)
-        false
-    }
-
-    private fun abandonFocus() {
-        try {
-            val am = audioManager ?: return
-            val request = focusRequest
-            if (request != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                am.abandonAudioFocusRequest(request)
-                focusRequest = null
-            } else {
-                @Suppress("DEPRECATION")
-                am.abandonAudioFocus(null)
-            }
-        } catch (t: Throwable) {
-            Log.w(TAG, "Failed to abandon tts audio focus", t)
-        }
+        return shorts
     }
 }

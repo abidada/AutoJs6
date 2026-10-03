@@ -60,6 +60,19 @@
     <string name="tts_clear_done">تم مسح نموذج TTS</string>
     <string name="tts_clear_failed">فشل المسح</string>
 
+    <!-- مزود CloneTTS عبر HTTP -->
+    <string name="tts_vendor_clonetts">CloneTTS (خدمة HTTP)</string>
+    <string name="label_tts_clone_tts_base_url">عنوان الخدمة</string>
+    <string name="tts_clone_tts_voice_default">افتراضي (يتبع صوت CloneTTS الحالي)</string>
+    <string name="label_tts_clone_tts_voice_manual">اسم الصوت (إدخال يدوي؛ فارغ = افتراضي)</string>
+    <string name="btn_tts_clone_tts_test">اختبار الاتصال</string>
+    <string name="tts_clone_tts_testing">جارٍ الاختبار…</string>
+    <string name="tts_clone_tts_test_ok">تم الاتصال. %1$d صوت متاح</string>
+    <string name="tts_clone_tts_test_failed">فشل الاتصال: %1$s</string>
+    <string name="tts_clone_tts_test_invalid">تعذر تحليل الاستجابة</string>
+    <string name="tts_clone_tts_voice_load_failed">قائمة الأصوات غير متاحة؛ يمكنك إدخال اسم الصوت يدويًا</string>
+    <string name="tts_clone_tts_audition_failed">فشل النطق عبر CloneTTS. تحقق من تشغيل خدمة HTTP</string>
+
     <!-- تجربة الاستماع -->
     <string name="label_tts_audition_text">نص التجربة</string>
     <string name="tts_audition_default_text">你好，我是语音助手。</string>

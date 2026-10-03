@@ -22,12 +22,17 @@ data class SettingsHostUiState(
     val themeMode: String = "system",
     val selectedHomeTab: Int = 0,
     val highlightTargetId: String? = null,
+
+    /** 一次性路由参数（外部深链附带，如待建规则的脚本路径），由目标页消费后置空。 */
+    val routeArg: String? = null,
+
     val backStack: List<BibiSettingsRoute> = listOf(BibiSettingsRoute.Home)
 )
 
 class SettingsHostViewModel(
     application: Application,
-    initialRoute: BibiSettingsRoute? = null
+    initialRoute: BibiSettingsRoute? = null,
+    initialRouteArg: String? = null
 ) : AndroidViewModel(application) {
     private val prefs = Prefs(application)
     private val _uiState = MutableStateFlow(
@@ -35,7 +40,11 @@ class SettingsHostViewModel(
             uiMode = BibiUiMode.fromId(prefs.settingsUiMode),
             themeMode = prefs.settingsThemeMode
         ).let { state ->
-            if (initialRoute == null) state else state.openedFromOutside(initialRoute)
+            if (initialRoute == null) {
+                state
+            } else {
+                state.openedFromOutside(initialRoute).copy(routeArg = initialRouteArg)
+            }
         }
     )
     val uiState: StateFlow<SettingsHostUiState> = _uiState.asStateFlow()
@@ -95,8 +104,15 @@ class SettingsHostViewModel(
      * 丢掉当前所在页面，按目标页自己的上级重建返回栈。
      * 例如后台停在 AI 设置时点进识别历史，返回落到「智能」而不是 AI 设置。
      */
-    fun openExternalRoute(route: BibiSettingsRoute) {
-        _uiState.update { it.openedFromOutside(route) }
+    fun openExternalRoute(route: BibiSettingsRoute, routeArg: String? = null) {
+        _uiState.update { it.openedFromOutside(route).copy(routeArg = routeArg) }
+    }
+
+    /** 目标页消费一次性路由参数后调用。 */
+    fun consumeRouteArg() {
+        _uiState.update { state ->
+            if (state.routeArg == null) state else state.copy(routeArg = null)
+        }
     }
 
     private fun SettingsHostUiState.openedFromOutside(route: BibiSettingsRoute): SettingsHostUiState {

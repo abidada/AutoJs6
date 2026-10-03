@@ -105,6 +105,8 @@ object OfflineTtsManager {
     /** 初始化预加载：后台加载引擎，消除首次播报延迟；失败静默（播报时会重试） */
     fun preloadAsync(context: Context, prefs: Prefs) {
         if (!prefs.ttsEnabled) return
+        // 仅本地离线引擎需要预加载；CloneTTS 等 HTTP 服务商无状态，无预加载概念
+        if (TtsVendor.fromId(prefs.ttsVendorId) != TtsVendor.SherpaOffline) return
         scope.launch(Dispatchers.IO) {
             try {
                 val loaded = loadSync(context, prefs)

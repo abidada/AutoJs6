@@ -94,6 +94,20 @@ class Prefs(context: Context) {
         }
     }
 
+    /**
+     * 重复命中策略（v2 执行面；作用于循环运行/定时任务两种执行方式）：
+     * REFUSE=拒绝重复（脚本运行中/已设置相同定时→语音提示且不执行，默认）；
+     * FORWARD=允许重复（与手动操作一致，重复触发会叠加运行/任务）。
+     */
+    enum class VoiceDuplicatePolicy(val id: String) {
+        REFUSE("refuse"),
+        FORWARD("forward");
+
+        companion object {
+            fun fromId(id: String?): VoiceDuplicatePolicy = entries.firstOrNull { it.id == id } ?: REFUSE
+        }
+    }
+
     internal val appContext = context.applicationContext
     private val sp = appContext.getSharedPreferences("asr_prefs", Context.MODE_PRIVATE)
 
@@ -742,6 +756,11 @@ class Prefs(context: Context) {
         get() = DispatchContinueMode.fromId(sp.getString(KEY_DISPATCH_CONTINUE_MODE, null))
         set(value) = sp.edit { putString(KEY_DISPATCH_CONTINUE_MODE, value.id) }
 
+    // 重复命中策略：循环运行/定时任务重复命中时拒绝（默认）或允许（与手动一致）
+    var voiceDispatchDuplicatePolicy: VoiceDuplicatePolicy
+        get() = VoiceDuplicatePolicy.fromId(sp.getString(KEY_DISPATCH_DUPLICATE_POLICY, null))
+        set(value) = sp.edit { putString(KEY_DISPATCH_DUPLICATE_POLICY, value.id) }
+
     // 分发反馈展示时长（0-10 秒）：识别结束后面板驻留展示分发结果的时长，0=不驻留
     var dispatchFeedbackHoldSeconds: Int
         get() = sp.getInt(KEY_DISPATCH_FEEDBACK_HOLD_SECONDS, DEFAULT_DISPATCH_FEEDBACK_HOLD_SECONDS)
@@ -796,6 +815,22 @@ class Prefs(context: Context) {
     fun setTtsVoiceSid(variant: String, sid: Int) {
         sp.edit { putInt(KEY_TTS_VOICE_SID_PREFIX + variant, sid) }
     }
+
+    // CloneTTS（HTTP 服务）服务地址，如 http://127.0.0.1:8080（同机）或 http://192.168.x.x:8080（局域网）
+    var ttsCloneTtsBaseUrl: String
+        get() = sp.getString(KEY_TTS_CLONE_TTS_BASE_URL, null)?.trim()
+            ?.takeUnless { it.isBlank() } ?: DEFAULT_TTS_CLONE_TTS_BASE_URL
+        set(value) = sp.edit { putString(KEY_TTS_CLONE_TTS_BASE_URL, value.trim()) }
+
+    // CloneTTS 音色别名（alias）；空 = 不带 voice 参数，由 CloneTTS 当前默认音色兜底
+    var ttsCloneTtsVoice: String
+        get() = sp.getString(KEY_TTS_CLONE_TTS_VOICE, null)?.trim() ?: ""
+        set(value) = sp.edit { putString(KEY_TTS_CLONE_TTS_VOICE, value.trim()) }
+
+    // CloneTTS 音色列表缓存（/api/voices 上次成功拉取的 JSON；服务未开时下拉仍可回显）
+    var ttsCloneTtsVoiceListCache: String
+        get() = sp.getString(KEY_TTS_CLONE_TTS_VOICE_LIST_CACHE, null) ?: ""
+        set(value) = sp.edit { putString(KEY_TTS_CLONE_TTS_VOICE_LIST_CACHE, value) }
 
     // 场景开关已移除：总开关开启即固定播报「正在听」与分发命中/未命中结果
 
@@ -2391,6 +2426,7 @@ class Prefs(context: Context) {
         const val DEFAULT_TTS_SPEED = 1.0f
         const val TTS_SPEED_MIN = 0.5f
         const val TTS_SPEED_MAX = 2.0f
+        const val DEFAULT_TTS_CLONE_TTS_BASE_URL = "http://127.0.0.1:8080"
 
         // 输入/点击触觉反馈等级（兼容旧开关）
         const val HAPTIC_FEEDBACK_LEVEL_OFF = 0

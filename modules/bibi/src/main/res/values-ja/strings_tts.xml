@@ -60,6 +60,19 @@
     <string name="tts_clear_done">TTS モデルを削除しました</string>
     <string name="tts_clear_failed">削除に失敗しました</string>
 
+    <!-- CloneTTS HTTP プロバイダー -->
+    <string name="tts_vendor_clonetts">CloneTTS（HTTP サービス）</string>
+    <string name="label_tts_clone_tts_base_url">サーバーアドレス</string>
+    <string name="tts_clone_tts_voice_default">デフォルト（CloneTTS の現在のボイスに従う）</string>
+    <string name="label_tts_clone_tts_voice_manual">ボイスエイリアス（手動入力、空欄でデフォルト）</string>
+    <string name="btn_tts_clone_tts_test">接続テスト</string>
+    <string name="tts_clone_tts_testing">テスト中…</string>
+    <string name="tts_clone_tts_test_ok">接続成功：%1$d 個のボイスが利用可能</string>
+    <string name="tts_clone_tts_test_failed">接続失敗：%1$s</string>
+    <string name="tts_clone_tts_test_invalid">応答を解析できません</string>
+    <string name="tts_clone_tts_voice_load_failed">ボイスリストを取得できませんでした。ボイスエイリアスを手動入力できます</string>
+    <string name="tts_clone_tts_audition_failed">CloneTTS の読み上げに失敗しました。HTTP サービスが有効か確認してください</string>
+
     <!-- 試聴 -->
     <string name="label_tts_audition_text">試聴テキスト</string>
     <string name="tts_audition_default_text">你好，我是语音助手。</string>

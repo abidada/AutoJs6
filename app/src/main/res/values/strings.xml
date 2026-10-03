@@ -1624,6 +1624,7 @@
     <string name="text_timed_task">Timed task</string>
     <string name="text_timed_task_backend_title">Timed task scheduling engine</string>
     <string name="text_timed_task_timing">Timing</string>
+    <string name="text_set_as_voice_rule">Set as voice rule</string>
     <string name="text_title">Title</string>
     <string name="text_to_be_chosen">To be chosen</string>
     <string name="text_toggle_all">Toggle all</string>

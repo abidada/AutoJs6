@@ -60,6 +60,19 @@
     <string name="tts_clear_done">TTS 模型已清除</string>
     <string name="tts_clear_failed">清除失敗</string>
 
+    <!-- CloneTTS HTTP 服務商 -->
+    <string name="tts_vendor_clonetts">CloneTTS（HTTP 服務）</string>
+    <string name="label_tts_clone_tts_base_url">服務位址</string>
+    <string name="tts_clone_tts_voice_default">預設（跟隨 CloneTTS 目前音色）</string>
+    <string name="label_tts_clone_tts_voice_manual">音色別名（手動輸入，留空跟隨預設）</string>
+    <string name="btn_tts_clone_tts_test">測試連線</string>
+    <string name="tts_clone_tts_testing">測試中…</string>
+    <string name="tts_clone_tts_test_ok">連線成功，共 %1$d 個音色</string>
+    <string name="tts_clone_tts_test_failed">連線失敗：%1$s</string>
+    <string name="tts_clone_tts_test_invalid">無法解析回應</string>
+    <string name="tts_clone_tts_voice_load_failed">音色清單不可用，可手動輸入音色別名</string>
+    <string name="tts_clone_tts_audition_failed">CloneTTS 播報失敗，請檢查 HTTP 服務是否開啟</string>
+
     <!-- 試聽 -->
     <string name="label_tts_audition_text">試聽文字</string>
     <string name="tts_audition_default_text">你好，我是語音助理。</string>

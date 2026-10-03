@@ -24,6 +24,9 @@ internal object PrefsBackup {
     // 保持与 Prefs 原日志 tag 一致，便于排查
     private const val TAG = "Prefs"
 
+    /** 备份 JSON 中语音分发规则字段的键名。 */
+    private const val KEY_VOICE_DISPATCH_RULES = "voice_dispatch_rules"
+
     fun exportJsonString(prefs: Prefs): String = prefs.run {
         val o = org.json.JSONObject()
         o.put("_version", 2)
@@ -296,6 +299,14 @@ internal object PrefsBackup {
             } catch (t: Throwable) {
                 Log.w(TAG, "Failed to export LLM vendor models", t)
             }
+        }
+
+        // 语音分发规则（文件型数据，随备份走；B5 纳入）
+        try {
+            val rulesFile = java.io.File(appContext.filesDir, "voice_dispatch/rules.json")
+            o.put(KEY_VOICE_DISPATCH_RULES, if (rulesFile.isFile) rulesFile.readText() else "")
+        } catch (t: Throwable) {
+            Log.w(TAG, "Failed to export voice dispatch rules", t)
         }
         return o.toString()
     }
@@ -675,6 +686,24 @@ internal object PrefsBackup {
                     setLlmVendorReasoningParamsOffJson(vendor, it)
                 }
                 optString("${keyPrefix}_models_json")?.let { setLlmVendorModelsJson(vendor, it) }
+            }
+
+            // 语音分发规则还原（B5 纳入；导入后失效分发器缓存）
+            if (o.has(KEY_VOICE_DISPATCH_RULES)) {
+                try {
+                    val rulesText = o.optString(KEY_VOICE_DISPATCH_RULES, "")
+                    val rulesFile = java.io.File(appContext.filesDir, "voice_dispatch/rules.json")
+                    if (rulesText.isEmpty()) {
+                        rulesFile.delete()
+                    } else {
+                        rulesFile.parentFile?.mkdirs()
+                        rulesFile.writeText(rulesText)
+                    }
+                    com.brycewg.asrkb.host.VoiceCommandDispatcher
+                        .getInstance(appContext).invalidateCache()
+                } catch (t: Throwable) {
+                    Log.w(TAG, "Failed to import voice dispatch rules", t)
+                }
             }
             true
         } catch (e: Exception) {

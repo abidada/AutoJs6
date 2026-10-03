@@ -2,6 +2,7 @@ package org.autojs.autojs.ui.explorer
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.util.Log
@@ -360,6 +361,36 @@ open class ExplorerView : ThemeColorSwipeRefreshLayout, SwipeRefreshLayout.OnRef
                             }
                         }, Observers.toastMessage())
                 }
+            }
+            R.id.action_voice_dispatch_rule -> {
+                val target = selectedItem ?: return false
+                try {
+                    val intent = Intent(
+                        context,
+                        com.brycewg.asrkb.ui.SettingsActivity::class.java
+                    )
+                        .putExtra(
+                            com.brycewg.asrkb.ui.SettingsActivity.EXTRA_INITIAL_ROUTE,
+                            com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute.VoiceDispatch.id
+                        )
+                        .putExtra(
+                            com.brycewg.asrkb.ui.SettingsActivity.EXTRA_ROUTE_ARG,
+                            target.path
+                        )
+                        .addFlags(
+                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        )
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    Log.w(LOG_TAG, "Failed to open voice dispatch editor", e)
+                    android.widget.Toast.makeText(
+                        context,
+                        context.getString(R.string.error_open_voice_dispatch_settings),
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
+                notifyItemOperated()
+                mRequestHostDialogHide?.run()
             }
             else -> {
                 return false
@@ -1044,6 +1075,7 @@ open class ExplorerView : ThemeColorSwipeRefreshLayout, SwipeRefreshLayout.OnRef
                 menu.removeItem(R.id.action_create_shortcut)
                 menu.removeItem(R.id.action_timed_task)
                 menu.removeItem(R.id.action_run_repeatedly)
+                menu.removeItem(R.id.action_voice_dispatch_rule)
             }
             if (!mExplorerItem.canMove()) {
                 menu.removeItem(R.id.action_move_to)
