@@ -3,6 +3,7 @@
  * 分发始终开启（无总开关）：每句识别结果统一匹配规则。
  * 规则项为两排式卡片：第一排为整行宽度的文字描述（标签分组、默认单行截断、可展开/收起），
  * 第二排为编辑/删除按钮与启用开关；开关是唯一启停入口，文字区无点击交互。
+ * 删除按钮先弹确认框（确认后才落盘删除）。
  * 归属模块：ui/settings/compose/screens
  */
 package com.brycewg.asrkb.ui.settings.compose.screens
@@ -51,6 +52,8 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButton
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMaterialItemSurface
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
+import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionTitle
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsTextField
@@ -125,6 +128,8 @@ internal fun VoiceDispatchScreen(
     var testInput by remember { mutableStateOf("") }
     var testResult by remember { mutableStateOf("") }
     var duplicatePolicy by remember { mutableStateOf(prefs.voiceDispatchDuplicatePolicy) }
+    // 待删除规则：点删除先弹确认框，确认后才真正落盘
+    var pendingDeleteRule by remember { mutableStateOf<VoiceDispatchRule?>(null) }
 
     // 测试按钮直连执行面：结果回显到测试文本区（不写规则统计）
     androidx.compose.runtime.DisposableEffect(Unit) {
@@ -146,6 +151,15 @@ internal fun VoiceDispatchScreen(
     }
 
     androidx.compose.runtime.LaunchedEffect(Unit) { reloadRules() }
+
+    fun deleteRule(target: VoiceDispatchRule) {
+        scope.launch(Dispatchers.IO) {
+            val store = dispatcher.getStore()
+            store.save(store.load().filterNot { it.id == target.id })
+            dispatcher.invalidateCache()
+            reloadRules()
+        }
+    }
 
     SettingsDetailScaffold(
         uiMode = uiMode,
@@ -303,14 +317,7 @@ internal fun VoiceDispatchScreen(
                                         }
                                     },
                                     onEdit = { onEditRule(rule.id) },
-                                    onDelete = {
-                                        scope.launch(Dispatchers.IO) {
-                                            val store = dispatcher.getStore()
-                                            store.save(store.load().filterNot { it.id == rule.id })
-                                            dispatcher.invalidateCache()
-                                            reloadRules()
-                                        }
-                                    }
+                                    onDelete = { pendingDeleteRule = rule }
                                 )
                             }
                         }
@@ -319,6 +326,22 @@ internal fun VoiceDispatchScreen(
             }
         }
     }
+    val deleteTarget = pendingDeleteRule
+    SettingsMessageDialog(
+        state = if (deleteTarget == null) {
+            null
+        } else {
+            SettingsMessageDialogState(
+                title = stringResource(R.string.voice_dispatch_delete_confirm_title),
+                message = stringResource(R.string.voice_dispatch_delete_confirm_message, deleteTarget.name),
+                confirmText = stringResource(R.string.btn_voice_dispatch_delete),
+                dismissText = stringResource(android.R.string.cancel),
+                onConfirm = { deleteRule(deleteTarget) }
+            )
+        },
+        uiMode = uiMode,
+        onDismiss = { pendingDeleteRule = null }
+    )
 }
 
 /** 分发类型展示名：执行脚本类型附加执行方式标识（LOOP/TIMED）。 */

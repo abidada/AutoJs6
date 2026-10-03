@@ -194,6 +194,8 @@
     <string name="btn_voice_dispatch_save">保存</string>
     <string name="btn_voice_dispatch_edit">编辑</string>
     <string name="btn_voice_dispatch_delete">删除</string>
+    <string name="voice_dispatch_delete_confirm_title">删除规则</string>
+    <string name="voice_dispatch_delete_confirm_message">确定删除规则「%1$s」？删除后不可恢复。</string>
     <string name="btn_voice_dispatch_test">测试</string>
     <string name="label_voice_dispatch_test">测试匹配</string>
     <string name="hint_voice_dispatch_test">输入模拟识别文本</string>

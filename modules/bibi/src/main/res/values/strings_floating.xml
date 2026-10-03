@@ -194,6 +194,8 @@
     <string name="btn_voice_dispatch_save">Save</string>
     <string name="btn_voice_dispatch_edit">Edit</string>
     <string name="btn_voice_dispatch_delete">Delete</string>
+    <string name="voice_dispatch_delete_confirm_title">Delete rule</string>
+    <string name="voice_dispatch_delete_confirm_message">Delete rule "%1$s"? This cannot be undone.</string>
     <string name="btn_voice_dispatch_test">Test</string>
     <string name="label_voice_dispatch_test">Test matching</string>
     <string name="hint_voice_dispatch_test">Enter simulated recognized text</string>
