@@ -16,6 +16,24 @@
     <string name="label_tts_model_variant">モデルバージョン</string>
     <string name="tts_model_medium">XiaoYa medium (58 MB)</string>
     <string name="tts_model_medium_int8">XiaoYa medium int8 (13 MB)</string>
+    <string name="tts_model_kokoro_int8_v11">Kokoro 多言語 int8 v1.1（中国語+英語・おすすめ、140 MB）</string>
+    <string name="tts_model_kokoro_v11">Kokoro 多言語 v1.1（中国語+英語、347 MB）</string>
+    <string name="tts_model_kokoro_int8_v10">Kokoro 多言語 int8 v1.0（中国語+英語、126 MB）</string>
+    <string name="tts_model_melo_zh_en">MeloTTS 中国語+英語（159 MB）</string>
+    <string name="tts_model_chaowen">Chaowen 標準・男性（57 MB）</string>
+    <string name="tts_model_chaowen_int8">Chaowen int8・男性（13 MB）</string>
+    <string name="label_tts_voice">ボイス</string>
+    <string name="tts_voice_female_fmt">女声 %1$02d</string>
+    <string name="tts_voice_male_fmt">男声 %1$02d</string>
+    <string name="tts_voice_default">デフォルトボイス</string>
+    <string name="tts_voice_v10_xiaobei">Xiaobei（女）</string>
+    <string name="tts_voice_v10_xiaoni">Xiaoni（女）</string>
+    <string name="tts_voice_v10_xiaoxiao">Xiaoxiao（女）</string>
+    <string name="tts_voice_v10_xiaoyi">Xiaoyi（女）</string>
+    <string name="tts_voice_v10_yunjian">Yunjian（男）</string>
+    <string name="tts_voice_v10_yunxi">Yunxi（男）</string>
+    <string name="tts_voice_v10_yunxia">Yunxia（男）</string>
+    <string name="tts_voice_v10_yunyang">Yunyang（男）</string>
     <string name="label_tts_threads">スレッド数 (1-8)</string>
     <string name="label_tts_preload">モデルを事前ロード（初回読み上げを高速化）</string>
     <string name="label_tts_keep_alive">読み上げ後のエンジン常駐</string>
@@ -41,8 +59,6 @@
     <string name="tts_clear_confirm_message">ダウンロード済みの TTS モデルファイルを削除します。後で再ダウンロードできます。続行しますか？</string>
     <string name="tts_clear_done">TTS モデルを削除しました</string>
     <string name="tts_clear_failed">削除に失敗しました</string>
-    <string name="notif_tts_title_medium">TTS モデル（XiaoYa medium）</string>
-    <string name="notif_tts_title_medium_int8">TTS モデル（XiaoYa int8）</string>
 
     <!-- 試聴 -->
     <string name="label_tts_audition_text">試聴テキスト</string>

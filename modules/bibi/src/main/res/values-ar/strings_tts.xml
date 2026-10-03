@@ -16,6 +16,24 @@
     <string name="label_tts_model_variant">إصدار النموذج</string>
     <string name="tts_model_medium">XiaoYa متوسط (58 م.ب)</string>
     <string name="tts_model_medium_int8">XiaoYa متوسط int8 (13 م.ب)</string>
+    <string name="tts_model_kokoro_int8_v11">Kokoro متعدد اللغات int8 v1.1 (صيني + إنجليزي · موصى به، 140 م.ب)</string>
+    <string name="tts_model_kokoro_v11">Kokoro متعدد اللغات v1.1 (صيني + إنجليزي، 347 م.ب)</string>
+    <string name="tts_model_kokoro_int8_v10">Kokoro متعدد اللغات int8 v1.0 (صيني + إنجليزي، 126 م.ب)</string>
+    <string name="tts_model_melo_zh_en">MeloTTS صيني + إنجليزي (159 م.ب)</string>
+    <string name="tts_model_chaowen">Chaowen قياسي · ذكوري (57 م.ب)</string>
+    <string name="tts_model_chaowen_int8">Chaowen int8 · ذكوري (13 م.ب)</string>
+    <string name="label_tts_voice">الصوت</string>
+    <string name="tts_voice_female_fmt">صوت أنثوي %1$02d</string>
+    <string name="tts_voice_male_fmt">صوت ذكوري %1$02d</string>
+    <string name="tts_voice_default">الصوت الافتراضي</string>
+    <string name="tts_voice_v10_xiaobei">Xiaobei (أنثوي)</string>
+    <string name="tts_voice_v10_xiaoni">Xiaoni (أنثوي)</string>
+    <string name="tts_voice_v10_xiaoxiao">Xiaoxiao (أنثوي)</string>
+    <string name="tts_voice_v10_xiaoyi">Xiaoyi (أنثوي)</string>
+    <string name="tts_voice_v10_yunjian">Yunjian (ذكوري)</string>
+    <string name="tts_voice_v10_yunxi">Yunxi (ذكوري)</string>
+    <string name="tts_voice_v10_yunxia">Yunxia (ذكوري)</string>
+    <string name="tts_voice_v10_yunyang">Yunyang (ذكوري)</string>
     <string name="label_tts_threads">عدد الخيوط (1-8)</string>
     <string name="label_tts_preload">تحميل النموذج مسبقًا (أسرع في أول نطق)</string>
     <string name="label_tts_keep_alive">إبقاء المحرك بعد النطق</string>
@@ -41,8 +59,6 @@
     <string name="tts_clear_confirm_message">سيتم حذف ملفات نموذج TTS التي تم تنزيلها. يمكنك إعادة التنزيل لاحقًا. هل تريد المتابعة؟</string>
     <string name="tts_clear_done">تم مسح نموذج TTS</string>
     <string name="tts_clear_failed">فشل المسح</string>
-    <string name="notif_tts_title_medium">نموذج TTS (XiaoYa متوسط)</string>
-    <string name="notif_tts_title_medium_int8">نموذج TTS (XiaoYa int8)</string>
 
     <!-- تجربة الاستماع -->
     <string name="label_tts_audition_text">نص التجربة</string>

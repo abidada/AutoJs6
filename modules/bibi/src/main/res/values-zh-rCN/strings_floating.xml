@@ -92,7 +92,7 @@
     <!-- Floating ASR status messages -->
     <string name="floating_asr_error">识别失败: %1$s</string>
     <string name="floating_asr_copied">已复制到剪贴板</string>
-    <string name="accessibility_service_description">允许说点啥悬浮球、音量键和摇一摇录音将语音识别结果自动插入到当前输入框中。不会收集或上传任何数据。</string>
+    <string name="accessibility_service_description">允许说点啥悬浮球、音量键和摇一摇录音将语音识别结果自动插入到当前输入框中，并使悬浮球在阻止普通悬浮窗的界面（如系统设置）上保持可见。不会收集或上传任何数据。</string>
 
     <!-- Floating radial menu -->
     <string name="label_radial_switch_asr">切换 ASR 供应商</string>
@@ -177,6 +177,11 @@
     <string name="section_haptic_feedback">振动反馈</string>
     <string name="floating_pill_ready">发起语音</string>
     <string name="floating_pill_listening">正在听…</string>
+    <string name="floating_pill_dispatch_hit">正在执行...</string>
+    <string name="floating_pill_dispatch_miss">没有找到任务...</string>
+    <string name="label_floating_ball_style">悬浮球样式</string>
+    <string name="label_floating_style_panel">面板</string>
+    <string name="label_floating_style_ball_only">仅悬浮球</string>
     <string name="listening_panel_placeholder">说点什么…</string>
     <string name="listening_panel_listening">正在听…</string>
     <string name="listening_panel_error_prefix">识别出错：%1$s</string>

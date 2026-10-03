@@ -75,10 +75,11 @@ internal object FloatingBallComposeViewFactory {
             addView(
                 TextView(context).apply {
                     id = R.id.pillText
-                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
                     textSize = 15f
-                    maxWidth = dp(context, 180)
-                    maxLines = 1
+                    setSingleLine(true)
+                    // 纯状态字（无跑马灯）：超宽兜底尾部省略
+                    ellipsize = android.text.TextUtils.TruncateAt.END
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT

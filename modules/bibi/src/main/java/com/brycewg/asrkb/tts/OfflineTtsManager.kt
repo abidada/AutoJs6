@@ -51,6 +51,7 @@ object OfflineTtsManager {
      */
     internal fun loadSync(context: Context, prefs: Prefs): OfflineSherpaTtsEngine? {
         val variant = TtsLocalModelCatalog.normalizeVariant(prefs.ttsModelVariant)
+        val family = TtsLocalModelCatalog.variantSpec(variant).family
         val numThreads = prefs.ttsNumThreads
         val key = "$variant/$numThreads"
         engine?.let { cached ->
@@ -70,14 +71,14 @@ object OfflineTtsManager {
                 return null
             }
             unloadInternal("reload")
-            val created = OfflineSherpaTtsEngine.create(appContext, files, numThreads)
+            val created = OfflineSherpaTtsEngine.create(appContext, files, family, numThreads)
             if (created == null) {
                 loadFailed = true
                 return null
             }
             engine = created
             loadedKey = key
-            Log.i(TAG, "TTS engine loaded (variant=$variant, threads=$numThreads, sampleRate=${created.sampleRate})")
+            Log.i(TAG, "TTS engine loaded (variant=$variant, family=$family, threads=$numThreads, sampleRate=${created.sampleRate})")
             return created
         }
     }

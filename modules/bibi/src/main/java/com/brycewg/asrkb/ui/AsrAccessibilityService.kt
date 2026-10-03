@@ -16,6 +16,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
@@ -24,6 +25,7 @@ import com.brycewg.asrkb.LocaleHelper
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.store.debug.DebugLogManager
 import com.brycewg.asrkb.ui.floating.FloatingAsrService
+import com.brycewg.asrkb.ui.floatingball.FloatingWindowHost
 
 /**
  * 无障碍服务,用于悬浮球语音识别后将文本插入到当前焦点的输入框中
@@ -61,11 +63,22 @@ class AsrAccessibilityService :
 
         private var instance: AsrAccessibilityService? = null
 
+        /** 无障碍层窗口宿主：服务连接期间非空，供悬浮球等常驻窗口挂载 TYPE_ACCESSIBILITY_OVERLAY。 */
+        @Volatile
+        private var overlayHost: FloatingWindowHost? = null
+
+        /** 服务可用性变化回调（true=已连接 / false=已断开），由 FloatingAsrService 注册以触发悬浮球切层重挂。 */
+        @Volatile
+        var onAvailabilityChanged: ((Boolean) -> Unit)? = null
+
         fun refreshShakeSensor() {
             instance?.updateShakeSensorRegistration()
         }
 
         fun isEnabled(): Boolean = instance != null
+
+        /** 获取无障碍层窗口宿主；服务未连接时返回 null，调用方应回退 TYPE_APPLICATION_OVERLAY。 */
+        fun overlayWindowHost(): FloatingWindowHost? = overlayHost
 
         /**
          * 读取当前焦点可编辑节点的文本与选区，转换为前后缀快照；
@@ -257,6 +270,7 @@ class AsrAccessibilityService :
         instance = this
         Log.d(TAG, "Accessibility service connected")
         DebugLogManager.log("a11y", "service_connected")
+        ensureOverlayHost()
         updateShakeSensorRegistration()
         // 刚连接时推送一次当前输入场景状态
         try {
@@ -264,14 +278,57 @@ class AsrAccessibilityService :
         } catch (e: Throwable) {
             Log.e(TAG, "Error posting initial IME visibility hint", e)
         }
+        try {
+            onAvailabilityChanged?.invoke(true)
+        } catch (e: Throwable) {
+            Log.w(TAG, "Error notifying availability changed", e)
+        }
     }
 
     override fun onDestroy() {
         unregisterShakeSensor()
         super.onDestroy()
         instance = null
+        overlayHost = null
         Log.d(TAG, "Accessibility service destroyed")
         DebugLogManager.log("a11y", "service_destroyed")
+        try {
+            onAvailabilityChanged?.invoke(false)
+        } catch (e: Throwable) {
+            Log.w(TAG, "Error notifying availability changed", e)
+        }
+    }
+
+    /**
+     * 创建无障碍层窗口宿主：优先用 createWindowContext 获得携带本服务 token 的
+     * WindowManager（R+）；失败时回退服务自身 context 的 WindowManager。
+     */
+    private fun ensureOverlayHost() {
+        overlayHost = try {
+            val ctx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                try {
+                    createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
+                } catch (e: Throwable) {
+                    Log.w(TAG, "createWindowContext(ACCESSIBILITY_OVERLAY) failed, fallback to service context", e)
+                    this
+                }
+            } else {
+                this
+            }
+            val wm = ctx.getSystemService(WindowManager::class.java)
+            if (wm == null) {
+                null
+            } else {
+                FloatingWindowHost(
+                    ctx,
+                    wm,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+                )
+            }
+        } catch (e: Throwable) {
+            Log.w(TAG, "Failed to create accessibility overlay host", e)
+            null
+        }
     }
 
     private val handler = Handler(Looper.getMainLooper())

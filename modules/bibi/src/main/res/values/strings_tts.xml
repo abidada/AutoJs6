@@ -16,6 +16,24 @@
     <string name="label_tts_model_variant">Model version</string>
     <string name="tts_model_medium">XiaoYa medium (58 MB)</string>
     <string name="tts_model_medium_int8">XiaoYa medium int8 (13 MB)</string>
+    <string name="tts_model_kokoro_int8_v11">Kokoro multilingual int8 v1.1 (zh+en, recommended, 140 MB)</string>
+    <string name="tts_model_kokoro_v11">Kokoro multilingual v1.1 (zh+en, 347 MB)</string>
+    <string name="tts_model_kokoro_int8_v10">Kokoro multilingual int8 v1.0 (zh+en, 126 MB)</string>
+    <string name="tts_model_melo_zh_en">MeloTTS zh+en (159 MB)</string>
+    <string name="tts_model_chaowen">Chaowen medium, male (57 MB)</string>
+    <string name="tts_model_chaowen_int8">Chaowen int8, male (13 MB)</string>
+    <string name="label_tts_voice">Voice</string>
+    <string name="tts_voice_female_fmt">Female %1$02d</string>
+    <string name="tts_voice_male_fmt">Male %1$02d</string>
+    <string name="tts_voice_default">Default voice</string>
+    <string name="tts_voice_v10_xiaobei">Xiaobei (female)</string>
+    <string name="tts_voice_v10_xiaoni">Xiaoni (female)</string>
+    <string name="tts_voice_v10_xiaoxiao">Xiaoxiao (female)</string>
+    <string name="tts_voice_v10_xiaoyi">Xiaoyi (female)</string>
+    <string name="tts_voice_v10_yunjian">Yunjian (male)</string>
+    <string name="tts_voice_v10_yunxi">Yunxi (male)</string>
+    <string name="tts_voice_v10_yunxia">Yunxia (male)</string>
+    <string name="tts_voice_v10_yunyang">Yunyang (male)</string>
     <string name="label_tts_threads">Threads (1-8)</string>
     <string name="label_tts_preload">Preload model (first broadcast faster)</string>
     <string name="label_tts_keep_alive">Keep engine after broadcast</string>
@@ -41,8 +59,6 @@
     <string name="tts_clear_confirm_message">This will delete downloaded TTS model files. You can re-download later. Continue?</string>
     <string name="tts_clear_done">TTS model cleared</string>
     <string name="tts_clear_failed">Clear failed</string>
-    <string name="notif_tts_title_medium">TTS model (XiaoYa medium)</string>
-    <string name="notif_tts_title_medium_int8">TTS model (XiaoYa int8)</string>
 
     <!-- Audition -->
     <string name="label_tts_audition_text">Audition text</string>

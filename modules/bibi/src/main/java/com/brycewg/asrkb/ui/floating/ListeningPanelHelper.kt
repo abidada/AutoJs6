@@ -30,12 +30,14 @@ import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.AsrResultBroadcaster
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.BibiViewThemes
+import com.brycewg.asrkb.ui.floatingball.FloatingWindowHost
 
 internal class ListeningPanelHelper(
     private val appContext: Context,
     private val overlayContext: Context,
     private val windowManager: WindowManager,
-    private val prefs: Prefs
+    private val prefs: Prefs,
+    private val hostProvider: () -> FloatingWindowHost
 ) {
     companion object {
         private const val TAG = "ListeningPanel"
@@ -47,6 +49,9 @@ internal class ListeningPanelHelper(
     private var panelView: View? = null
     private var textLabel: TextView? = null
     private var textScroll: FollowScrollView? = null
+
+    /** 面板挂载层：show 时解析并绑定，hide 时用同一层移除。 */
+    private var attachedHost: FloatingWindowHost? = null
 
     /** 自动跟底：用户上滑回看历史时暂停，滚回底部后恢复。 */
     private var autoFollow = true
@@ -83,15 +88,18 @@ internal class ListeningPanelHelper(
             try {
                 expanded = false
                 autoFollow = true
+                val host = hostProvider()
                 val view = buildPanel()
                 textLabel = view.findViewById(R.id.listeningPanelText)
-                windowManager.addView(view, buildLayoutParams())
+                host.windowManager.addView(view, buildLayoutParams(host.windowType))
+                attachedHost = host
                 panelView = view
                 applyText(null)
                 AsrResultBroadcaster.add(resultListener)
             } catch (e: Throwable) {
                 Log.w(TAG, "Failed to show listening panel", e)
                 panelView = null
+                attachedHost = null
             }
         }
     }
@@ -104,9 +112,11 @@ internal class ListeningPanelHelper(
             textLabel = null
             textScroll = null
             try {
-                windowManager.removeView(view)
+                (attachedHost?.windowManager ?: windowManager).removeView(view)
             } catch (e: Throwable) {
                 Log.w(TAG, "Failed to hide listening panel", e)
+            } finally {
+                attachedHost = null
             }
         }
     }
@@ -131,10 +141,10 @@ internal class ListeningPanelHelper(
         return if (expanded) usable else maxOf((usable * 0.55f).toInt(), dp(220))
     }
 
-    private fun buildLayoutParams(): WindowManager.LayoutParams = WindowManager.LayoutParams(
+    private fun buildLayoutParams(windowType: Int): WindowManager.LayoutParams = WindowManager.LayoutParams(
         WindowManager.LayoutParams.MATCH_PARENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
-        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+        windowType,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
         PixelFormat.TRANSLUCENT

@@ -47,7 +47,12 @@ internal class OfflineSherpaTtsEngine private constructor(
 
         @Volatile private var classLoadFailed: Boolean = false
 
-        fun create(context: Context, modelFiles: TtsLocalModelCatalog.ModelFiles, numThreads: Int): OfflineSherpaTtsEngine? {
+        fun create(
+            context: Context,
+            modelFiles: TtsLocalModelCatalog.ModelFiles,
+            family: TtsLocalModelCatalog.TtsModelFamily,
+            numThreads: Int
+        ): OfflineSherpaTtsEngine? {
             if (classLoadFailed) return null
             return try {
                 try {
@@ -62,26 +67,55 @@ internal class OfflineSherpaTtsEngine private constructor(
                 val modelConfigClass = Class.forName("com.k2fsa.sherpa.onnx.OfflineTtsModelConfig")
                 val vitsClass = Class.forName("com.k2fsa.sherpa.onnx.OfflineTtsVitsModelConfig")
 
-                val vits = vitsClass.getDeclaredConstructor().newInstance()
-                setField(vits, "model", modelFiles.onnxFile.absolutePath)
-                setField(vits, "tokens", modelFiles.tokensFile.absolutePath)
-                // 打包布局差异：lexicon 布局（xiao_ya）走 lexicon.txt；
-                // espeak 布局（huayan 等旧 piper zh 包）走 dataDir（+ 可选 dictDir jieba）
-                if (modelFiles.lexiconFile != null) {
-                    setField(vits, "lexicon", modelFiles.lexiconFile.absolutePath)
-                }
-                if (modelFiles.espeakDataDir != null) {
-                    setField(vits, "dataDir", modelFiles.espeakDataDir.absolutePath)
-                }
-                if (modelFiles.dictDir != null) {
-                    setField(vits, "dictDir", modelFiles.dictDir.absolutePath)
-                }
-
                 val modelConfig = modelConfigClass.getDeclaredConstructor().newInstance()
-                setField(modelConfig, "vits", vits)
                 setField(modelConfig, "numThreads", numThreads)
                 setField(modelConfig, "debug", false)
                 setField(modelConfig, "provider", "cpu")
+
+                when (family) {
+                    TtsLocalModelCatalog.TtsModelFamily.KOKORO -> {
+                        // kokoro-multi-lang：中英混合（中文词库 + espeak-ng 兜底）
+                        // 多语种模型 lexicon/lang 双缺时 native 会 EXIT(-1) 杀进程，先拦截
+                        val lexiconArg = modelFiles.lexiconArg()
+                        if (lexiconArg.isBlank()) {
+                            Log.e(TAG, "Kokoro model missing lexicon*.txt; refuse to create engine")
+                            return null
+                        }
+                        val kokoroClass = Class.forName(
+                            "com.k2fsa.sherpa.onnx.OfflineTtsKokoroModelConfig"
+                        )
+                        val kokoro = kokoroClass.getDeclaredConstructor().newInstance()
+                        setField(kokoro, "model", modelFiles.onnxFile.absolutePath)
+                        modelFiles.voicesBinFile?.let {
+                            setField(kokoro, "voices", it.absolutePath)
+                        }
+                        setField(kokoro, "tokens", modelFiles.tokensFile.absolutePath)
+                        modelFiles.espeakDataDir?.let {
+                            setField(kokoro, "dataDir", it.absolutePath)
+                        }
+                        // 词库支持逗号分隔多文件（lexicon-zh.txt 等，见 kokoro-multi-lang-lexicon.cc）
+                        setField(kokoro, "lexicon", lexiconArg)
+                        setField(modelConfig, "kokoro", kokoro)
+                    }
+
+                    TtsLocalModelCatalog.TtsModelFamily.VITS -> {
+                        val vits = vitsClass.getDeclaredConstructor().newInstance()
+                        setField(vits, "model", modelFiles.onnxFile.absolutePath)
+                        setField(vits, "tokens", modelFiles.tokensFile.absolutePath)
+                        // 打包布局差异：lexicon 布局（xiao_ya/chaowen/melo）走 lexicon.txt；
+                        // espeak 布局（huayan 等旧 piper zh 包）走 dataDir（+ 可选 dictDir jieba）
+                        if (modelFiles.lexiconFile != null) {
+                            setField(vits, "lexicon", modelFiles.lexiconFile.absolutePath)
+                        }
+                        if (modelFiles.espeakDataDir != null) {
+                            setField(vits, "dataDir", modelFiles.espeakDataDir.absolutePath)
+                        }
+                        if (modelFiles.dictDir != null) {
+                            setField(vits, "dictDir", modelFiles.dictDir.absolutePath)
+                        }
+                        setField(modelConfig, "vits", vits)
+                    }
+                }
 
                 val config = configClass.getDeclaredConstructor().newInstance()
                 setField(config, "model", modelConfig)
@@ -142,7 +176,7 @@ internal class OfflineSherpaTtsEngine private constructor(
         22050
     }
 
-    override fun speak(text: String, speed: Float, callback: TtsSpeakCallback) {
+    override fun speak(text: String, sid: Int, speed: Float, callback: TtsSpeakCallback) {
         if (speaking) {
             callback.onError("TTS engine is busy")
             return
@@ -158,10 +192,10 @@ internal class OfflineSherpaTtsEngine private constructor(
             track = t
             t.play()
             try {
-                generateStreaming(text, clampedSpeed)
+                generateStreaming(text, sid, clampedSpeed)
             } catch (streamingFailure: Throwable) {
                 Log.w(TAG, "generateWithCallback unavailable, fallback to generate", streamingFailure)
-                generateAll(text, clampedSpeed)
+                generateAll(text, sid, clampedSpeed)
             }
             drainTrack(t)
             callback.onDone()
@@ -233,7 +267,7 @@ internal class OfflineSherpaTtsEngine private constructor(
      * 流式合成：回调写入 AudioTrack；返回 0 停止生成。
      * @return 是否成功发起并完成合成（打断视为完成）
      */
-    private fun generateStreaming(text: String, speed: Float): Boolean {
+    private fun generateStreaming(text: String, sid: Int, speed: Float): Boolean {
         val t = track ?: throw IllegalStateException("AudioTrack not ready")
         val callback = object : Function1<FloatArray, Int> {
             override fun invoke(chunk: FloatArray): Int {
@@ -249,12 +283,12 @@ internal class OfflineSherpaTtsEngine private constructor(
             Float::class.javaPrimitiveType,
             Function1::class.java
         )
-        method.invoke(ttsInstance, text, 0, speed, callback)
+        method.invoke(ttsInstance, text, sid, speed, callback)
         return true
     }
 
     /** 整段生成后播放（generateWithCallback 不可用时的兜底路径） */
-    private fun generateAll(text: String, speed: Float): Boolean {
+    private fun generateAll(text: String, sid: Int, speed: Float): Boolean {
         val t = track ?: throw IllegalStateException("AudioTrack not ready")
         val method = ttsClass.getMethod(
             "generate",
@@ -262,7 +296,7 @@ internal class OfflineSherpaTtsEngine private constructor(
             Int::class.javaPrimitiveType,
             Float::class.javaPrimitiveType
         )
-        val audio = method.invoke(ttsInstance, text, 0, speed) ?: return false
+        val audio = method.invoke(ttsInstance, text, sid, speed) ?: return false
         val samples = audio.javaClass.getMethod("getSamples").invoke(audio) as? FloatArray
         if (samples == null || samples.isEmpty()) return false
         if (!cancelled) writeChunk(t, samples)

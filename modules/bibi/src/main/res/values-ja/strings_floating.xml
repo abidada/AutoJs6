@@ -93,7 +93,7 @@
     <!-- Floating ASR status messages -->
     <string name="floating_asr_error">認識失敗：%1$s</string>
     <string name="floating_asr_copied">クリップボードにコピーしました</string>
-    <string name="accessibility_service_description">フローティングボール、音量キー、振って録音のASR結果を現在の入力フィールドに挿入できるようにします。データは収集またはアップロードされません。</string>
+    <string name="accessibility_service_description">フローティングボール、音量キー、振って録音のASR結果を現在の入力フィールドに挿入できるようにします。また、通常のオーバーレイをブロックする画面（システム設定など）でもフローティングボールを表示し続けます。データは収集またはアップロードされません。</string>
 
     <!-- Floating radial menu -->
     <string name="label_radial_switch_asr">ASRプロバイダーを切り替え</string>
@@ -178,6 +178,11 @@
     <string name="section_haptic_feedback">触覚フィードバック</string>
     <string name="floating_pill_ready">音声入力</string>
     <string name="floating_pill_listening">録音中…</string>
+    <string name="floating_pill_dispatch_hit">実行中...</string>
+    <string name="floating_pill_dispatch_miss">一致するタスクがありません...</string>
+    <string name="label_floating_ball_style">フローティングボールのスタイル</string>
+    <string name="label_floating_style_panel">パネル</string>
+    <string name="label_floating_style_ball_only">ボールのみ</string>
     <string name="listening_panel_placeholder">何か話してください…</string>
     <string name="listening_panel_listening">録音中…</string>
     <string name="listening_panel_error_prefix">認識エラー：%1$s</string>

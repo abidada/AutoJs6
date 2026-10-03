@@ -16,6 +16,24 @@
     <string name="label_tts_model_variant">模型版本</string>
     <string name="tts_model_medium">曉雅 標準 (58 MB)</string>
     <string name="tts_model_medium_int8">曉雅 標準 int8 (13 MB)</string>
+    <string name="tts_model_kokoro_int8_v11">Kokoro 多語系 int8 v1.1（中英·推薦，140 MB）</string>
+    <string name="tts_model_kokoro_v11">Kokoro 多語系 v1.1（中英，347 MB）</string>
+    <string name="tts_model_kokoro_int8_v10">Kokoro 多語系 int8 v1.0（中英，126 MB）</string>
+    <string name="tts_model_melo_zh_en">MeloTTS 中英（159 MB）</string>
+    <string name="tts_model_chaowen">Chaowen 標準·男聲（57 MB）</string>
+    <string name="tts_model_chaowen_int8">Chaowen int8·男聲（13 MB）</string>
+    <string name="label_tts_voice">音色</string>
+    <string name="tts_voice_female_fmt">女聲 %1$02d</string>
+    <string name="tts_voice_male_fmt">男聲 %1$02d</string>
+    <string name="tts_voice_default">預設音色</string>
+    <string name="tts_voice_v10_xiaobei">曉貝（女）</string>
+    <string name="tts_voice_v10_xiaoni">曉妮（女）</string>
+    <string name="tts_voice_v10_xiaoxiao">曉曉（女）</string>
+    <string name="tts_voice_v10_xiaoyi">曉伊（女）</string>
+    <string name="tts_voice_v10_yunjian">雲健（男）</string>
+    <string name="tts_voice_v10_yunxi">雲希（男）</string>
+    <string name="tts_voice_v10_yunxia">雲夏（男）</string>
+    <string name="tts_voice_v10_yunyang">雲揚（男）</string>
     <string name="label_tts_threads">執行緒數 (1-8)</string>
     <string name="label_tts_preload">預先載入模型（首次播報更快）</string>
     <string name="label_tts_keep_alive">播報後引擎常駐</string>
@@ -41,8 +59,6 @@
     <string name="tts_clear_confirm_message">將刪除已下載的 TTS 模型檔案，之後可重新下載。是否繼續？</string>
     <string name="tts_clear_done">TTS 模型已清除</string>
     <string name="tts_clear_failed">清除失敗</string>
-    <string name="notif_tts_title_medium">TTS 模型（曉雅 標準）</string>
-    <string name="notif_tts_title_medium_int8">TTS 模型（曉雅 int8）</string>
 
     <!-- 試聽 -->
     <string name="label_tts_audition_text">試聽文字</string>

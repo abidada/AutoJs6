@@ -92,7 +92,7 @@
     <!-- Floating ASR status messages -->
     <string name="floating_asr_error">فشل التعرّف: %1$s</string>
     <string name="floating_asr_copied">تم النسخ إلى الحافظة</string>
-    <string name="accessibility_service_description">يسمح للكرة العائمة والتسجيل بمفاتيح الصوت والهز بإدراج نتائج ASR في حقل الإدخال الحالي. لا تُجمع بيانات ولا تُرفع.</string>
+    <string name="accessibility_service_description">يسمح للكرة العائمة والتسجيل بمفاتيح الصوت والهز بإدراج نتائج ASR في حقل الإدخال الحالي، ويحافظ على ظهور الكرة العائمة فوق الشاشات التي تمنع النوافذ العائمة العادية (مثل إعدادات النظام). لا تُجمع بيانات ولا تُرفع.</string>
 
     <!-- Floating radial menu -->
     <string name="label_radial_switch_asr">تبديل مزود ASR</string>
@@ -177,6 +177,11 @@
     <string name="section_haptic_feedback">الاهتزاز اللمسي</string>
     <string name="floating_pill_ready">ابدأ الصوت</string>
     <string name="floating_pill_listening">جارٍ الاستماع…</string>
+    <string name="floating_pill_dispatch_hit">جارٍ التنفيذ...</string>
+    <string name="floating_pill_dispatch_miss">لا توجد مهمة مطابقة...</string>
+    <string name="label_floating_ball_style">نمط الكرة العائمة</string>
+    <string name="label_floating_style_panel">لوحة</string>
+    <string name="label_floating_style_ball_only">الكرة فقط</string>
     <string name="listening_panel_placeholder">قل شيئًا…</string>
     <string name="listening_panel_listening">جارٍ الاستماع…</string>
     <string name="listening_panel_error_prefix">خطأ في التعرف: %1$s</string>

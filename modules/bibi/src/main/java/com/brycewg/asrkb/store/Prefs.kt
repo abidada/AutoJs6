@@ -20,6 +20,7 @@ import com.brycewg.asrkb.asr.GeminiAsrMode
 import com.brycewg.asrkb.asr.LlmReasoningThreshold
 import com.brycewg.asrkb.asr.LlmVendor
 import com.brycewg.asrkb.asr.VolcAsrModelCatalog
+import com.brycewg.asrkb.ui.floatingball.ResultDisplayMode
 import com.brycewg.asrkb.clipboard.ClipboardSyncReceiveMode
 import kotlin.reflect.KProperty
 import kotlinx.serialization.Serializable
@@ -745,6 +746,11 @@ class Prefs(context: Context) {
         get() = sp.getInt(KEY_DISPATCH_FEEDBACK_HOLD_SECONDS, DEFAULT_DISPATCH_FEEDBACK_HOLD_SECONDS)
         set(value) = sp.edit { putInt(KEY_DISPATCH_FEEDBACK_HOLD_SECONDS, value.coerceIn(0, 10)) }
 
+    // 悬浮球识别 UI 形态：panel=底部面板（默认），capsule=仅悬浮球（识别文字直接显示在胶囊上）
+    var floatingResultDisplayMode: ResultDisplayMode
+        get() = ResultDisplayMode.fromId(sp.getString(KEY_FLOATING_RESULT_DISPLAY_MODE, null))
+        set(value) = sp.edit { putString(KEY_FLOATING_RESULT_DISPLAY_MODE, value.id) }
+
     // ==================== TTS 语音播报 ====================
 
     // TTS 总开关：关闭时零行为变化（不加载引擎、不播报、监听逻辑与原版一致）
@@ -781,6 +787,14 @@ class Prefs(context: Context) {
     var ttsKeepAliveMinutes: Int
         get() = sp.getInt(KEY_TTS_KEEP_ALIVE_MINUTES, 5)
         set(value) = sp.edit { putInt(KEY_TTS_KEEP_ALIVE_MINUTES, value) }
+
+    // 按变体存储音色 sid（key = 前缀 + variantId）；-1 表示未设置，取变体默认音色
+    fun ttsVoiceSid(variant: String): Int =
+        sp.getInt(KEY_TTS_VOICE_SID_PREFIX + variant, -1)
+
+    fun setTtsVoiceSid(variant: String, sid: Int) {
+        sp.edit { putInt(KEY_TTS_VOICE_SID_PREFIX + variant, sid) }
+    }
 
     // 场景开关已移除：总开关开启即固定播报「正在听」与分发命中/未命中结果
 

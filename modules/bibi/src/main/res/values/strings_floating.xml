@@ -92,7 +92,7 @@
     <!-- Floating ASR status messages -->
     <string name="floating_asr_error">Recognition failed: %1$s</string>
     <string name="floating_asr_copied">Copied to clipboard</string>
-    <string name="accessibility_service_description">Allow floating ball, volume-key, and shake recording to insert ASR results into the current input field. No data is collected or uploaded.</string>
+    <string name="accessibility_service_description">Allow floating ball, volume-key, and shake recording to insert ASR results into the current input field. It also keeps the floating ball visible over apps that block regular overlays (e.g., system Settings). No data is collected or uploaded.</string>
 
     <!-- Floating radial menu -->
     <string name="label_radial_switch_asr">Switch ASR provider</string>
@@ -177,6 +177,11 @@
     <string name="section_haptic_feedback">Haptic Feedback</string>
     <string name="floating_pill_ready">Start Voice</string>
     <string name="floating_pill_listening">Listening…</string>
+    <string name="floating_pill_dispatch_hit">Executing...</string>
+    <string name="floating_pill_dispatch_miss">No matching task...</string>
+    <string name="label_floating_ball_style">Floating Ball Style</string>
+    <string name="label_floating_style_panel">Panel</string>
+    <string name="label_floating_style_ball_only">Ball Only</string>
     <string name="listening_panel_placeholder">Say something…</string>
     <string name="listening_panel_listening">Listening…</string>
     <string name="listening_panel_error_prefix">Recognition error: %1$s</string>

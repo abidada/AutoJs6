@@ -34,7 +34,8 @@ import com.google.android.material.color.DynamicColors
 class FloatingBallViewManager(
     private val context: Context,
     private val prefs: Prefs,
-    private val windowManager: WindowManager
+    private val windowManager: WindowManager,
+    private val hostProvider: () -> FloatingWindowHost
 ) {
     companion object {
         private const val TAG = "FloatingBallViewManager"
@@ -56,10 +57,14 @@ class FloatingBallViewManager(
     private var edgeHandleIcon: ImageView? = null
     private var pillContainer: View? = null
     private var pillText: android.widget.TextView? = null
+    private var lastPillText: String? = null
     private var processingSpinner: ProcessingSpinnerView? = null
     private var recordingAuraView: RecordingAuraView? = null
     private var recordingAuraLp: WindowManager.LayoutParams? = null
     private var lp: WindowManager.LayoutParams? = null
+
+    // 球视图挂载层：addView 时解析并绑定，后续所有窗口操作走同一 WindowManager 实例
+    private var attachedHost: FloatingWindowHost? = null
 
     // 动画
 
@@ -110,7 +115,7 @@ class FloatingBallViewManager(
             }
             if (newFlags != params.flags) {
                 params.flags = newFlags
-                windowManager.updateViewLayout(view, params)
+                viewWm().updateViewLayout(view, params)
             }
             true
         } catch (e: Throwable) {
@@ -118,6 +123,9 @@ class FloatingBallViewManager(
             false
         }
     }
+
+    /** 已挂载窗口所属层的 WindowManager；未挂载时回退构造传入的普通层。 */
+    private fun viewWm(): WindowManager = attachedHost?.windowManager ?: windowManager
 
     /** 显示悬浮球 */
     fun showBall(
@@ -197,12 +205,19 @@ class FloatingBallViewManager(
             pillContainer?.isLongClickable = true
 
             // 创建 WindowManager.LayoutParams
-            val params = createWindowLayoutParams()
+            val host = hostProvider()
+            val params = createWindowLayoutParams(host)
             lp = params
             ensureRecordingAuraOverlay()
 
             // 添加视图
-            windowManager.addView(view, params)
+            attachedHost = host
+            try {
+                host.windowManager.addView(view, params)
+            } catch (e: Throwable) {
+                attachedHost = null
+                throw e
+            }
             ballView = view
             applyKeepScreenOnToCurrentView()
             applyBallAlpha()
@@ -241,7 +256,7 @@ class FloatingBallViewManager(
             Log.e(TAG, "Failed to persist ball position", e)
         }
         try {
-            windowManager.removeView(v)
+            viewWm().removeView(v)
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to remove ball view", e)
         }
@@ -252,6 +267,7 @@ class FloatingBallViewManager(
         edgeHandleIcon = null
         pillContainer = null
         pillText = null
+        lastPillText = null
         processingSpinner = null
         recordingAuraView = null
         recordingAuraLp = null
@@ -259,7 +275,51 @@ class FloatingBallViewManager(
         lastAppliedAlpha = null
         lastAppliedBallSizeDp = null
         currentVisualMode = FloatingBallInteractionMode.ROUND
+        attachedHost = null
         lp = null
+    }
+
+    /**
+     * 挂载层变化（无障碍层连接/断开）时切换球窗口的挂载层：
+     * remove 后按新层 add，窗口参数（位置/状态）不变；失败时回退 [fallback]。
+     * 球未挂载时仅记录目标层，由下一次 showBall 按 hostProvider 解析。
+     *
+     * @return false 表示旧层拆除失败（如无障碍 token 已失效），调用方应走完整重建，
+     *         避免残留的 ViewRootImpl 造成 WindowManagerGlobal 泄漏。
+     */
+    fun reattachIfNeeded(target: FloatingWindowHost, fallback: FloatingWindowHost): Boolean {
+        val v = ballView ?: return true
+        val p = lp ?: return true
+        val current = attachedHost ?: return true
+        if (current.sameLayerAs(target)) return true
+
+        try {
+            try {
+                current.windowManager.removeView(v)
+            } catch (e: Throwable) {
+                // 无障碍服务断开时 token 已失效，remove 可能抛异常：旧窗口客户端状态未知，
+                // 不再复用该视图，交由调用方 hide+show 完整重建
+                Log.w(TAG, "Failed to remove ball from old host; rebuild required", e)
+                return false
+            }
+            attachedHost = target
+            p.type = target.windowType
+            try {
+                target.windowManager.addView(v, p)
+                Log.d(TAG, "Ball reattached to host type=${target.windowType}")
+            } catch (e: Throwable) {
+                Log.e(TAG, "Failed to attach ball to target host, falling back", e)
+                attachedHost = fallback
+                p.type = fallback.windowType
+                fallback.windowManager.addView(v, p)
+            }
+            updateRecordingAuraLayout()
+            return true
+        } catch (e: Throwable) {
+            Log.e(TAG, "Failed to reattach ball, will rebuild on next show", e)
+            attachedHost = null
+            return false
+        }
     }
 
     fun isEdgeHandleVisible(): Boolean = edgeHandleVisible
@@ -311,7 +371,8 @@ class FloatingBallViewManager(
 
     /**
      * 切换交互视觉：完整圆球 / 「发起语音」胶囊 / 「正在听...」胶囊。
-     * 窗口宽度在方形球与胶囊宽度间动态调整，并补偿 X 保持球心不动。
+     * 胶囊宽度按当前状态文字自测量（各状态宽窄不同），切换时补偿 X 保持球心/贴边锚点不动。
+     * 胶囊模式动态文字（分发结果）由 setPillContent 覆盖并同样自测量宽度。
      */
     fun setBallVisualMode(mode: FloatingBallInteractionMode) {
         currentVisualMode = mode
@@ -319,78 +380,126 @@ class FloatingBallViewManager(
         val p = lp ?: return
         val ballSizePx = getBallSizePx()
         val oldW = p.width
+
+        // 非 LISTENING 态复位胶囊内容层（缓存文字）
+        if (mode != FloatingBallInteractionMode.LISTENING_PILL) {
+            resetPillContent()
+        }
         val newW = if (mode == FloatingBallInteractionMode.ROUND) {
             ballSizePx
         } else {
-            measurePillWidthPx(mode, ballSizePx)
+            val text = context.getString(
+                if (mode == FloatingBallInteractionMode.LISTENING_PILL) {
+                    R.string.floating_pill_listening
+                } else {
+                    R.string.floating_pill_ready
+                }
+            )
+            measurePillWidthForText(text, ballSizePx)
         }
 
         ballContainer?.visibility =
             if (mode == FloatingBallInteractionMode.ROUND) View.VISIBLE else View.GONE
         pillContainer?.visibility =
             if (mode == FloatingBallInteractionMode.ROUND) View.GONE else View.VISIBLE
-        pillText?.setText(
-            if (mode == FloatingBallInteractionMode.LISTENING_PILL) {
-                R.string.floating_pill_listening
-            } else {
-                R.string.floating_pill_ready
-            }
-        )
+        if (mode != FloatingBallInteractionMode.LISTENING_PILL) {
+            // ROUND/READY：READY 默认文案（ROUND 下胶囊本就隐藏，仅保持一致性）
+            pillText?.setText(R.string.floating_pill_ready)
+        } else {
+            // LISTENING 默认文案；分发结果随后由 setPillContent 覆盖
+            pillText?.setText(R.string.floating_pill_listening)
+        }
 
         if (newW != oldW) {
-            // 展开/收缩胶囊时，按贴边方向决定扩展锚点，避免胶囊越出屏幕导致文字被裁剪：
-            // - 右贴边：右边界贴屏幕，向左展开；
-            // - 左贴边：左边界贴屏幕，向右展开；
-            // - 其余（非贴边/底部）：保持球心不动，并做越界钳位兜底。
-            // 先基于当前（旧宽度）判断贴边方向，再修改窗口宽度，避免宽度变化干扰判断。
-            val (screenW, _) = getUsableScreenSize()
-            val dock = detectDockSide()
-            p.width = newW
-            when (dock) {
-                DockSide.RIGHT -> p.x = (screenW - newW).coerceAtLeast(0)
-                DockSide.LEFT -> p.x = 0
-                else -> {
-                    p.x += (oldW - newW) / 2
-                    p.x = p.x.coerceIn(0, (screenW - newW).coerceAtLeast(0))
-                }
-            }
-            try {
-                windowManager.updateViewLayout(v, p)
-            } catch (e: Throwable) {
-                Log.e(TAG, "Failed to update pill window width", e)
-            }
+            applyPillWidth(newW)
         }
         updateRecordingAuraLayout()
     }
 
-    /** 估算胶囊窗口宽度：左右内边距 + 图标 + 图标间距 + 文本宽度。 */
-    private fun measurePillWidthPx(mode: FloatingBallInteractionMode, ballSizePx: Int): Int {
+    /** 胶囊宽度自测量：左右内边距 + 图标 + 文本测量宽，下限为球边长。 */
+    private fun measurePillWidthForText(text: String, ballSizePx: Int): Int {
         val dm = context.resources.displayMetrics
         val density = dm.density
-        val text = context.getString(
-            if (mode == FloatingBallInteractionMode.LISTENING_PILL) {
-                R.string.floating_pill_listening
-            } else {
-                R.string.floating_pill_ready
-            }
-        )
-        val textPx = try {
-            android.text.TextPaint().apply {
-                textSize = android.util.TypedValue.applyDimension(
-                    android.util.TypedValue.COMPLEX_UNIT_SP,
-                    15f,
-                    dm
-                )
-            }.measureText(text)
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to measure pill text", e)
-            text.length * 14 * density
-        }
-        val maxTextPx = 180 * density
-        val paddingPx = (14 * 2 * density).toInt()
+        val textPx = measureTextPx(text, dm)
+        val paddingPx = 14 * 2 * density
         val iconPx = (22 + 8) * density
-        return (paddingPx + iconPx + textPx.coerceAtMost(maxTextPx)).toInt()
-            .coerceAtLeast(ballSizePx)
+        return (paddingPx + iconPx + textPx).toInt().coerceAtLeast(ballSizePx)
+    }
+
+    private fun measureTextPx(text: String, dm: android.util.DisplayMetrics): Float = try {
+        android.text.TextPaint().apply {
+            textSize = android.util.TypedValue.applyDimension(
+                android.util.TypedValue.COMPLEX_UNIT_SP,
+                15f,
+                dm
+            )
+        }.measureText(text)
+    } catch (e: Throwable) {
+        Log.w(TAG, "Failed to measure pill text", e)
+        text.length * 14 * dm.density
+    }
+
+    /**
+     * 展开/收缩胶囊窗口宽度：按贴边方向决定扩展锚点，避免胶囊越出屏幕导致文字被裁剪：
+     * - 右贴边：右边界贴屏幕，向左展开；
+     * - 左贴边：左边界贴屏幕，向右展开；
+     * - 其余（非贴边/底部）：保持球心不动，并做越界钳位兜底。
+     * 先基于当前（旧宽度）判断贴边方向，再修改窗口宽度，避免宽度变化干扰判断。
+     */
+    private fun applyPillWidth(newW: Int) {
+        val v = ballView ?: return
+        val p = lp ?: return
+        val oldW = p.width
+        if (newW == oldW) return
+        val (screenW, _) = getUsableScreenSize()
+        val dock = detectDockSide()
+        p.width = newW
+        when (dock) {
+            DockSide.RIGHT -> p.x = (screenW - newW).coerceAtLeast(0)
+            DockSide.LEFT -> p.x = 0
+            else -> {
+                p.x += (oldW - newW) / 2
+                p.x = p.x.coerceIn(0, (screenW - newW).coerceAtLeast(0))
+            }
+        }
+        try {
+            viewWm().updateViewLayout(v, p)
+        } catch (e: Throwable) {
+            Log.e(TAG, "Failed to update pill window width", e)
+        }
+    }
+
+    // ==================== 胶囊模式内容层（仅悬浮球形态，纯状态字） ====================
+
+    /**
+     * 更新胶囊状态字（分发命中/未命中）：按新文字自测量窗口宽度（贴边方向感知）。
+     * 仅会话结束时一次性调用，无流式刷新。
+     */
+    fun setPillContent(text: String?) {
+        val tv = pillText ?: return
+        val content = text?.takeIf { it.isNotBlank() } ?: return
+        if (content == lastPillText) return
+        lastPillText = content
+        tv.visibility = View.VISIBLE
+        tv.text = content
+        tv.contentDescription = content
+        applyPillWidth(measurePillWidthForText(content, getBallSizePx()))
+    }
+
+    /** 新一轮录音开始：胶囊回到「正在听…」默认状态字（覆盖上一轮遗留的反馈文字）。 */
+    fun resetPillToListening() {
+        val tv = pillText ?: return
+        lastPillText = null
+        tv.visibility = View.VISIBLE
+        tv.setText(R.string.floating_pill_listening)
+        tv.contentDescription = null
+        applyPillWidth(measurePillWidthForText(tv.text.toString(), getBallSizePx()))
+    }
+
+    private fun resetPillContent() {
+        pillText?.visibility = View.VISIBLE
+        pillText?.contentDescription = null
+        lastPillText = null
     }
 
     /** 用实时录音振幅驱动悬浮球脉动。 */
@@ -563,7 +672,7 @@ class FloatingBallViewManager(
     /** 更新窗口位置 */
     fun updateViewLayout(v: View, params: WindowManager.LayoutParams) {
         try {
-            windowManager.updateViewLayout(v, params)
+            viewWm().updateViewLayout(v, params)
             if (params === lp) {
                 updateRecordingAuraLayout()
             }
@@ -587,7 +696,7 @@ class FloatingBallViewManager(
         p.x = windowX
         p.y = windowY
         try {
-            windowManager.updateViewLayout(root, p)
+            viewWm().updateViewLayout(root, p)
             updateRecordingAuraLayout()
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to update logical ball position", e)
@@ -716,7 +825,7 @@ class FloatingBallViewManager(
         }
         val params = createRecordingAuraLayoutParams()
         return try {
-            windowManager.addView(aura, params)
+            viewWm().addView(aura, params)
             recordingAuraView = aura
             recordingAuraLp = params
             aura
@@ -734,7 +843,7 @@ class FloatingBallViewManager(
             return
         }
         try {
-            windowManager.removeView(aura)
+            viewWm().removeView(aura)
         } catch (e: Throwable) {
             Log.w(TAG, "Failed to remove recording aura overlay", e)
         } finally {
@@ -750,7 +859,7 @@ class FloatingBallViewManager(
         return WindowManager.LayoutParams(
             windowSizePx,
             windowSizePx,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            attachedHost?.windowType ?: WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
@@ -782,7 +891,7 @@ class FloatingBallViewManager(
         params.x = targetX
         params.y = targetY
         try {
-            windowManager.updateViewLayout(aura, params)
+            viewWm().updateViewLayout(aura, params)
         } catch (e: Throwable) {
             Log.w(TAG, "Failed to update recording aura layout", e)
         }
@@ -1056,8 +1165,8 @@ class FloatingBallViewManager(
         }
     }
 
-    private fun createWindowLayoutParams(): WindowManager.LayoutParams {
-        val type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+    private fun createWindowLayoutParams(host: FloatingWindowHost): WindowManager.LayoutParams {
+        val type = host.windowType
         val size = try {
             prefs.floatingBallSizeDp
         } catch (e: Throwable) {
@@ -1140,7 +1249,7 @@ class FloatingBallViewManager(
         try {
             p.x = windowX
             p.y = windowY
-            windowManager.updateViewLayout(v, p)
+            viewWm().updateViewLayout(v, p)
             updateRecordingAuraLayout()
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to reset position to default", e)
@@ -1181,7 +1290,7 @@ class FloatingBallViewManager(
             }
             p.x = nx
             p.y = ny
-            windowManager.updateViewLayout(v, p)
+            viewWm().updateViewLayout(v, p)
             updateRecordingAuraLayout()
             cachedDockAnchor = anchor
             persistBallPosition()

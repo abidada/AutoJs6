@@ -28,11 +28,13 @@ import com.brycewg.asrkb.asr.ContinuousCaptureCoordinator
 import com.brycewg.asrkb.asr.ContinuousCaptureOwner
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.store.debug.DebugLogManager
+import com.brycewg.asrkb.ui.AsrAccessibilityService
 import com.brycewg.asrkb.ui.floatingball.AsrSessionManager
 import com.brycewg.asrkb.ui.floatingball.FloatingBallStateMachine
 import com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler
 import com.brycewg.asrkb.ui.floatingball.FloatingBallViewManager
 import com.brycewg.asrkb.ui.floatingball.FloatingMenuHelper
+import com.brycewg.asrkb.ui.floatingball.FloatingWindowHost
 import com.brycewg.asrkb.util.HapticFeedbackHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -133,9 +135,14 @@ class FloatingAsrService : Service() {
         overlayPermissionGate = OverlayPermissionGate(this, notifier, TAG)
         ensureRecordingChannel()
 
-        viewManager = FloatingBallViewManager(overlayWindowContext, prefs, windowManager)
+        viewManager = FloatingBallViewManager(
+            overlayWindowContext,
+            prefs,
+            windowManager,
+            hostProvider = { resolveWindowHost() }
+        )
 
-        val menuHelper = FloatingMenuHelper(overlayWindowContext, windowManager)
+        val menuHelper = FloatingMenuHelper(overlayWindowContext) { resolveWindowHost() }
         val menuController = FloatingMenuController(menuHelper)
         interactionController = FloatingAsrInteractionController(
             context = this,
@@ -164,7 +171,8 @@ class FloatingAsrService : Service() {
             appContext = applicationContext,
             overlayContext = overlayWindowContext,
             windowManager = windowManager,
-            prefs = prefs
+            prefs = prefs,
+            hostProvider = { resolveWindowHost() }
         )
         listeningPanel.onStopClicked = { interactionController.onListeningPanelStopClicked() }
         interactionController.listeningPanel = listeningPanel
@@ -191,6 +199,21 @@ class FloatingAsrService : Service() {
         )
         interactionController.applyVisibility =
             { src -> visibilityCoordinator.applyVisibility(src) }
+
+        // 无障碍服务连接/断开时，把悬浮球在普通层与无障碍层之间自动切换重挂
+        AsrAccessibilityService.onAvailabilityChanged = { available ->
+            handler.post {
+                try {
+                    if (!viewManager.reattachIfNeeded(resolveWindowHost(), fallbackWindowHost())) {
+                        // 旧层拆除失败（如无障碍 token 失效）：完整重建，避免残留窗口引用
+                        hideBall()
+                        showBall("reattach_rebuild")
+                    }
+                } catch (e: Throwable) {
+                    Log.w(TAG, "Failed to reattach ball after a11y availability change: $available", e)
+                }
+            }
+        }
 
         try {
             val filter = android.content.IntentFilter().apply {
@@ -255,6 +278,7 @@ class FloatingAsrService : Service() {
         super.onDestroy()
         Log.d(TAG, "onDestroy")
 
+        AsrAccessibilityService.onAvailabilityChanged = null
         handler.removeCallbacks(displayRemapRunnable)
         displayListener?.let(displayManager::unregisterDisplayListener)
         displayListener = null
@@ -303,6 +327,20 @@ class FloatingAsrService : Service() {
             null
         )
     }
+
+    /**
+     * 解析悬浮窗挂载层：无障碍服务在跑时优先无障碍层（TYPE_ACCESSIBILITY_OVERLAY，
+     * 不受前台应用 setHideOverlayWindows 影响，可在系统设置等防遮挡界面常驻显示）；
+     * 否则回退普通层 TYPE_APPLICATION_OVERLAY。
+     */
+    private fun resolveWindowHost(): FloatingWindowHost =
+        AsrAccessibilityService.overlayWindowHost() ?: fallbackWindowHost()
+
+    private fun fallbackWindowHost(): FloatingWindowHost = FloatingWindowHost(
+        overlayWindowContext,
+        windowManager,
+        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+    )
 
     private fun registerDisplayListener() {
         val listener = object : DisplayManager.DisplayListener {

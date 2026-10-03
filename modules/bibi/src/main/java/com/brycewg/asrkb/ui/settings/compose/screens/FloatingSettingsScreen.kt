@@ -36,6 +36,7 @@ import com.brycewg.asrkb.ui.AsrAccessibilityService
 import com.brycewg.asrkb.ui.floating.FloatingServiceManager
 import com.brycewg.asrkb.ui.floating.floatingAsrNeedsAccessibility as policyFloatingAsrNeedsAccessibility
 import com.brycewg.asrkb.ui.floating.floatingInputNeedsAccessibility as policyFloatingInputNeedsAccessibility
+import com.brycewg.asrkb.ui.floatingball.ResultDisplayMode
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsChoiceSheet
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsChoiceSheetState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsFeatureExplainerDialog
@@ -370,6 +371,27 @@ fun FloatingSettingsScreen(
         )
     }
 
+    fun resultDisplayModeLabel(mode: ResultDisplayMode): String = context.getString(
+        when (mode) {
+            ResultDisplayMode.PANEL -> R.string.label_floating_style_panel
+            ResultDisplayMode.CAPSULE -> R.string.label_floating_style_ball_only
+        }
+    )
+
+    /** 「悬浮球样式」选择：panel=底部面板（原版），capsule=仅悬浮球。即时保存，下次进 LISTENING 生效。 */
+    fun showResultDisplayModeSheet() {
+        val modes = ResultDisplayMode.entries
+        val selectedIndex = modes.indexOf(prefs.floatingResultDisplayMode).takeIf { it >= 0 } ?: 0
+        choiceSheet = settingsChoiceSheetState(
+            title = context.getString(R.string.label_floating_ball_style),
+            items = modes.map { resultDisplayModeLabel(it) },
+            selectedIndex = selectedIndex
+        ) { index ->
+            prefs.floatingResultDisplayMode = modes.getOrElse(index) { ResultDisplayMode.PANEL }
+            refreshState()
+        }
+    }
+
     fun volumeKeyModeLabel(mode: String): String = context.getString(
         when (mode) {
             Prefs.VOLUME_KEY_MODE_DOWN_TOGGLE -> R.string.option_volume_key_down_toggle
@@ -461,7 +483,7 @@ fun FloatingSettingsScreen(
 
             item("basic") {
                 FloatingSection(uiMode = uiMode, titleRes = R.string.section_floating_basic) {
-                    val basicItemCount = if (uiState.asrEnabled) 5 else 1
+                    val basicItemCount = if (uiState.asrEnabled) 6 else 1
                     FloatingExplainedSwitch(
                         id = "floating_asr",
                         titleRes = R.string.label_floating_asr,
@@ -514,6 +536,14 @@ fun FloatingSettingsScreen(
                             index = 2,
                             count = basicItemCount
                         )
+                        FloatingValuePreference(
+                            titleRes = R.string.label_floating_ball_style,
+                            value = resultDisplayModeLabel(prefs.floatingResultDisplayMode),
+                            uiMode = uiMode,
+                            index = 3,
+                            count = basicItemCount,
+                            onClick = { showResultDisplayModeSheet() }
+                        )
                         FloatingSliderPreference(
                             titleRes = R.string.label_floating_alpha,
                             valueLabel = { "${it.roundFloatingToStep(5).toInt()}%" },
@@ -521,7 +551,7 @@ fun FloatingSettingsScreen(
                             valueRange = 30f..100f,
                             step = 5,
                             uiMode = uiMode,
-                            index = 3,
+                            index = 4,
                             count = basicItemCount,
                             onValueChange = { value ->
                                 uiState = uiState.copy(alphaPercent = value.roundFloatingToStep(5))
@@ -540,7 +570,7 @@ fun FloatingSettingsScreen(
                             valueRange = 28f..96f,
                             step = 4,
                             uiMode = uiMode,
-                            index = 4,
+                            index = 5,
                             count = basicItemCount,
                             onValueChange = { value ->
                                 uiState = uiState.copy(sizeDp = value.roundFloatingToStep(4).toInt().coerceIn(28, 96))

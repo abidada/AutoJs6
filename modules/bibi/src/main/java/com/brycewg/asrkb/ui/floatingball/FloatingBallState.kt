@@ -16,6 +16,21 @@ enum class FloatingBallInteractionMode {
 }
 
 /**
+ * 识别中的 UI 形态：
+ * PANEL   底部监听面板 + 胶囊状态（默认，原版行为）
+ * CAPSULE 仅悬浮球：不弹底部面板，波形/识别文字直接显示在胶囊上
+ */
+enum class ResultDisplayMode(val id: String) {
+    PANEL("panel"),
+    CAPSULE("capsule");
+
+    companion object {
+        fun fromId(id: String?): ResultDisplayMode =
+            entries.firstOrNull { it.id == id } ?: PANEL
+    }
+}
+
+/**
  * 悬浮球状态机
  * 使用 sealed class 定义所有可能的状态，替代多个布尔标志
  */

@@ -29,6 +29,7 @@ import com.brycewg.asrkb.ui.floatingball.FloatingBallStateMachine
 import com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler
 import com.brycewg.asrkb.ui.floatingball.FloatingBallViewManager
 import com.brycewg.asrkb.ui.floatingball.FloatingMenuHelper
+import com.brycewg.asrkb.ui.floatingball.ResultDisplayMode
 import com.brycewg.asrkb.ui.floatingball.resolveFloatingBallHoldPressAction
 import com.brycewg.asrkb.ui.floatingball.resolveFloatingBallRecordingTapAction
 import com.brycewg.asrkb.util.HapticFeedbackHelper
@@ -107,7 +108,12 @@ internal class FloatingAsrInteractionController(
         }
         val panel = listeningPanel
         if (mode == FloatingBallInteractionMode.LISTENING_PILL) {
-            panel?.show()
+            if (currentResultDisplayMode() == ResultDisplayMode.CAPSULE) {
+                // 「仅悬浮球」形态：不弹底部面板，胶囊只显示状态字（正在听…/分发结果）
+                panel?.hide()
+            } else {
+                panel?.show()
+            }
             cancelReadyCollapseTimer()
         } else {
             panel?.hide()
@@ -117,6 +123,14 @@ internal class FloatingAsrInteractionController(
                 cancelReadyCollapseTimer()
             }
         }
+    }
+
+    /** 当前识别 UI 形态；读取失败回退面板模式（原版行为）。 */
+    private fun currentResultDisplayMode(): ResultDisplayMode = try {
+        prefs.floatingResultDisplayMode
+    } catch (e: Throwable) {
+        Log.w(tag, "Failed to read floating result display mode", e)
+        ResultDisplayMode.PANEL
     }
 
     /** 「发起语音」停留超时后收缩回完整圆球；菜单/拖动等前台交互期间顺延。 */
@@ -173,12 +187,18 @@ internal class FloatingAsrInteractionController(
             // 结论同步记录（分发在主线程执行），驻留评估可立即读取
             lastDispatchHit = true
             handler.post {
-                // 面板与 TTS 同源文案：识别文本 + 执行后缀
+                // 面板与 TTS 用完整文案（含识别文本）；胶囊只显示截取后的状态字
                 val message = context.getString(
                     R.string.voice_dispatch_feedback_executing,
                     recognizedText
                 )
-                listeningPanel?.showFeedback(message)
+                if (currentResultDisplayMode() == ResultDisplayMode.CAPSULE) {
+                    viewManager.setPillContent(
+                        context.getString(R.string.floating_pill_dispatch_hit)
+                    )
+                } else {
+                    listeningPanel?.showFeedback(message)
+                }
                 // 命中即播；播报期间由开麦闸口推迟自动续听
                 if (isTtsEnabled()) TtsPlaybackCoordinator.speak(context, message)
             }
@@ -186,11 +206,18 @@ internal class FloatingAsrInteractionController(
         dispatcher.onMiss = { recognizedText ->
             lastDispatchHit = false
             handler.post {
+                // 面板与 TTS 用完整文案（含识别文本）；胶囊只显示截取后的状态字
                 val message = context.getString(
                     R.string.voice_dispatch_feedback_no_task,
                     recognizedText
                 )
-                listeningPanel?.showFeedback(message)
+                if (currentResultDisplayMode() == ResultDisplayMode.CAPSULE) {
+                    viewManager.setPillContent(
+                        context.getString(R.string.floating_pill_dispatch_miss)
+                    )
+                } else {
+                    listeningPanel?.showFeedback(message)
+                }
                 if (isTtsEnabled()) TtsPlaybackCoordinator.speak(context, message)
             }
         }
@@ -396,6 +423,8 @@ internal class FloatingAsrInteractionController(
             listeningAnnounceToken = null
             suppressAutoContinue = true
             cancelPostResultRunnable()
+            // 打断进行中的分发反馈播报（幂等；TTS 关时为空操作）
+            TtsPlaybackCoordinator.stopSpeaking()
             transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
         }
     }
@@ -946,8 +975,16 @@ internal class FloatingAsrInteractionController(
             // 旁路启动（音量键/摇一摇/JS）时同步交互模式为 LISTENING；
             // 识别完成驻留片刻（展示分发反馈）回 READY，出错直接回 READY。
             when (state) {
-                is FloatingBallState.Recording, is FloatingBallState.Processing ->
+                is FloatingBallState.Recording, is FloatingBallState.Processing -> {
                     transitionInteractionMode(FloatingBallInteractionMode.LISTENING_PILL)
+                    if (state is FloatingBallState.Recording &&
+                        currentResultDisplayMode() == ResultDisplayMode.CAPSULE
+                    ) {
+                        // 新一轮录音开始：胶囊回到「正在听…」，覆盖上一轮遗留的反馈文字
+                        // （②③模式自动续听时保持 LISTENING 不经过 READY，需在此复位）
+                        viewManager.resetPillToListening()
+                    }
+                }
 
                 is FloatingBallState.Idle -> {
                     if (interactionMode == FloatingBallInteractionMode.LISTENING_PILL) {
@@ -1152,7 +1189,8 @@ internal class FloatingAsrInteractionController(
 
         when (interactionMode) {
             FloatingBallInteractionMode.ROUND -> {
-                // 单击圆球 → 「发起语音」胶囊（不启动录音）
+                // 单击圆球 → 「发起语音」胶囊（不启动录音）；顺带打断残留的反馈播报
+                TtsPlaybackCoordinator.stopSpeaking()
                 transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
             }
 
@@ -1184,6 +1222,8 @@ internal class FloatingAsrInteractionController(
                     listeningAnnounceToken = null
                     suppressAutoContinue = true
                     cancelPostResultRunnable()
+                    // 打断进行中的分发反馈播报（幂等；TTS 关时为空操作）
+                    TtsPlaybackCoordinator.stopSpeaking()
                     transitionInteractionMode(FloatingBallInteractionMode.READY_PILL)
                 }
             }

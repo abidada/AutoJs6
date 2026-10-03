@@ -73,6 +73,14 @@ fun TtsSettingsScreen(
 
     // ---- 服务商/模型状态 ----
     var variant by remember { mutableStateOf(prefs.ttsModelVariant) }
+    var voiceSid by remember {
+        mutableStateOf(
+            TtsLocalModelCatalog.resolveVoiceSid(
+                prefs.ttsModelVariant,
+                prefs.ttsVoiceSid(prefs.ttsModelVariant)
+            )
+        )
+    }
     var numThreads by remember { mutableStateOf(prefs.ttsNumThreads) }
     var preload by remember { mutableStateOf(prefs.ttsPreloadEnabled) }
     var keepAliveMinutes by remember { mutableStateOf(prefs.ttsKeepAliveMinutes) }
@@ -201,6 +209,7 @@ fun TtsSettingsScreen(
                     context = context,
                     prefs = prefs,
                     variant = variant,
+                    voiceSid = voiceSid,
                     numThreads = numThreads,
                     preload = preload,
                     keepAliveMinutes = keepAliveMinutes,
@@ -209,7 +218,16 @@ fun TtsSettingsScreen(
                     onVariantChange = { selected ->
                         variant = selected
                         prefs.ttsModelVariant = selected
+                        // 切换变体：音色回落到该变体的已存/默认音色
+                        voiceSid = TtsLocalModelCatalog.resolveVoiceSid(
+                            selected,
+                            prefs.ttsVoiceSid(selected)
+                        )
                         refreshModelReady()
+                    },
+                    onVoiceSidChange = { sid ->
+                        voiceSid = sid
+                        prefs.setTtsVoiceSid(TtsLocalModelCatalog.normalizeVariant(variant), sid)
                     },
                     onNumThreadsChange = { numThreads = it; prefs.ttsNumThreads = it },
                     onPreloadChange = { preload = it; prefs.ttsPreloadEnabled = it },
@@ -361,12 +379,14 @@ private fun TtsVendorSection(
     context: android.content.Context,
     prefs: Prefs,
     variant: String,
+    voiceSid: Int,
     numThreads: Int,
     preload: Boolean,
     keepAliveMinutes: Int,
     modelReady: Boolean,
     operationStatus: String?,
     onVariantChange: (String) -> Unit,
+    onVoiceSidChange: (Int) -> Unit,
     onNumThreadsChange: (Int) -> Unit,
     onPreloadChange: (Boolean) -> Unit,
     onKeepAliveChange: (Int) -> Unit,
@@ -376,7 +396,9 @@ private fun TtsVendorSection(
 ) {
     AsrSection(uiMode = uiMode, titleRes = R.string.section_tts_vendor) {
         var itemIndex = 0
-        val itemCount = 5
+        val spec = TtsLocalModelCatalog.variantSpec(variant)
+        val showVoicePicker = spec.voices.size > 1
+        val itemCount = 5 + if (showVoicePicker) 1 else 0
         AsrDropdownPreference(
             id = "tts_vendor",
             titleRes = R.string.label_tts_vendor,
@@ -391,14 +413,32 @@ private fun TtsVendorSection(
         AsrDropdownPreference(
             id = "tts_model_variant",
             titleRes = R.string.label_tts_model_variant,
-            options = TtsLocalModelCatalog.variants.map { spec ->
-                DropdownOption(spec.id, context.getString(spec.labelRes))
+            options = TtsLocalModelCatalog.variants.map { s ->
+                DropdownOption(s.id, context.getString(s.labelRes))
             },
             selectedOptionId = TtsLocalModelCatalog.normalizeVariant(variant),
             index = itemIndex++,
             count = itemCount,
             onSelectedOptionChange = onVariantChange
         )
+        if (showVoicePicker) {
+            AsrDropdownPreference(
+                id = "tts_voice",
+                titleRes = R.string.label_tts_voice,
+                options = spec.voices.map { voice ->
+                    DropdownOption(
+                        voice.sid.toString(),
+                        TtsLocalModelCatalog.voiceLabel(context, spec.id, voice.sid)
+                    )
+                },
+                selectedOptionId = voiceSid.toString(),
+                index = itemIndex++,
+                count = itemCount,
+                onSelectedOptionChange = { value ->
+                    value.toIntOrNull()?.let(onVoiceSidChange)
+                }
+            )
+        }
         AsrSliderPreference(
             titleRes = R.string.label_tts_threads,
             valueLabel = { it.toInt().toString() },

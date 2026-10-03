@@ -158,7 +158,15 @@ object TtsPlaybackCoordinator {
                 )
                 return false
             }
-            engine.speak(request.text, prefs.ttsSpeed, object : TtsSpeakCallback {
+            // 音色 sid：按当前变体取存储值，脏数据/未设置回落变体默认音色
+            val sid = try {
+                val variant = TtsLocalModelCatalog.normalizeVariant(prefs.ttsModelVariant)
+                TtsLocalModelCatalog.resolveVoiceSid(variant, prefs.ttsVoiceSid(variant))
+            } catch (t: Throwable) {
+                Log.w(TAG, "Failed to resolve tts voice sid", t)
+                0
+            }
+            engine.speak(request.text, sid, prefs.ttsSpeed, object : TtsSpeakCallback {
                 override fun onDone() {
                     ok = true
                 }

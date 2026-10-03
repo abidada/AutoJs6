@@ -27,8 +27,9 @@ import com.google.android.material.color.DynamicColors
  * FloatingAsrService 和 FloatingImeSwitcherService 共享此工具
  *
  * 自动应用动态主题上下文（Material3 + Monet），确保与系统主题一致
+ * 挂载层由 [hostProvider] 解析（普通层/无障碍层），保证与悬浮球同层显示。
  */
-class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowManager) {
+class FloatingMenuHelper(rawContext: Context, private val hostProvider: () -> FloatingWindowHost) {
     companion object {
         private const val TAG = "FloatingMenuHelper"
     }
@@ -150,6 +151,8 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
         items: List<MenuItem>,
         onDismiss: () -> Unit
     ): View? {
+        val host = hostProvider()
+        val wm = host.windowManager
         try {
             val root = android.widget.FrameLayout(context).apply {
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
@@ -158,7 +161,7 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
                 isFocusableInTouchMode = true
                 setOnClickListener {
                     try {
-                        windowManager.removeView(this)
+                        wm.removeView(this)
                     } catch (e: Throwable) {
                         Log.e(TAG, "Failed to remove radial root on blank click", e)
                     }
@@ -193,7 +196,7 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
                         Log.e(TAG, "Radial item action failed", e)
                     }
                     try {
-                        windowManager.removeView(root)
+                        wm.removeView(root)
                     } catch (e: Throwable) {
                         Log.e(TAG, "Failed to remove radial root on item click", e)
                     }
@@ -227,14 +230,14 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                host.windowType,
                 // 允许获得焦点，以便本应用在菜单展示期间具备前台焦点（例如读取剪贴板）
                 0,
                 PixelFormat.TRANSLUCENT
             )
             params.gravity = Gravity.TOP or Gravity.START
 
-            windowManager.addView(root, params)
+            wm.addView(root, params)
             return root
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to show radial menu", e)
@@ -251,6 +254,8 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
         items: List<MenuItem>,
         onDismiss: () -> Unit
     ): DragRadialMenuSession? {
+        val host = hostProvider()
+        val wm = host.windowManager
         try {
             val root = android.widget.FrameLayout(context).apply {
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
@@ -259,7 +264,7 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
                 isFocusableInTouchMode = true
                 setOnClickListener {
                     try {
-                        windowManager.removeView(this)
+                        wm.removeView(this)
                     } catch (e: Throwable) {
                         Log.e(TAG, "Failed to remove drag radial root on blank click", e)
                     }
@@ -299,7 +304,7 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
                         Log.e(TAG, "Drag radial item action failed", e)
                     }
                     try {
-                        windowManager.removeView(root)
+                        wm.removeView(root)
                     } catch (
                         e: Throwable
                     ) {
@@ -338,16 +343,16 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                host.windowType,
                 0,
                 PixelFormat.TRANSLUCENT
             )
             params.gravity = Gravity.TOP or Gravity.START
 
-            windowManager.addView(root, params)
+            wm.addView(root, params)
             return DragRadialMenuSession(
                 context,
-                windowManager,
+                wm,
                 root,
                 container,
                 rows,
@@ -376,6 +381,8 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
         entries: List<Triple<String, Boolean, () -> Unit>>,
         onDismiss: () -> Unit
     ): View? {
+        val host = hostProvider()
+        val wm = host.windowManager
         try {
             val root = android.widget.FrameLayout(context).apply {
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
@@ -384,7 +391,7 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
                 isFocusableInTouchMode = true
                 setOnClickListener {
                     try {
-                        windowManager.removeView(this)
+                        wm.removeView(this)
                     } catch (e: Throwable) {
                         Log.e(TAG, "Failed to remove panel root on blank click", e)
                     }
@@ -438,7 +445,7 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
                             Log.e(TAG, "Panel item action failed", e)
                         }
                         try {
-                            windowManager.removeView(root)
+                            wm.removeView(root)
                         } catch (e: Throwable) {
                             Log.e(TAG, "Failed to remove panel root on item click", e)
                         }
@@ -476,13 +483,13 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                host.windowType,
                 0,
                 PixelFormat.TRANSLUCENT
             )
             params.gravity = Gravity.TOP or Gravity.START
 
-            windowManager.addView(root, params)
+            wm.addView(root, params)
             return root
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to show list panel", e)
@@ -511,6 +518,8 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
         loadMoreCount: Int = Int.MAX_VALUE,
         onDismiss: () -> Unit
     ): View? {
+        val host = hostProvider()
+        val wm = host.windowManager
         try {
             val root = android.widget.FrameLayout(context).apply {
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
@@ -519,7 +528,7 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
                 isFocusableInTouchMode = true
                 setOnClickListener {
                     try {
-                        windowManager.removeView(this)
+                        wm.removeView(this)
                     } catch (e: Throwable) {
                         Log.e(TAG, "Failed to remove text panel root on blank click", e)
                     }
@@ -610,7 +619,7 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
                             Log.e(TAG, "Text item action failed", e)
                         }
                         try {
-                            windowManager.removeView(root)
+                            wm.removeView(root)
                         } catch (e: Throwable) {
                             Log.e(TAG, "Failed to remove text panel root on item click", e)
                         }
@@ -707,13 +716,13 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                host.windowType,
                 0,
                 PixelFormat.TRANSLUCENT
             )
             params.gravity = Gravity.TOP or Gravity.START
 
-            windowManager.addView(root, params)
+            wm.addView(root, params)
             return root
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to show scrollable text panel", e)
@@ -726,9 +735,10 @@ class FloatingMenuHelper(rawContext: Context, private val windowManager: WindowM
      */
     fun hideMenu(menuView: View?) {
         menuView?.let { v ->
+            val wm = hostProvider().windowManager
             try {
                 cancelAllAnimations(v)
-                windowManager.removeView(v)
+                wm.removeView(v)
             } catch (e: Throwable) {
                 Log.e(TAG, "Failed to remove menu view", e)
             }

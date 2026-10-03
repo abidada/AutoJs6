@@ -16,6 +16,7 @@ import com.brycewg.asrkb.asr.LocalModelFileSpec
 import com.brycewg.asrkb.asr.LocalModelSpecs
 import com.brycewg.asrkb.asr.requireModelFilesCached
 import com.brycewg.asrkb.store.Prefs
+import com.brycewg.asrkb.tts.TtsLocalModelCatalog
 import com.brycewg.asrkb.ui.SettingsActivity
 import java.io.File
 import java.io.FileOutputStream
@@ -1727,11 +1728,7 @@ class NotificationHandler(
         "firered_asr" -> context.getString(R.string.notif_fr_title_ctc_int8)
         "punctuation" -> context.getString(R.string.notif_punct_title)
         "tts_offline" -> context.getString(
-            if (variant == "medium-int8") {
-                R.string.notif_tts_title_medium_int8
-            } else {
-                R.string.notif_tts_title_medium
-            }
+            TtsLocalModelCatalog.variantSpec(variant).labelRes
         )
         "funasr_nano" -> {
             if (com.brycewg.asrkb.asr.normalizeFunAsrNanoVariant(variant) == "mlt-int8") {

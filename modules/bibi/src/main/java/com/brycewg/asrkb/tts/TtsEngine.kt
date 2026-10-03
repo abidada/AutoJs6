@@ -19,8 +19,8 @@ interface TtsSpeakCallback {
 }
 
 interface TtsEngine {
-    /** 播报一段文本；重复调用前必须先 [stop] */
-    fun speak(text: String, speed: Float, callback: TtsSpeakCallback)
+    /** 播报一段文本（sid=音色编号，多音色模型如 kokoro 生效）；重复调用前必须先 [stop] */
+    fun speak(text: String, sid: Int, speed: Float, callback: TtsSpeakCallback)
 
     /** 打断当前播报（若在播）；幂等 */
     fun stop()
