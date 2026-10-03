@@ -231,7 +231,7 @@ class SetupStateMachine(
     }
 
     private fun hasAccessibilityPermission(): Boolean =
-        HostA11yServiceResolver.isEnabledInSettings(context)
+        HostA11yServiceResolver.isA11yEnabled(context)
 
     /**
      * 获取当前状态对应的 RequestingPermissions，如果不是则返回 null

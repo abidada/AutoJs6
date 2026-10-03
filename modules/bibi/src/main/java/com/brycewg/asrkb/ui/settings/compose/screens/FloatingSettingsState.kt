@@ -84,7 +84,7 @@ internal enum class FloatingPermissionRequest {
 }
 
 internal fun isAccessibilityServiceEnabled(context: Context): Boolean =
-    HostA11yServiceResolver.isEnabledInSettings(context)
+    HostA11yServiceResolver.isA11yEnabled(context)
 
 internal fun resetFloatingPosition(
     context: Context,

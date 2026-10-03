@@ -375,5 +375,5 @@ class OnboardingGuideActivity : BaseActivity() {
     }
 
     private fun hasAccessibilityPermission(): Boolean =
-        HostA11yServiceResolver.isEnabledInSettings(this)
+        HostA11yServiceResolver.isA11yEnabled(this)
 }

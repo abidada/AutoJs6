@@ -57,7 +57,7 @@ class SettingsEntryEffectsCoordinator(
     }
 
     private fun isAccessibilityServiceEnabled(): Boolean =
-        HostA11yServiceResolver.isEnabledInSettings(activity)
+        HostA11yServiceResolver.isA11yEnabled(activity)
 
     private companion object {
         private const val TAG = "SettingsEntryEffects"

@@ -194,7 +194,7 @@ class SettingsActionController(
             } ?: true
             val envData = mapOf(
                 "overlay" to overlayOk,
-                "a11y" to com.brycewg.asrkb.ui.AsrAccessibilityService.isEnabled(),
+                "a11y" to com.brycewg.asrkb.ui.HostA11yServiceResolver.isA11yEnabled(activity),
                 "batteryIgnore" to batteryIgnore,
                 "notifGranted" to notifGranted
             )
