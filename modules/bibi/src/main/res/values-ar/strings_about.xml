@@ -27,7 +27,7 @@
     <!-- About: Usage stats -->
     <string name="about_stats_title">إحصاءات الاستخدام</string>
     <string name="about_stats_overview">نظرة عامة</string>
-    <string name="about_days_with_you">رافقتك BiBi Keyboard لمدة %1$d يوماً</string>
+    <string name="about_days_with_you">رافقتك xyauto لمدة %1$d يوماً</string>
     <string name="about_stats_total_audio_label">إجمالي مدة الصوت</string>
     <string name="about_stats_total_chars_label">إجمالي الأحرف</string>
     <string name="about_stats_sessions_label">عدد الجلسات</string>

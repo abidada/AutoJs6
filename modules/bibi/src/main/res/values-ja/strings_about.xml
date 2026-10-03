@@ -28,7 +28,7 @@
     <!-- About: Usage stats -->
     <string name="about_stats_title">使用統計</string>
     <string name="about_stats_overview">概要</string>
-    <string name="about_days_with_you">BiBi Keyboard は%1$d日間あなたと一緒にいました</string>
+    <string name="about_days_with_you">xyauto は%1$d日間あなたと一緒にいました</string>
     <string name="about_stats_total_audio_label">総音声時間</string>
     <string name="about_stats_total_chars_label">総文字数</string>
     <string name="about_stats_sessions_label">セッション数</string>

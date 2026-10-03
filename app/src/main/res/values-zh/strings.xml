@@ -1432,7 +1432,7 @@
 
     <!-- BIBI (说点啥) 语音输入库入口, 由 bibi 移植于 Sep 30, 2026 添加. -->
     <string name="text_bibi_settings">BIBI设置</string>
-    <string name="summary_bibi_settings">说点啥语音输入 · 悬浮球 · 语音识别</string>
+    <string name="summary_bibi_settings">xyauto语音输入 · 悬浮球 · 语音识别</string>
     <string name="text_bibi_permissions">BIBI 权限</string>
     <string name="text_bibi_microphone_permission">BIBI 麦克风权限</string>
     <string name="summary_bibi_microphone_permission">BIBI 语音识别所必需</string>

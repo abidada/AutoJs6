@@ -2,8 +2,8 @@
   <!-- ============================================== -->
   <!-- 基礎資訊 -->
   <!-- ============================================== -->
-  <string name="app_name">說點啥</string>
-  <string name="fxliang_fcitx_voice_input_provider_label">說點啥聯動</string>
+  <string name="app_name">xyauto</string>
+  <string name="fxliang_fcitx_voice_input_provider_label">xyauto聯動</string>
 
   <string name="qs_tile_ime_picker">切換輸入法</string>
 
@@ -57,7 +57,7 @@
   <!-- ============================================== -->
   <string name="btn_one_click_setup">一鍵設定</string>
 
-  <string name="settings_title">說點啥設定</string>
+  <string name="settings_title">xyauto設定</string>
   <string name="settings_tab_input">輸入</string>
   <string name="settings_tab_smart">智慧</string>
   <string name="settings_tab_system">系統</string>
@@ -239,7 +239,7 @@
   <!-- ============================================== -->
   <string name="toast_setup_all_done">已完成所有設定</string>
   <string name="toast_setup_enable_keyboard_first">請在系統設定中啟用鍵盤後返回</string>
-  <string name="toast_setup_choose_keyboard">請選擇「說點啥」為目前輸入法</string>
+  <string name="toast_setup_choose_keyboard">請選擇「xyauto」為目前輸入法</string>
   <string name="toast_setup_aborted">設定已中止：%1$s</string>
   <string name="setup_abort_reason_ime_timeout">選擇輸入法逾時</string>
   <string name="btn_get_api_key_guide">去查看配置教學</string>
@@ -271,7 +271,7 @@
   <!-- 外部輸入法聯動（AIDL） -->
   <string name="label_external_ime_link_aidl">允許外部輸入法聯動（AIDL）</string>
   <string name="external_aidl_guide_title">如何使用聯動功能</string>
-  <string name="external_aidl_guide_message">支援從外部輸入法調用說點啥的語音識別能力（AIDL）。目前支援：小企鵝輸入法（Fcitx）與同文輸入法（Trime）。\n\n請先在說點啥中啟用：設定 - 輸入設定 - 允許外部輸入法聯動（AIDL）（無需啟用懸浮球和無障礙功能）。\n\n然後依你使用的輸入法進行設定：\n\n【Fcitx（小企鵝）】\n1. 下載修改版 Fcitx：https://github.com/BryceWG/fcitx5-android-lexi-keyboard/releases（需解除安裝原版並注意備份資料）\n2. 開啟 Fcitx 設定 - 虛擬鍵盤 - 空格鍵長按行為 - 語音輸入(AIDL)\n3. 在輸入法面板長按空格鍵即可語音輸入\n\n【Trime（同文）】\n1. 下載修改版同文：https://github.com/BryceWG/trime-bibi-keyboard/releases\n2. 在同文設定 - 一般設定 - 開啟「說點啥 AIDL 語音輸入」，若使用的主題方案無長按 VOICE_ASSIST 功能，則可啟用「工具列麥克風按鈕」\n3. 長按具備 VOICE_ASSIST 功能的按鈕開始錄音，放開即停止；或在輸入法工具列點選麥克風按鈕開始錄音，再次點選則停止並上屏。</string>
+  <string name="external_aidl_guide_message">支援從外部輸入法調用xyauto的語音識別能力（AIDL）。目前支援：小企鵝輸入法（Fcitx）與同文輸入法（Trime）。\n\n請先在xyauto中啟用：設定 - 輸入設定 - 允許外部輸入法聯動（AIDL）（無需啟用懸浮球和無障礙功能）。\n\n然後依你使用的輸入法進行設定：\n\n【Fcitx（小企鵝）】\n1. 下載修改版 Fcitx：https://github.com/BryceWG/fcitx5-android-lexi-keyboard/releases（需解除安裝原版並注意備份資料）\n2. 開啟 Fcitx 設定 - 虛擬鍵盤 - 空格鍵長按行為 - 語音輸入(AIDL)\n3. 在輸入法面板長按空格鍵即可語音輸入\n\n【Trime（同文）】\n1. 下載修改版同文：https://github.com/BryceWG/trime-bibi-keyboard/releases\n2. 在同文設定 - 一般設定 - 開啟「xyauto AIDL 語音輸入」，若使用的主題方案無長按 VOICE_ASSIST 功能，則可啟用「工具列麥克風按鈕」\n3. 長按具備 VOICE_ASSIST 功能的按鈕開始錄音，放開即停止；或在輸入法工具列點選麥克風按鈕開始錄音，再次點選則停止並上屏。</string>
   <string name="external_aidl_guide_btn_close">關閉</string>
   <string name="external_aidl_guide_btn_open_release">開啟Release頁</string>
   <string name="external_aidl_guide_choose_release_title">選擇要開啟的 Release 頁</string>
@@ -281,7 +281,7 @@
 
   <!-- 模型選擇引導 -->
   <string name="model_guide_title">選擇語音識別模型</string>
-  <string name="model_guide_message">使用說點啥前，請先選擇語音識別模型類型：</string>
+  <string name="model_guide_message">使用xyauto前，請先選擇語音識別模型類型：</string>
   <string name="model_guide_option_sf_free">⭐ 免費雲端服務（推薦）</string>
   <string name="model_guide_option_sf_free_desc">無需任何配置，由硅基流動提供支援。包含免費的語音識別和 AI 文字優化。</string>
   <string name="model_guide_option_sf_free_action">開箱即用，有免費用量限制</string>
@@ -383,7 +383,7 @@
   <string name="feature_fcitx5_return_on_switcher_on_desc">輸入法切換鍵直接返回指定輸入法，未設定時返回上一個輸入法。</string>
 
   <!-- 收起後切回上一個輸入法 -->
-  <string name="feature_return_prev_ime_on_hide_off_desc">鍵盤收起後，目前輸入法仍為說點啥。</string>
+  <string name="feature_return_prev_ime_on_hide_off_desc">鍵盤收起後，目前輸入法仍為xyauto。</string>
   <string name="feature_return_prev_ime_on_hide_on_desc">鍵盤收起時自動切換到指定輸入法，未設定時返回上一個輸入法，方便臨時語音輸入。</string>
 
   <!-- 隱藏任務卡片 -->
@@ -430,7 +430,7 @@
 
   <!-- 匿名資料收集同意彈窗 -->
   <string name="title_data_collection_consent">匿名資料收集說明</string>
-  <string name="msg_data_collection_consent">為了改進說點啥的體驗，我們希望收集少量匿名使用資料，包括：應用版本、安裝渠道、初次使用時間、Android 版本（SDK）、裝置型號、語音識別事件中繼資料（供應商、音訊時長、處理耗時、字數、來源渠道、是否使用 AI 後處理）、應用介面語言，以及應用啟動次數。不會上傳識別文字或任何個人資訊。相關收集與上報程式碼已開源。是否同意開啟？</string>
+  <string name="msg_data_collection_consent">為了改進xyauto的體驗，我們希望收集少量匿名使用資料，包括：應用版本、安裝渠道、初次使用時間、Android 版本（SDK）、裝置型號、語音識別事件中繼資料（供應商、音訊時長、處理耗時、字數、來源渠道、是否使用 AI 後處理）、應用介面語言，以及應用啟動次數。不會上傳識別文字或任何個人資訊。相關收集與上報程式碼已開源。是否同意開啟？</string>
   <string name="btn_agree">同意</string>
   <string name="btn_disagree">暫不</string>
 
@@ -482,6 +482,6 @@
   <string name="recording_test_error_transcribe_timeout">轉錄逾時</string>
   <string name="recording_test_error_vendor_unavailable">目前 ASR 設定無法用於本次測試</string>
   <string name="recording_test_error_ai">AI 處理失敗：%1$s</string>
-  <string name="toast_ime_bridge_protocol_mismatch">輸入法橋接模組與說點啥版本不相容，請更新模組或應用程式。</string>
+  <string name="toast_ime_bridge_protocol_mismatch">輸入法橋接模組與xyauto版本不相容，請更新模組或應用程式。</string>
   <string name="toast_ime_bridge_connection_failed">無法連線輸入法橋接模組，請確認已在 LSPosed 中啟用模組並勾選目前輸入法。</string>
 </resources>

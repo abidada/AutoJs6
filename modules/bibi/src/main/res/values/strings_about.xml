@@ -27,7 +27,7 @@
     <!-- About: Usage stats -->
     <string name="about_stats_title">Usage Stats</string>
     <string name="about_stats_overview">Overview</string>
-    <string name="about_days_with_you">BiBi Keyboard has been with you for %1$d days</string>
+    <string name="about_days_with_you">xyauto has been with you for %1$d days</string>
     <string name="about_stats_total_audio_label">Total audio time</string>
     <string name="about_stats_total_chars_label">Total characters</string>
     <string name="about_stats_sessions_label">Sessions</string>

@@ -63,7 +63,7 @@ class ExternalSpeechService : Service() {
                         val sid = synchronized(this@ExternalSpeechService) { nextId++ }
                         safe { cb.onState(sid, STATE_RECORDING, "recording") }
                         safe { cb.onPartial(sid, "【联通测试中】……") }
-                        safe { cb.onFinal(sid, "说点啥外部AIDL联通成功（mock）") }
+                        safe { cb.onFinal(sid, "xyauto外部AIDL联通成功（mock）") }
                         safe { cb.onState(sid, STATE_IDLE, "final") }
                         reply?.apply {
                             writeNoException()

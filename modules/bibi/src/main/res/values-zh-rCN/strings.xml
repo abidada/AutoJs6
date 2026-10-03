@@ -2,8 +2,8 @@
   <!-- ============================================== -->
   <!-- 基础信息 -->
   <!-- ============================================== -->
-  <string name="app_name">说点啥</string>
-  <string name="fxliang_fcitx_voice_input_provider_label">说点啥联动</string>
+  <string name="app_name">xyauto</string>
+  <string name="fxliang_fcitx_voice_input_provider_label">xyauto联动</string>
 
   <string name="qs_tile_ime_picker">切换输入法</string>
 
@@ -57,7 +57,7 @@
   <!-- ============================================== -->
   <string name="btn_one_click_setup">一键设置</string>
 
-  <string name="settings_title">说点啥设置</string>
+  <string name="settings_title">xyauto设置</string>
   <string name="settings_tab_input">输入</string>
   <string name="settings_tab_smart">智能</string>
   <string name="settings_tab_system">系统</string>
@@ -239,7 +239,7 @@
   <!-- ============================================== -->
   <string name="toast_setup_all_done">已完成所有设置</string>
   <string name="toast_setup_enable_keyboard_first">请在系统设置中启用键盘后返回</string>
-  <string name="toast_setup_choose_keyboard">请选择"说点啥"为当前输入法</string>
+  <string name="toast_setup_choose_keyboard">请选择"xyauto"为当前输入法</string>
   <string name="toast_setup_aborted">设置已中止：%1$s</string>
   <string name="setup_abort_reason_ime_timeout">选择输入法超时</string>
   <string name="btn_get_api_key_guide">去查看配置教程</string>
@@ -280,9 +280,9 @@
   <!-- 外部输入法联动（AIDL） -->
   <string name="label_external_ime_link_aidl">允许外部输入法联动（AIDL）</string>
   <string name="external_aidl_guide_title">如何使用联动功能</string>
-  <string name="external_aidl_guide_message">支持从外部输入法调用说点啥的语音识别能力（AIDL）。目前支持：小企鹅输入法（Fcitx）与同文输入法（Trime）。
+  <string name="external_aidl_guide_message">支持从外部输入法调用xyauto的语音识别能力（AIDL）。目前支持：小企鹅输入法（Fcitx）与同文输入法（Trime）。
 
-请先在说点啥中启用：设置 - 输入设置 - 允许外部输入法联动（AIDL）（无需启用悬浮球和无障碍功能）。
+请先在xyauto中启用：设置 - 输入设置 - 允许外部输入法联动（AIDL）（无需启用悬浮球和无障碍功能）。
 
 然后按你使用的输入法进行设置：
 
@@ -293,7 +293,7 @@
 
 【Trime（同文）】
 1. 下载修改版同文：https://github.com/BryceWG/trime-bibi-keyboard/releases
-2. 在同文设置 - 常规设置 开启「说点啥 AIDL 语音输入」，如果使用的主题方案没有长按  VOICE_ASSIST 功能则可以启用「工具栏麦克风按钮」
+2. 在同文设置 - 常规设置 开启「xyauto AIDL 语音输入」，如果使用的主题方案没有长按  VOICE_ASSIST 功能则可以启用「工具栏麦克风按钮」
 3. 长按具有 VOICE_ASSIST 功能的按钮开始录音，松手停止; 或者在输入法工具栏点击麦克风按钮开始录音，再次点击停止并上屏。</string>
   <string name="external_aidl_guide_btn_close">关闭</string>
   <string name="external_aidl_guide_btn_open_release">打开Release页</string>
@@ -304,7 +304,7 @@
 
   <!-- 模型选择引导 -->
   <string name="model_guide_title">选择语音识别模型</string>
-  <string name="model_guide_message">使用说点啥前，请先选择语音识别模型类型：</string>
+  <string name="model_guide_message">使用xyauto前，请先选择语音识别模型类型：</string>
   <string name="model_guide_option_sf_free">⭐ 免费云服务（推荐）</string>
   <string name="model_guide_option_sf_free_desc">无需任何配置，由硅基流动提供支持。包含免费的语音识别和 AI 文本优化。</string>
   <string name="model_guide_option_sf_free_action">开箱即用，有免费用量限制</string>
@@ -406,7 +406,7 @@
   <string name="feature_fcitx5_return_on_switcher_on_desc">输入法切换键直接返回指定输入法，未设置时返回上一个输入法。</string>
 
   <!-- 收起后切回上一个输入法 -->
-  <string name="feature_return_prev_ime_on_hide_off_desc">键盘收起后，当前输入法仍为说点啥。</string>
+  <string name="feature_return_prev_ime_on_hide_off_desc">键盘收起后，当前输入法仍为xyauto。</string>
   <string name="feature_return_prev_ime_on_hide_on_desc">键盘收起时自动切换到指定输入法，未设置时返回上一个输入法，方便临时语音输入。</string>
 
   <!-- 隐藏任务卡片 -->
@@ -453,7 +453,7 @@
 
   <!-- 匿名数据采集同意弹窗 -->
   <string name="title_data_collection_consent">匿名数据采集说明</string>
-  <string name="msg_data_collection_consent">为了改进说点啥的体验，我们希望收集少量匿名使用数据，包括：应用版本、安装渠道、初次使用时间、Android 版本（SDK）、设备型号、语音识别事件元数据（供应商、音频时长、处理耗时、字数、来源渠道、是否使用 AI 后处理）、应用界面语言，以及应用启动次数。不会上传识别文本或任何个人信息。相关采集与上报代码已开源。是否同意开启？</string>
+  <string name="msg_data_collection_consent">为了改进xyauto的体验，我们希望收集少量匿名使用数据，包括：应用版本、安装渠道、初次使用时间、Android 版本（SDK）、设备型号、语音识别事件元数据（供应商、音频时长、处理耗时、字数、来源渠道、是否使用 AI 后处理）、应用界面语言，以及应用启动次数。不会上传识别文本或任何个人信息。相关采集与上报代码已开源。是否同意开启？</string>
   <string name="btn_agree">同意</string>
   <string name="btn_disagree">暂不</string>
 
@@ -505,6 +505,6 @@
   <string name="recording_test_error_transcribe_timeout">转录超时</string>
   <string name="recording_test_error_vendor_unavailable">当前 ASR 配置无法用于本次测试</string>
   <string name="recording_test_error_ai">AI 处理失败：%1$s</string>
-  <string name="toast_ime_bridge_protocol_mismatch">输入法桥接模块与说点啥版本不兼容，请更新模块或应用。</string>
+  <string name="toast_ime_bridge_protocol_mismatch">输入法桥接模块与xyauto版本不兼容，请更新模块或应用。</string>
   <string name="toast_ime_bridge_connection_failed">无法连接输入法桥接模块，请确认已在 LSPosed 中启用模块并勾选当前输入法。</string>
 </resources>

@@ -2,8 +2,8 @@
   <!-- ============================================== -->
   <!-- Basic Information -->
   <!-- ============================================== -->
-  <string name="app_name">BiBi Keyboard</string>
-  <string name="fxliang_fcitx_voice_input_provider_label">BiBi Keyboard Link</string>
+  <string name="app_name">xyauto</string>
+  <string name="fxliang_fcitx_voice_input_provider_label">xyauto Link</string>
   <!-- PocketBase 统计服务地址（渠道可覆盖）；为空则不上报 -->
   <string name="pocketbase_base_url" translatable="false"></string>
 
@@ -59,7 +59,7 @@
   <!-- ============================================== -->
   <string name="btn_one_click_setup">One-click Setup</string>
 
-  <string name="settings_title">BiBi Keyboard Settings</string>
+  <string name="settings_title">xyauto Settings</string>
   <string name="settings_tab_input">Input</string>
   <string name="settings_tab_smart">Smart</string>
   <string name="settings_tab_system">System</string>
@@ -241,7 +241,7 @@
   <!-- ============================================== -->
   <string name="toast_setup_all_done">All set</string>
   <string name="toast_setup_enable_keyboard_first">Enable the keyboard in system settings, then come back</string>
-  <string name="toast_setup_choose_keyboard">Please select "BiBi Keyboard" as the current input method</string>
+  <string name="toast_setup_choose_keyboard">Please select "xyauto" as the current input method</string>
   <string name="toast_setup_aborted">Setup aborted: %1$s</string>
   <string name="setup_abort_reason_ime_timeout">Input method selection timed out</string>
   <string name="btn_get_api_key_guide">View Configuration Guide</string>
@@ -282,7 +282,7 @@
   <!-- External IME linking (AIDL) -->
   <string name="label_external_ime_link_aidl">Allow external IME linking (AIDL)</string>
   <string name="external_aidl_guide_title">How to Use the Linking Feature</string>
-  <string name="external_aidl_guide_message">This feature enables voice recognition from external IMEs via AIDL. Currently supported: Fcitx (Little Penguin) and Trime.\n\nFirst enable it in BiBi Keyboard: Settings - Input Settings - Allow external IME linking (AIDL) (no floating ball or accessibility service required).\n\nThen set up your IME:\n\n[Fcitx (Little Penguin)]\n1. Download the modified Fcitx: https://github.com/BryceWG/fcitx5-android-lexi-keyboard/releases (uninstall the original Fcitx first and back up your data)\n2. Open Fcitx Settings - Virtual Keyboard - Long-press Space Bar Behavior - Voice Input (AIDL)\n3. Long-press the space bar in the IME panel to start voice input\n\n[Trime]\n1. Download the modified Trime: https://github.com/BryceWG/trime-bibi-keyboard/releases\n2. In Trime Settings - General, enable \"BiBi Keyboard AIDL voice input\".If the theme scheme you are using does not have the long-press VOICE_ASSIST function, you can enable the "Microphone Button in Toolbar".\n3. Long-press the button with the VOICE_ASSIST function to start recording, and release it to stop; or click the microphone button in the input method toolbar to start recording, and click again to stop and display the text on the screen.</string>
+  <string name="external_aidl_guide_message">This feature enables voice recognition from external IMEs via AIDL. Currently supported: Fcitx (Little Penguin) and Trime.\n\nFirst enable it in xyauto: Settings - Input Settings - Allow external IME linking (AIDL) (no floating ball or accessibility service required).\n\nThen set up your IME:\n\n[Fcitx (Little Penguin)]\n1. Download the modified Fcitx: https://github.com/BryceWG/fcitx5-android-lexi-keyboard/releases (uninstall the original Fcitx first and back up your data)\n2. Open Fcitx Settings - Virtual Keyboard - Long-press Space Bar Behavior - Voice Input (AIDL)\n3. Long-press the space bar in the IME panel to start voice input\n\n[Trime]\n1. Download the modified Trime: https://github.com/BryceWG/trime-bibi-keyboard/releases\n2. In Trime Settings - General, enable \"xyauto AIDL voice input\".If the theme scheme you are using does not have the long-press VOICE_ASSIST function, you can enable the "Microphone Button in Toolbar".\n3. Long-press the button with the VOICE_ASSIST function to start recording, and release it to stop; or click the microphone button in the input method toolbar to start recording, and click again to stop and display the text on the screen.</string>
   <string name="external_aidl_guide_btn_close">Close</string>
   <string name="external_aidl_guide_btn_open_release">Open Release Page</string>
   <string name="external_aidl_guide_choose_release_title">Select a release page</string>
@@ -292,7 +292,7 @@
 
   <!-- Model Selection Guide -->
   <string name="model_guide_title">Choose Speech Recognition Model</string>
-  <string name="model_guide_message">To use BiBi Keyboard, please choose a speech recognition model type:</string>
+  <string name="model_guide_message">To use xyauto, please choose a speech recognition model type:</string>
   <string name="model_guide_option_sf_free">⭐ Free Cloud Service (Recommended)</string>
   <string name="model_guide_option_sf_free_desc">No configuration needed, powered by SiliconFlow. Includes free ASR and AI text enhancement.</string>
   <string name="model_guide_option_sf_free_action">Ready to use immediately, limited free quota</string>
@@ -394,7 +394,7 @@
   <string name="feature_fcitx5_return_on_switcher_on_desc">The IME switcher key returns to the specified input method (falls back to the previous one if not set).</string>
 
   <!-- Return prev IME on hide -->
-  <string name="feature_return_prev_ime_on_hide_off_desc">The current input method remains as BiBi Keyboard after hiding.</string>
+  <string name="feature_return_prev_ime_on_hide_off_desc">The current input method remains as xyauto after hiding.</string>
   <string name="feature_return_prev_ime_on_hide_on_desc">Switches to the specified input method when the keyboard is hidden (falls back to the previous one if not set), convenient for temporary voice input.</string>
 
   <!-- Hide recent tasks -->
@@ -441,7 +441,7 @@
 
   <!-- Data collection consent dialog -->
   <string name="title_data_collection_consent">Anonymous Data Collection</string>
-  <string name="msg_data_collection_consent">To help improve BiBi Keyboard, we would like to collect anonymous usage statistics. This includes: app version, install channel, first seen date, Android version (SDK), device model, ASR event metadata (provider, audio duration, processing time, character count, source channel, whether AI post-processing was used), app language, and app start events. No recognition text or personal content will be uploaded. The collection code is open-source. Do you agree to enable this?</string>
+  <string name="msg_data_collection_consent">To help improve xyauto, we would like to collect anonymous usage statistics. This includes: app version, install channel, first seen date, Android version (SDK), device model, ASR event metadata (provider, audio duration, processing time, character count, source channel, whether AI post-processing was used), app language, and app start events. No recognition text or personal content will be uploaded. The collection code is open-source. Do you agree to enable this?</string>
   <string name="btn_agree">Agree</string>
   <string name="btn_disagree">Not now</string>
 
@@ -493,6 +493,6 @@
   <string name="recording_test_error_transcribe_timeout">Transcription timed out</string>
   <string name="recording_test_error_vendor_unavailable">The current ASR configuration is unavailable for this test</string>
   <string name="recording_test_error_ai">AI processing failed: %1$s</string>
-  <string name="toast_ime_bridge_protocol_mismatch">The IME Bridge module is incompatible with BiBi Keyboard. Update the module or app.</string>
+  <string name="toast_ime_bridge_protocol_mismatch">The IME Bridge module is incompatible with xyauto. Update the module or app.</string>
   <string name="toast_ime_bridge_connection_failed">Unable to connect to the IME Bridge module. Check that it is enabled and the current input method is selected in LSPosed.</string>
 </resources>

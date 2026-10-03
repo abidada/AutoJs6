@@ -92,7 +92,7 @@
     <!-- Floating ASR status messages -->
     <string name="floating_asr_error">識別失敗：%1$s</string>
     <string name="floating_asr_copied">已複製到剪貼簿</string>
-    <string name="accessibility_service_description">允許說點啥懸浮球、音量鍵和搖一搖錄音將語音識別結果自動插入到目前輸入欄位中，並使懸浮球在阻擋普通懸浮窗的介面（如系統設定）上保持可見。不會收集或上傳任何資料。</string>
+    <string name="accessibility_service_description">允許xyauto懸浮球、音量鍵和搖一搖錄音將語音識別結果自動插入到目前輸入欄位中，並使懸浮球在阻擋普通懸浮窗的介面（如系統設定）上保持可見。不會收集或上傳任何資料。</string>
 
     <!-- Floating radial menu -->
     <string name="label_radial_switch_asr">切換 ASR 供應商</string>
@@ -126,7 +126,7 @@
     <!-- ============================================== -->
 
     <!-- 使用懸浮球進行語音識別 -->
-    <string name="feature_floating_asr_off_desc">不顯示懸浮球，仍可從說點啥鍵盤使用語音輸入。</string>
+    <string name="feature_floating_asr_off_desc">不顯示懸浮球，仍可從xyauto鍵盤使用語音輸入。</string>
     <string name="feature_floating_asr_on_desc">在其他應用程式上方顯示語音輸入懸浮球，即使鍵盤未顯示也可開始辨識。需要懸浮窗權限；音量鍵控制與部分文字輸入方式還需要無障礙服務或輸入法橋接。</string>
 
     <!-- 僅在鍵盤顯示時顯示懸浮球 -->
@@ -159,7 +159,7 @@
     <string name="feature_floating_ime_bridge_off_desc">停止接受所有 Hook 聯動請求；主鍵盤與懸浮球的非 Hook 功能不受影響。</string>
     <string name="feature_floating_ime_bridge_on_desc">在用戶端啟用相容 LSPosed/LSPatch 模組提供的輸入法可見性、文字插入、錄音與剪貼簿能力，不影響模組自身設定與狀態。</string>
     <string name="feature_ime_bridge_pcm_recording_off_desc">橋接模組仍可輸入辨識結果，但無法在第三方輸入法中長按錄音。</string>
-    <string name="feature_ime_bridge_pcm_recording_on_desc">可在相容的第三方輸入法中長按錄音，並將錄音交給說點啥辨識。錄音失敗時不會自動改用懸浮球或本應用程式的麥克風。</string>
+    <string name="feature_ime_bridge_pcm_recording_on_desc">可在相容的第三方輸入法中長按錄音，並將錄音交給xyauto辨識。錄音失敗時不會自動改用懸浮球或本應用程式的麥克風。</string>
     <string name="feature_floating_a11y_android13_api_off_desc">辨識結果透過傳統無障礙 API 寫入，並保留串流預覽，與相容優化功能配合，適用於一般應用程式和舊系統。</string>
     <string name="feature_floating_a11y_android13_api_on_desc">在 Android 13 及以上優先透過新的無障礙 API 插入辨識結果，在終端機、編輯器等特殊場景有更好的表現。寫入文字相容優化功能自動失效，但會關閉串流預覽功能。</string>
     <string name="feature_floating_write_compat_off_desc">辨識結果會直接寫入輸入框，適用於大多數應用程式。</string>

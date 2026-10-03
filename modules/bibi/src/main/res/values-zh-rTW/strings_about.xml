@@ -27,7 +27,7 @@
     <!-- About: Usage stats -->
     <string name="about_stats_title">使用統計</string>
     <string name="about_stats_overview">總覽</string>
-    <string name="about_days_with_you">說點啥已陪伴你 %1$d 天</string>
+    <string name="about_days_with_you">xyauto已陪伴你 %1$d 天</string>
     <string name="about_stats_total_audio_label">總音訊時長</string>
     <string name="about_stats_total_chars_label">總辨識字數</string>
     <string name="about_stats_sessions_label">工作階段次數</string>

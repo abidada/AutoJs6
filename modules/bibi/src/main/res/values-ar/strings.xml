@@ -2,8 +2,8 @@
   <!-- ============================================== -->
   <!-- Basic Information -->
   <!-- ============================================== -->
-  <string name="app_name">BiBi Keyboard</string>
-  <string name="fxliang_fcitx_voice_input_provider_label">ربط BiBi Keyboard</string>
+  <string name="app_name">xyauto</string>
+  <string name="fxliang_fcitx_voice_input_provider_label">ربط xyauto</string>
   <!-- PocketBase 统计服务地址（渠道可覆盖）；为空则不上报 -->
   <string name="pocketbase_base_url" translatable="false"></string>
 
@@ -59,7 +59,7 @@
   <!-- ============================================== -->
   <string name="btn_one_click_setup">إعداد بنقرة</string>
 
-  <string name="settings_title">إعدادات BiBi Keyboard</string>
+  <string name="settings_title">إعدادات xyauto</string>
   <string name="settings_tab_input">الإدخال</string>
   <string name="settings_tab_smart">ذكي</string>
   <string name="settings_tab_system">النظام</string>
@@ -241,7 +241,7 @@
   <!-- ============================================== -->
   <string name="toast_setup_all_done">اكتمل كل شيء</string>
   <string name="toast_setup_enable_keyboard_first">فعّل لوحة المفاتيح في إعدادات النظام ثم عد</string>
-  <string name="toast_setup_choose_keyboard">يرجى اختيار «BiBi Keyboard» كطريقة الإدخال الحالية</string>
+  <string name="toast_setup_choose_keyboard">يرجى اختيار «xyauto» كطريقة الإدخال الحالية</string>
   <string name="toast_setup_aborted">أُلغي الإعداد: %1$s</string>
   <string name="setup_abort_reason_ime_timeout">انتهت مهلة اختيار طريقة الإدخال</string>
   <string name="btn_get_api_key_guide">عرض دليل الإعداد</string>
@@ -273,7 +273,7 @@
   <!-- External IME linking (AIDL) -->
   <string name="label_external_ime_link_aidl">السماح بربط لوحة خارجية (AIDL)</string>
   <string name="external_aidl_guide_title">كيفية استخدام ميزة الربط</string>
-  <string name="external_aidl_guide_message">تتيح هذه الميزة التعرّف على الصوت من لوحات خارجية عبر AIDL. المدعوم حالياً: Fcitx (Little Penguin) و Trime.\n\nفعّلها أولاً في BiBi Keyboard: الإعدادات - إعدادات الإدخال - السماح بربط لوحة خارجية (AIDL) (لا يلزم كرة عائمة أو خدمة إمكانية وصول).\n\nثم اضبط لوحتك:\n\n[Fcitx (Little Penguin)]\n1. نزّل Fcitx المعدّل: https://github.com/BryceWG/fcitx5-android-lexi-keyboard/releases (ألغِ تثبيت Fcitx الأصلي أولاً وانسخ بياناتك احتياطياً)\n2. افتح إعدادات Fcitx - لوحة افتراضية - سلوك الضغط المطوّل على المسافة - إدخال صوتي (AIDL)\n3. اضغط مطوّلاً على المسافة في لوحة IME لبدء الإدخال الصوتي\n\n[Trime]\n1. نزّل Trime المعدّل: https://github.com/BryceWG/trime-bibi-keyboard/releases\n2. في إعدادات Trime - عام، فعّل «إدخال صوتي BiBi Keyboard AIDL». إن لم يكن مخطط السمة يحتوي وظيفة الضغط المطوّل VOICE_ASSIST، يمكنك تفعيل «زر الميكروفون في شريط الأدوات».\n3. اضغط مطوّلاً على الزر بوظيفة VOICE_ASSIST لبدء التسجيل وأفلت للإيقاف؛ أو اضغط زر الميكروفون في شريط أدوات اللوحة لبدء التسجيل، واضغط مجدداً للإيقاف وعرض النص.</string>
+  <string name="external_aidl_guide_message">تتيح هذه الميزة التعرّف على الصوت من لوحات خارجية عبر AIDL. المدعوم حالياً: Fcitx (Little Penguin) و Trime.\n\nفعّلها أولاً في xyauto: الإعدادات - إعدادات الإدخال - السماح بربط لوحة خارجية (AIDL) (لا يلزم كرة عائمة أو خدمة إمكانية وصول).\n\nثم اضبط لوحتك:\n\n[Fcitx (Little Penguin)]\n1. نزّل Fcitx المعدّل: https://github.com/BryceWG/fcitx5-android-lexi-keyboard/releases (ألغِ تثبيت Fcitx الأصلي أولاً وانسخ بياناتك احتياطياً)\n2. افتح إعدادات Fcitx - لوحة افتراضية - سلوك الضغط المطوّل على المسافة - إدخال صوتي (AIDL)\n3. اضغط مطوّلاً على المسافة في لوحة IME لبدء الإدخال الصوتي\n\n[Trime]\n1. نزّل Trime المعدّل: https://github.com/BryceWG/trime-bibi-keyboard/releases\n2. في إعدادات Trime - عام، فعّل «إدخال صوتي xyauto AIDL». إن لم يكن مخطط السمة يحتوي وظيفة الضغط المطوّل VOICE_ASSIST، يمكنك تفعيل «زر الميكروفون في شريط الأدوات».\n3. اضغط مطوّلاً على الزر بوظيفة VOICE_ASSIST لبدء التسجيل وأفلت للإيقاف؛ أو اضغط زر الميكروفون في شريط أدوات اللوحة لبدء التسجيل، واضغط مجدداً للإيقاف وعرض النص.</string>
   <string name="external_aidl_guide_btn_close">إغلاق</string>
   <string name="external_aidl_guide_btn_open_release">فتح صفحة الإصدار</string>
   <string name="external_aidl_guide_choose_release_title">اختر صفحة إصدار</string>
@@ -283,7 +283,7 @@
 
   <!-- Model Selection Guide -->
   <string name="model_guide_title">اختر نموذج التعرّف على الكلام</string>
-  <string name="model_guide_message">لاستخدام BiBi Keyboard، اختر نوع نموذج التعرّف:</string>
+  <string name="model_guide_message">لاستخدام xyauto، اختر نوع نموذج التعرّف:</string>
   <string name="model_guide_option_sf_free">⭐ خدمة سحابية مجانية (موصى بها)</string>
   <string name="model_guide_option_sf_free_desc">بدون إعداد، مدعومة من SiliconFlow. تتضمن ASR مجاني وتحسين نص بالذكاء الاصطناعي.</string>
   <string name="model_guide_option_sf_free_action">جاهز للاستخدام فوراً، حصة مجانية محدودة</string>
@@ -385,7 +385,7 @@
   <string name="feature_fcitx5_return_on_switcher_on_desc">مفتاح تبديل IME يعود لطريقة الإدخال المحددة (يعود للسابقة إن لم تُضبط).</string>
 
   <!-- Return prev IME on hide -->
-  <string name="feature_return_prev_ime_on_hide_off_desc">تبقى طريقة الإدخال الحالية BiBi Keyboard بعد الإخفاء.</string>
+  <string name="feature_return_prev_ime_on_hide_off_desc">تبقى طريقة الإدخال الحالية xyauto بعد الإخفاء.</string>
   <string name="feature_return_prev_ime_on_hide_on_desc">يتبدل إلى طريقة الإدخال المحددة عند إخفاء اللوحة (يعود للسابقة إن لم تُضبط)، مناسب للإدخال الصوتي المؤقت.</string>
 
   <!-- Hide recent tasks -->
@@ -432,7 +432,7 @@
 
   <!-- Data collection consent dialog -->
   <string name="title_data_collection_consent">جمع بيانات مجهولة</string>
-  <string name="msg_data_collection_consent">للمساعدة على تحسين BiBi Keyboard، نود جمع إحصاءات استخدام مجهولة. يشمل ذلك: إصدار التطبيق، قناة التثبيت، تاريخ أول ظهور، إصدار Android (SDK)، طراز الجهاز، بيانات أحداث ASR الوصفية (المزود، مدة الصوت، وقت المعالجة، عدد الأحرف، قناة المصدر، هل استُخدمت معالجة الذكاء الاصطناعي)، لغة التطبيق، وأحداث بدء التطبيق. لن يُرفع نص التعرّف أو محتوى شخصي. رمز الجمع مفتوح المصدر. هل توافق على التفعيل؟</string>
+  <string name="msg_data_collection_consent">للمساعدة على تحسين xyauto، نود جمع إحصاءات استخدام مجهولة. يشمل ذلك: إصدار التطبيق، قناة التثبيت، تاريخ أول ظهور، إصدار Android (SDK)، طراز الجهاز، بيانات أحداث ASR الوصفية (المزود، مدة الصوت، وقت المعالجة، عدد الأحرف، قناة المصدر، هل استُخدمت معالجة الذكاء الاصطناعي)، لغة التطبيق، وأحداث بدء التطبيق. لن يُرفع نص التعرّف أو محتوى شخصي. رمز الجمع مفتوح المصدر. هل توافق على التفعيل؟</string>
   <string name="btn_agree">موافق</string>
   <string name="btn_disagree">ليس الآن</string>
 
@@ -484,6 +484,6 @@
   <string name="recording_test_error_transcribe_timeout">انتهت مهلة النسخ النصي</string>
   <string name="recording_test_error_vendor_unavailable">إعداد ASR الحالي غير متاح لهذا الاختبار</string>
   <string name="recording_test_error_ai">فشلت معالجة الذكاء الاصطناعي: %1$s</string>
-  <string name="toast_ime_bridge_protocol_mismatch">وحدة جسر طريقة الإدخال غير متوافقة مع BiBi Keyboard. حدّث الوحدة أو التطبيق.</string>
+  <string name="toast_ime_bridge_protocol_mismatch">وحدة جسر طريقة الإدخال غير متوافقة مع xyauto. حدّث الوحدة أو التطبيق.</string>
   <string name="toast_ime_bridge_connection_failed">تعذر الاتصال بوحدة جسر طريقة الإدخال. تأكد من تفعيلها واختيار طريقة الإدخال الحالية في LSPosed.</string>
 </resources>
