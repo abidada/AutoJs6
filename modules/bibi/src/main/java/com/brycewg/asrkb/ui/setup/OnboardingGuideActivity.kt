@@ -30,6 +30,7 @@ import com.brycewg.asrkb.asr.AsrVendor
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.BaseActivity
 import com.brycewg.asrkb.ui.DownloadSourceOption
+import com.brycewg.asrkb.ui.HostA11yServiceResolver
 import com.brycewg.asrkb.ui.floating.floatingInputNeedsAccessibility
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
@@ -373,15 +374,6 @@ class OnboardingGuideActivity : BaseActivity() {
         true
     }
 
-    private fun hasAccessibilityPermission(): Boolean = try {
-        val expectedComponentName = "$packageName/com.brycewg.asrkb.ui.AsrAccessibilityService"
-        val enabledServicesSetting = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        )
-        enabledServicesSetting?.contains(expectedComponentName) == true
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to check accessibility service state", e)
-        false
-    }
+    private fun hasAccessibilityPermission(): Boolean =
+        HostA11yServiceResolver.isEnabledInSettings(this)
 }

@@ -6,7 +6,6 @@
 package com.brycewg.asrkb
 
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -16,7 +15,7 @@ import android.provider.Settings
 import android.util.Log
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.store.debug.DebugLogManager
-import com.brycewg.asrkb.ui.AsrAccessibilityService
+import com.brycewg.asrkb.ui.HostA11yServiceResolver
 import com.brycewg.asrkb.ui.floating.FloatingAsrService
 import com.brycewg.asrkb.ui.floating.FloatingKeepAliveService
 import com.brycewg.asrkb.ui.floating.PrivilegedKeepAliveScheduler
@@ -173,10 +172,11 @@ class BootReceiver : BroadcastReceiver() {
 
         try {
             val resolver = context.contentResolver
-            val component = ComponentName(
-                context,
-                AsrAccessibilityService::class.java
-            ).flattenToString()
+            val component = HostA11yServiceResolver.hostComponentName(context)?.flattenToString()
+            if (component == null) {
+                Log.w("BootReceiver", "Host a11y service component unavailable; skip auto enable")
+                return
+            }
             val keyEnabled = Settings.Secure.ACCESSIBILITY_ENABLED
             val keyServices = Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
 

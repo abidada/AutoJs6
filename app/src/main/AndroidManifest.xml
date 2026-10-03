@@ -711,6 +711,11 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
+        <!-- bibi 侧检查宿主合并无障碍服务所用组件名(单一事实来源, HostA11yServiceResolver 读取) -->
+        <meta-data
+            android:name="host_a11y_service_class"
+            android:value="org.autojs.autojs.core.accessibility.AccessibilityServiceUsher" />
+
         <service
             android:name="org.autojs.autojs.core.image.capture.ScreenCapturerForegroundService"
             android:foregroundServiceType="mediaProjection" />

@@ -6,7 +6,7 @@
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
                        android:accessibilityEventTypes="typeAllMask"
                        android:accessibilityFeedbackType="feedbackAllMask"
-                       android:accessibilityFlags="flagIncludeNotImportantViews|flagReportViewIds|flagRetrieveInteractiveWindows|flagRequestEnhancedWebAccessibility|flagRequestFilterKeyEvents"
+                       android:accessibilityFlags="flagIncludeNotImportantViews|flagReportViewIds|flagRetrieveInteractiveWindows|flagRequestEnhancedWebAccessibility|flagRequestFilterKeyEvents|flagInputMethodEditor"
                        android:canPerformGestures="true"
                        android:canRequestEnhancedWebAccessibility="true"
                        android:canRequestFilterKeyEvents="true"

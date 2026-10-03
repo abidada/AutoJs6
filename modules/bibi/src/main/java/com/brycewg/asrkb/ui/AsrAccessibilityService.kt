@@ -28,16 +28,17 @@ import com.brycewg.asrkb.ui.floating.FloatingAsrService
 import com.brycewg.asrkb.ui.floatingball.FloatingWindowHost
 
 /**
- * 无障碍服务,用于悬浮球语音识别后将文本插入到当前焦点的输入框中
+ * ASR 无障碍核心（历史名保留, 已不再是独立的无障碍服务组件）:
+ * 由宿主侧合并无障碍服务 org.autojs.autojs.core.accessibility.AccessibilityServiceUsher
+ * 实例化并驱动, 本应用在系统无障碍列表中仅此一个开关。
+ * 职责: 悬浮球语音识别文本写入焦点输入框、IME 面板显隐检测、音量键/摇一摇触发录音、
+ * TYPE_ACCESSIBILITY_OVERLAY 悬浮层窗口宿主。
+ * [host] 为宿主服务, windows/rootInActiveWindow/getSystemService 等均经其访问。
  */
-class AsrAccessibilityService :
-    AccessibilityService(),
-    SensorEventListener {
+class AsrAccessibilityService(private val host: AccessibilityService) : SensorEventListener {
 
-    override fun attachBaseContext(newBase: Context?) {
-        val wrapped = newBase?.let { LocaleHelper.wrap(it) }
-        super.attachBaseContext(wrapped ?: newBase)
-    }
+    /** 展示用途上下文: 经 LocaleHelper 包裹, 保证 Toast 等文案语言与 bibi 设置一致。 */
+    private val displayContext: Context = LocaleHelper.wrap(host) ?: host
 
     /**
      * 焦点输入框上下文：用于在悬浮球语音识别期间进行"前缀 + 预览 + 后缀"的拼接写入。
@@ -58,8 +59,6 @@ class AsrAccessibilityService :
     companion object {
         private const val TAG = "AsrAccessibilityService"
         private const val CLIPBOARD_RESTORE_DELAY_MS = 150L
-        const val ACTION_INSERT_TEXT = "com.brycewg.asrkb.action.INSERT_TEXT"
-        const val EXTRA_TEXT = "text"
 
         private var instance: AsrAccessibilityService? = null
 
@@ -195,8 +194,8 @@ class AsrAccessibilityService :
          */
         fun getActiveWindowPackage(): String? {
             val service = instance ?: return null
-            return try {
-                val ws = service.windows
+        return try {
+            val ws = service.host.windows
                 if (ws != null) {
                     var candidate: String? = null
                     for (w in ws) {
@@ -224,8 +223,8 @@ class AsrAccessibilityService :
                     if (!candidate.isNullOrEmpty()) return candidate
                 }
 
-                // 再回退：rootInActiveWindow（可能是 IME，但总比空好）
-                val root = service.rootInActiveWindow
+            // 再回退：rootInActiveWindow（可能是 IME，但总比空好）
+            val root = service.host.rootInActiveWindow
                 val pkg = root?.packageName?.toString()
                 if (!pkg.isNullOrEmpty()) return pkg
                 null
@@ -256,7 +255,7 @@ class AsrAccessibilityService :
 
         private fun copyToClipboard(context: Context, text: String) {
             try {
-                val clipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("ASR Result", text)
                 clipboard.setPrimaryClip(clip)
             } catch (e: Throwable) {
@@ -265,8 +264,8 @@ class AsrAccessibilityService :
         }
     }
 
-    override fun onServiceConnected() {
-        super.onServiceConnected()
+    /** 宿主服务连接时调用(对应原 onServiceConnected)。 */
+    fun onConnected() {
         instance = this
         Log.d(TAG, "Accessibility service connected")
         DebugLogManager.log("a11y", "service_connected")
@@ -285,9 +284,9 @@ class AsrAccessibilityService :
         }
     }
 
-    override fun onDestroy() {
+    /** 宿主服务销毁时调用(对应原 onDestroy)。 */
+    fun onDetached() {
         unregisterShakeSensor()
-        super.onDestroy()
         instance = null
         overlayHost = null
         Log.d(TAG, "Accessibility service destroyed")
@@ -307,13 +306,13 @@ class AsrAccessibilityService :
         overlayHost = try {
             val ctx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 try {
-                    createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
+                    host.createWindowContext(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY, null)
                 } catch (e: Throwable) {
                     Log.w(TAG, "createWindowContext(ACCESSIBILITY_OVERLAY) failed, fallback to service context", e)
-                    this
+                    host
                 }
             } else {
-                this
+                host
             }
             val wm = ctx.getSystemService(WindowManager::class.java)
             if (wm == null) {
@@ -333,7 +332,7 @@ class AsrAccessibilityService :
 
     private val handler = Handler(Looper.getMainLooper())
     private val sensorManager: SensorManager by lazy(LazyThreadSafetyMode.NONE) {
-        getSystemService(SENSOR_SERVICE) as SensorManager
+        host.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
     private val accelerometer: Sensor? by lazy(LazyThreadSafetyMode.NONE) {
         sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -343,7 +342,7 @@ class AsrAccessibilityService :
     private var pendingClipboardRestore: Runnable? = null
     private val prefsOrNull: Prefs? by lazy(LazyThreadSafetyMode.NONE) {
         try {
-            Prefs(this)
+            Prefs(host)
         } catch (e: Throwable) {
             Log.e(TAG, "Error getting preferences", e)
             null
@@ -362,7 +361,7 @@ class AsrAccessibilityService :
     private var aggTextChanged: Int = 0
     private var aggWindowsChanged: Int = 0
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+    fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // 现用于辅助判断"仅在输入法面板显示时显示悬浮球"的场景
         // 为避免频繁遍历树，做轻量节流
         if (event == null) return
@@ -396,7 +395,7 @@ class AsrAccessibilityService :
         }
     }
 
-    override fun onKeyEvent(event: KeyEvent?): Boolean {
+    fun onKeyEvent(event: KeyEvent?): Boolean {
         if (event == null) return false
         if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0) return false
         if (event.keyCode != KeyEvent.KEYCODE_VOLUME_UP &&
@@ -489,7 +488,7 @@ class AsrAccessibilityService :
 
     private fun isOwnPackageContentChange(event: AccessibilityEvent): Boolean {
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) return false
-        return event.packageName?.toString() == packageName
+        return event.packageName?.toString() == host.packageName
     }
 
     private fun tryDispatchImeVisibilityHint() {
@@ -663,25 +662,11 @@ class AsrAccessibilityService :
 
     private fun dispatchRecordingAction(action: String) {
         try {
-            val i = Intent(this, FloatingAsrService::class.java).apply { this.action = action }
-            startService(i)
+            val i = Intent(host, FloatingAsrService::class.java).apply { this.action = action }
+            host.startService(i)
         } catch (e: Throwable) {
             Log.e(TAG, "Error dispatching recording action", e)
         }
-    }
-
-    override fun onInterrupt() {
-        // 服务被中断
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_INSERT_TEXT) {
-            val text = intent.getStringExtra(EXTRA_TEXT)
-            if (!text.isNullOrEmpty()) {
-                performInsertText(text)
-            }
-        }
-        return START_NOT_STICKY
     }
 
     private fun performInsertText(
@@ -702,7 +687,7 @@ class AsrAccessibilityService :
                 return InsertPath.IME
             }
 
-            val rootNode = rootInActiveWindow
+            val rootNode = host.rootInActiveWindow
             val target = findInsertTargetNode()
             val setTextPayload = prefix + delta + suffix
             try {
@@ -794,10 +779,10 @@ class AsrAccessibilityService :
                 path = InsertPath.CLIPBOARD.id,
                 extras = mapOf("reason" to (e::class.java.simpleName))
             )
-            copyToClipboard(this, delta)
+            copyToClipboard(host, delta)
             Toast.makeText(
-                this,
-                getString(com.brycewg.asrkb.R.string.floating_asr_copied),
+                displayContext,
+                displayContext.getString(com.brycewg.asrkb.R.string.floating_asr_copied),
                 Toast.LENGTH_SHORT
             ).show()
             return InsertPath.CLIPBOARD
@@ -843,7 +828,7 @@ class AsrAccessibilityService :
 
     // 静默粘贴：使用剪贴板 + ACTION_PASTE，尽量不干扰用户当前剪贴板内容
     private fun performPasteTextSilent(text: String): Boolean = withFocusedEditableNode { focusedNode ->
-        val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard = host.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val previous = try {
             clipboard.primaryClip
         } catch (e: Throwable) {
@@ -920,7 +905,7 @@ class AsrAccessibilityService :
      */
     private fun <T> withFocusedEditableNode(action: (AccessibilityNodeInfo) -> T): T? {
         return try {
-            val rootNode = rootInActiveWindow ?: return null
+            val rootNode = host.rootInActiveWindow ?: return null
             val focusedNode = findFocusedEditableNode(rootNode)
             if (focusedNode != null) {
                 try {
@@ -947,7 +932,7 @@ class AsrAccessibilityService :
     private fun findInsertTargetNode(): AccessibilityNodeInfo? {
         var focusFallback: AccessibilityNodeInfo? = null
         try {
-            val ws = windows
+            val ws = host.windows
             if (ws != null) {
                 for (w in ws) {
                     try {
@@ -976,7 +961,7 @@ class AsrAccessibilityService :
                 }
             }
             if (focusFallback != null) return focusFallback
-            val root = rootInActiveWindow ?: return null
+            val root = host.rootInActiveWindow ?: return null
             findFocusedEditableNode(root)?.let { return it }
             return try {
                 root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
@@ -1043,7 +1028,7 @@ class AsrAccessibilityService :
     private fun tryCommitViaA11yIme(text: String): Boolean {
         if (Build.VERSION.SDK_INT < 33) return false
         return try {
-            val ime = getInputMethod() ?: return false
+            val ime = host.getInputMethod() ?: return false
             if (!ime.currentInputStarted) {
                 DebugLogManager.log("insert", "ime_not_started")
                 return false
@@ -1082,10 +1067,10 @@ class AsrAccessibilityService :
     private fun copyDeltaAndToast(delta: String, reason: String) {
         DebugLogManager.log("insert", "fallback_clipboard", mapOf("reason" to reason))
         logWrite(ok = false, path = InsertPath.CLIPBOARD.id, extras = mapOf("reason" to reason))
-        copyToClipboard(this, delta)
+        copyToClipboard(host, delta)
         Toast.makeText(
-            this,
-            getString(com.brycewg.asrkb.R.string.floating_asr_copied),
+            displayContext,
+            displayContext.getString(com.brycewg.asrkb.R.string.floating_asr_copied),
             Toast.LENGTH_SHORT
         ).show()
     }
@@ -1149,7 +1134,7 @@ class AsrAccessibilityService :
         target: AccessibilityNodeInfo,
         text: String
     ): Boolean = try {
-        val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard = host.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val previous = try {
             clipboard.primaryClip
         } catch (e: Throwable) {
@@ -1188,7 +1173,7 @@ class AsrAccessibilityService :
         return try {
             // 严格判断：仅当存在“已聚焦且可编辑”的节点时返回 true
             // 优先在应用窗口中寻找（避免 IME 窗口干扰）
-            val ws = windows
+            val ws = host.windows
             if (ws != null) {
                 for (w in ws) {
                     try {
@@ -1207,7 +1192,7 @@ class AsrAccessibilityService :
             }
 
             // 回退：rootInActiveWindow
-            val root = rootInActiveWindow ?: return false
+            val root = host.rootInActiveWindow ?: return false
             val node = findFocusedEditableNode(root)
             val ok = node != null
             if (node != null) {
@@ -1223,7 +1208,7 @@ class AsrAccessibilityService :
 
     private fun isImeWindowVisible(): Boolean {
         return try {
-            val ws = windows ?: return false
+            val ws = host.windows ?: return false
             for (w in ws) {
                 try {
                     if (w?.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD) {
@@ -1251,7 +1236,7 @@ class AsrAccessibilityService :
 
     private fun isImePackageDetected(): Boolean {
         return try {
-            val ws = windows ?: return false
+            val ws = host.windows ?: return false
             for (w in ws) {
                 try {
                     if (w?.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD) {

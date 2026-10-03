@@ -103,18 +103,7 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
-        <!-- 无障碍服务,用于文本插入 -->
-        <service
-            android:name=".ui.AsrAccessibilityService"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibility_service_config" />
-        </service>
+        <!-- 无障碍服务已合并至宿主(AccessibilityServiceUsher), 由其托管 ui.AsrAccessibilityService 核心 -->
 
         <!-- 开机启动接收器：根据偏好启动悬浮服务，并在具备权限时尝试开启无障碍 -->
         <receiver

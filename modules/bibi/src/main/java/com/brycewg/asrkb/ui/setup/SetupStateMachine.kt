@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
+import com.brycewg.asrkb.ui.HostA11yServiceResolver
 import com.brycewg.asrkb.ui.floating.floatingInputNeedsAccessibility
 
 /**
@@ -229,19 +230,8 @@ class SetupStateMachine(
         true // Android 13 以下默认已授予
     }
 
-    private fun hasAccessibilityPermission(): Boolean {
-        val expectedComponentName = "${context.packageName}/com.brycewg.asrkb.ui.AsrAccessibilityService"
-        val enabledServicesSetting = try {
-            Settings.Secure.getString(
-                context.contentResolver,
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to check accessibility permission", e)
-            return false
-        }
-        return enabledServicesSetting?.contains(expectedComponentName) == true
-    }
+    private fun hasAccessibilityPermission(): Boolean =
+        HostA11yServiceResolver.isEnabledInSettings(context)
 
     /**
      * 获取当前状态对应的 RequestingPermissions，如果不是则返回 null

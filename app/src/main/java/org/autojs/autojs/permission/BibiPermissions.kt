@@ -8,7 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.ContextCompat
-import com.brycewg.asrkb.ui.AsrAccessibilityService
+import org.autojs.autojs.core.accessibility.AccessibilityServiceUsher
 import com.brycewg.asrkb.store.Prefs
 import org.autojs.autojs.core.permission.PermissionRequestActivity
 import org.autojs.autojs.ui.main.drawer.PermissionItemHelper
@@ -62,7 +62,7 @@ class BibiAccessibilityPermission(override val context: Context) : PermissionIte
     }
 
     private fun isBibiAccessibilityServiceEnabled(): Boolean {
-        val component = ComponentName(context, AsrAccessibilityService::class.java)
+        val component = ComponentName(context, AccessibilityServiceUsher::class.java)
         val expectedComponentNames = setOf(component.flattenToString(), component.flattenToShortString())
         val enabledServicesSetting = try {
             Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
