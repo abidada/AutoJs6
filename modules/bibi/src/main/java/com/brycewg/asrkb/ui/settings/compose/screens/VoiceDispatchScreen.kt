@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Edit
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -151,8 +151,8 @@ internal fun VoiceDispatchScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(horizontal = SettingsLayoutMetrics.ActionButtonRowHorizontalPadding)
                                 .padding(
-                                    horizontal = SettingsLayoutMetrics.ActionButtonRowHorizontalPadding,
                                     top = SettingsLayoutMetrics.ActionButtonRowTopPadding,
                                     bottom = SettingsLayoutMetrics.ActionButtonRowBottomPadding
                                 ),
@@ -329,7 +329,7 @@ private fun MiuixRuleItem(
                 minHeight = 36.dp
             ) {
                 MiuixIcon(
-                    imageVector = Icons.AutoMirrored.Rounded.Edit,
+                    imageVector = Icons.Rounded.Edit,
                     contentDescription = stringResource(R.string.btn_voice_dispatch_edit),
                     modifier = Modifier.size(18.dp),
                     tint = MiuixTheme.colorScheme.onSurfaceVariantActions
@@ -423,7 +423,7 @@ private fun MaterialRuleItem(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.Edit,
+                            imageVector = Icons.Rounded.Edit,
                             contentDescription = stringResource(R.string.btn_voice_dispatch_edit),
                             modifier = Modifier.size(20.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
