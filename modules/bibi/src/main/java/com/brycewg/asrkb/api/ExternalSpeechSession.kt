@@ -330,7 +330,8 @@ internal class ExternalSpeechSession(
             onBackupRequestDuration = ::onRequestDuration
         ) ?: directMicrophoneEngineFactory.createOrNull(
             context = context,
-            scope = CoroutineScope(Dispatchers.Main),
+            // 挂到 sessionJob 上：cancel/超时能结构性取消引擎协程，正常完成不受影响
+            scope = CoroutineScope(sessionJob + Dispatchers.Main),
             prefs = prefs,
             listener = this,
             vendor = primaryVendor,
@@ -358,7 +359,8 @@ internal class ExternalSpeechSession(
             onBackupRequestDuration = ::onRequestDuration
         ) ?: pushPcmEngineFactory.createOrNull(
             context = context,
-            scope = CoroutineScope(Dispatchers.Main),
+            // 挂到 sessionJob 上：cancel/超时能结构性取消引擎协程，正常完成不受影响
+            scope = CoroutineScope(sessionJob + Dispatchers.Main),
             prefs = prefs,
             listener = this,
             vendor = primaryVendor,
@@ -531,8 +533,9 @@ internal class ExternalSpeechSession(
                 hasAsrPartial = true
                 safe { callbacks.onPartial(id, text) }
             }
-            // 执行带 AI 的完整后处理链（IO 在线程内切换）
-            CoroutineScope(Dispatchers.Main).launch {
+            // 执行带 AI 的完整后处理链（IO 在线程内切换）；挂到 sessionJob 上，
+            // 取消会话时结构性终止后处理（原先裸 scope 只靠 canceled 软检查）
+            CoroutineScope(sessionJob + Dispatchers.Main).launch {
                 if (canceled) return@launch
                 val typewriterEnabled = try {
                     prefs.postprocTypewriterEnabled

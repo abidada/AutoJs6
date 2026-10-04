@@ -35,7 +35,12 @@ object TtsPlaybackCoordinator {
 
     private var pending: SpeakRequest? = null
     private var playing: Boolean = false
-    private val idleListeners = mutableListOf<() -> Unit>()
+    private val idleListeners = mutableListOf<IdleAction>()
+
+    /** 一次性空闲任务；canceled 后即使已被 notifyIdle 快照也不会再执行 */
+    private class IdleAction(val action: () -> Unit) {
+        @Volatile var canceled = false
+    }
 
     /** 当前占用工作线程的引擎（stopSpeaking 需跨线程打断 HTTP 请求等资源） */
     @Volatile private var activeEngine: TtsEngine? = null
@@ -104,18 +109,26 @@ object TtsPlaybackCoordinator {
     /**
      * 空闲时（立即）或播报结束后（一次性）在主线程执行 action。
      * 若期间 stopSpeaking/speak 重置了状态，action 仍会执行一次（语义为「回到空闲」）。
+     *
+     * @return 取消句柄：调用后 action 不再执行（已开始执行的不受影响）。
+     *  调用方（如悬浮球服务）销毁时必须取消，否则 lambda 会滞留本单例直到下次空闲。
      */
-    fun runWhenIdle(action: () -> Unit) {
+    fun runWhenIdle(action: () -> Unit): () -> Unit {
+        val handle = IdleAction(action)
         val runNow = synchronized(lock) {
             if (!playing && pending == null) {
                 true
             } else {
-                idleListeners.add(action)
+                idleListeners.add(handle)
                 false
             }
         }
         if (runNow) {
-            mainHandler.post { runSafely(action) }
+            mainHandler.post { if (!handle.canceled) runSafely(action) }
+        }
+        return {
+            handle.canceled = true
+            synchronized(lock) { idleListeners.remove(handle) }
         }
     }
 
@@ -227,7 +240,7 @@ object TtsPlaybackCoordinator {
             snapshot
         }
         listeners.forEach { listener ->
-            mainHandler.post { runSafely(listener) }
+            mainHandler.post { if (!listener.canceled) runSafely(listener.action) }
         }
     }
 

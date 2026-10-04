@@ -90,9 +90,15 @@ class AssetAndUrlModuleSourceProvider(
                 if (!response.isSuccessful) {
                     return null.also { response.close() }
                 }
-                return response.body?.let {
-                    createModuleSource(it.byteStream(), URI.create(url), null, validator, it.contentType()?.charset())
+                val body = response.body ?: return null.also { response.close() }
+                // 流关闭时联动关闭 Response：Rhino 中途放弃读取（编译失败/validator 拒绝）也不会滞留连接
+                val stream = object : FilterInputStream(body.byteStream()) {
+                    override fun close() {
+                        super.close()
+                        response.close()
+                    }
                 }
+                createModuleSource(stream, URI.create(url), null, validator, body.contentType()?.charset())
             }
         } catch (e: Exception) {
             null.also { ScriptRuntime.popException(e.message) }
@@ -108,6 +114,10 @@ class AssetAndUrlModuleSourceProvider(
         return try {
             createModuleSource(inputStream, uri, parent, validator)
         } catch (e: FileNotFoundException) {
+            runCatching { inputStream.close() }
+            null.also { ScriptRuntime.popException(e.message) }
+        } catch (e: Throwable) {
+            runCatching { inputStream.close() }
             null.also { ScriptRuntime.popException(e.message) }
         }
     }

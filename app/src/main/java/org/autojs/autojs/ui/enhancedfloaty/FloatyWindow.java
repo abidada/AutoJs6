@@ -118,9 +118,12 @@ public abstract class FloatyWindow {
     public void close() {
         try {
             mWindowManager.removeView(mWindowView);
-            FloatyService.removeWindow(this);
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            // removeView 抛异常（如 token 失效）也不能跳过静态集合移除，
+            // 否则窗口滞留 windows 且 FloatyService 重启时可能被重复 addView
+            FloatyService.removeWindow(this);
         }
     }
 

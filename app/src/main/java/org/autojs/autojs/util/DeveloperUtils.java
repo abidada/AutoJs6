@@ -150,8 +150,7 @@ public class DeveloperUtils {
 
     public static boolean checkDexFile(Context context, long[] crc) {
         String apkPath = context.getPackageCodePath();
-        try {
-            ZipFile zipFile = new ZipFile(apkPath);
+        try (ZipFile zipFile = new ZipFile(apkPath)) {
             for (int i = 0; i < crc.length; i++) {
                 String dexFile;
                 if (i == 0) {

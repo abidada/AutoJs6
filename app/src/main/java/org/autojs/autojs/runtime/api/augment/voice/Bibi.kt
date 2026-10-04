@@ -106,7 +106,9 @@ class Bibi(scriptRuntime: ScriptRuntime) : Augmentable(scriptRuntime) {
             ensureArgumentsAtLeast(args, 1) { argList ->
                 val (function) = argList
                 require(function is BaseFunction) { "Argument for \$bibi.onResult must be a function" }
-                mFinalCallbacks.getOrPut(scriptRuntime) { CopyOnWriteArrayList() }.add(function)
+                val list = mFinalCallbacks.getOrPut(scriptRuntime) { CopyOnWriteArrayList() }
+                // 幂等添加：脚本循环里重复注册同一函数时避免列表无限增长
+                if (!list.contains(function)) list.add(function)
                 UNDEFINED
             }
 
@@ -116,7 +118,8 @@ class Bibi(scriptRuntime: ScriptRuntime) : Augmentable(scriptRuntime) {
             ensureArgumentsAtLeast(args, 1) { argList ->
                 val (function) = argList
                 require(function is BaseFunction) { "Argument for \$bibi.onPartial must be a function" }
-                mPartialCallbacks.getOrPut(scriptRuntime) { CopyOnWriteArrayList() }.add(function)
+                val list = mPartialCallbacks.getOrPut(scriptRuntime) { CopyOnWriteArrayList() }
+                if (!list.contains(function)) list.add(function)
                 UNDEFINED
             }
 

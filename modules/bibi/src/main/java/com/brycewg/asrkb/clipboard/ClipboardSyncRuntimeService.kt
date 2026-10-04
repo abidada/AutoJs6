@@ -45,9 +45,6 @@ class ClipboardSyncRuntimeService : Service() {
         @Volatile
         private var runningInstance: ClipboardSyncRuntimeService? = null
 
-        @Volatile
-        private var pendingUiListener: SyncClipboardManager.Listener? = null
-
         fun activateDirect(context: Context) {
             start(context, ACTION_ACTIVATE_DIRECT)
         }
@@ -61,11 +58,6 @@ class ClipboardSyncRuntimeService : Service() {
         }
 
         fun downloadFile(entryId: String): Boolean = runningInstance?.runtime?.downloadFile(entryId) ?: false
-
-        fun setUiListener(listener: SyncClipboardManager.Listener?) {
-            pendingUiListener = listener
-            runningInstance?.attachListener(listener)
-        }
 
         private fun start(context: Context, action: String) {
             context.applicationContext.startService(
@@ -211,10 +203,6 @@ class ClipboardSyncRuntimeService : Service() {
         Log.d(TAG, "Runtime service destroyed")
     }
 
-    private fun attachListener(listener: SyncClipboardManager.Listener?) {
-        runtime?.updateListener(listener)
-    }
-
     private fun activateDirectPath() {
         if (owner != ClipboardSyncOwner.Direct || runtime == null) {
             tearDownRuntime()
@@ -241,8 +229,7 @@ class ClipboardSyncRuntimeService : Service() {
         val createdSession = DirectClipboardSyncRuntimeSession(
             context = this,
             prefs = prefs,
-            scope = serviceScope,
-            initialListener = pendingUiListener
+            scope = serviceScope
         )
         lateinit var createdRuntime: ClipboardSyncRuntime
         createdRuntime = ClipboardSyncRuntime(

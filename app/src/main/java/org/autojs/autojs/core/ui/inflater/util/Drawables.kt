@@ -20,6 +20,7 @@ import org.autojs.autojs.util.ColorUtils
 import org.autojs.autojs.util.ColorUtils.toInt
 import com.xiaoyu.ai.R
 import java.io.File
+import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Executors
 import java.util.regex.Pattern
@@ -133,9 +134,14 @@ open class Drawables {
 
         override fun load(view: View, uri: Uri): Drawable? {
             return try {
-                val url = URL(uri.toString())
-                val bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream())
-                BitmapDrawable(view.resources, bmp)
+                val conn = URL(uri.toString()).openConnection()
+                try {
+                    conn.getInputStream().use { stream ->
+                        BitmapDrawable(view.resources, BitmapFactory.decodeStream(stream))
+                    }
+                } finally {
+                    (conn as? HttpURLConnection)?.disconnect()
+                }
             } catch (e: Exception) {
                 null
             }
@@ -148,8 +154,14 @@ open class Drawables {
         override fun load(view: View, uri: Uri, callback: BitmapCallback) {
             mExecutor.execute {
                 try {
-                    val url = URL(uri.toString())
-                    val bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream())
+                    val conn = URL(uri.toString()).openConnection()
+                    val bmp = try {
+                        conn.getInputStream().use { stream ->
+                            BitmapFactory.decodeStream(stream)
+                        }
+                    } finally {
+                        (conn as? HttpURLConnection)?.disconnect()
+                    }
                     view.post { callback.onLoaded(bmp) }
                 } catch (e: Exception) {
                     e.printStackTrace()

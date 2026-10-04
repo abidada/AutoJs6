@@ -379,7 +379,15 @@ internal class WakeWordService : Service() {
                 record.release()
                 return null
             }
-            record.startRecording()
+            // startRecording 抛异常时字段尚未赋值，releaseAudio() 够不到，
+            // 必须在这里释放，否则自愈循环会按秒持续泄漏 AudioRecord
+            try {
+                record.startRecording()
+            } catch (t: Throwable) {
+                Log.w(TAG, "Failed to start AudioRecord for wake loop", t)
+                record.release()
+                return null
+            }
             audioRecord = record
             record
         } catch (t: Throwable) {

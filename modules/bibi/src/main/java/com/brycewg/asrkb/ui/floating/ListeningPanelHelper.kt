@@ -28,6 +28,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.AsrResultBroadcaster
+import com.brycewg.asrkb.ui.removeWindowViewWithRetry
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.BibiViewThemes
 import com.brycewg.asrkb.ui.floatingball.FloatingWindowHost
@@ -111,13 +112,10 @@ internal class ListeningPanelHelper(
             panelView = null
             textLabel = null
             textScroll = null
-            try {
-                (attachedHost?.windowManager ?: windowManager).removeView(view)
-            } catch (e: Throwable) {
-                Log.w(TAG, "Failed to hide listening panel", e)
-            } finally {
-                attachedHost = null
-            }
+            val wm = attachedHost?.windowManager ?: windowManager
+            attachedHost = null
+            // 拆除失败（如 a11y 层 token 失效瞬间）由助手保留引用重试，避免窗口滞留
+            removeWindowViewWithRetry(wm, view, "listening-panel")
         }
     }
 

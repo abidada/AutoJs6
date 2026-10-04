@@ -22,6 +22,7 @@ import android.widget.ImageView
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.BibiViewThemes
+import com.brycewg.asrkb.ui.removeWindowViewWithRetry
 import com.brycewg.asrkb.ui.widgets.ProcessingSpinnerView
 import com.brycewg.asrkb.util.currentUsableWindowSize
 import com.brycewg.asrkb.util.legacyUsableWindowSize
@@ -61,6 +62,9 @@ class FloatingBallViewManager(
     private var processingSpinner: ProcessingSpinnerView? = null
     private var recordingAuraView: RecordingAuraView? = null
     private var recordingAuraLp: WindowManager.LayoutParams? = null
+
+    /** 光晕 add 时实际使用的 WindowManager；remove 用同一实例保证对称 */
+    private var recordingAuraWm: WindowManager? = null
     private var lp: WindowManager.LayoutParams? = null
 
     // 球视图挂载层：addView 时解析并绑定，后续所有窗口操作走同一 WindowManager 实例
@@ -80,6 +84,7 @@ class FloatingBallViewManager(
     private var smoothedRecordingAmplitude: Float = 0f
     private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var completionResetPosted: Boolean = false
+    private var completionResetRunnable: Runnable? = null
     private var currentState: FloatingBallState = FloatingBallState.Idle
     private var lastAppliedAlpha: Float? = null
     private var lastAppliedBallSizeDp: Int? = null
@@ -271,6 +276,7 @@ class FloatingBallViewManager(
         processingSpinner = null
         recordingAuraView = null
         recordingAuraLp = null
+        recordingAuraWm = null
         edgeHandleVisible = false
         lastAppliedAlpha = null
         lastAppliedBallSizeDp = null
@@ -631,7 +637,7 @@ class FloatingBallViewManager(
         }
         if (!completionResetPosted) {
             completionResetPosted = true
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            val resetRunnable = Runnable {
                 try {
                     ballIcon?.setImageResource(R.drawable.microphone_floatingball)
                 } catch (e: Throwable) {
@@ -643,7 +649,10 @@ class FloatingBallViewManager(
                     resetIconScale()
                 }
                 completionResetPosted = false
-            }, durationMs)
+                completionResetRunnable = null
+            }
+            completionResetRunnable = resetRunnable
+            mainHandler.postDelayed(resetRunnable, durationMs)
         }
     }
 
@@ -705,6 +714,8 @@ class FloatingBallViewManager(
 
     /** 清理所有动画 */
     fun cleanup() {
+        completionResetRunnable?.let { mainHandler.removeCallbacks(it) }
+        completionResetRunnable = null
         stopRecordingAura()
         removeRecordingAuraOverlay()
         stopProcessingSpinner()
@@ -825,7 +836,9 @@ class FloatingBallViewManager(
         }
         val params = createRecordingAuraLayoutParams()
         return try {
-            viewWm().addView(aura, params)
+            val wm = viewWm()
+            wm.addView(aura, params)
+            recordingAuraWm = wm
             recordingAuraView = aura
             recordingAuraLp = params
             aura
@@ -833,6 +846,7 @@ class FloatingBallViewManager(
             Log.w(TAG, "Failed to add recording aura overlay", e)
             recordingAuraView = null
             recordingAuraLp = null
+            recordingAuraWm = null
             null
         }
     }
@@ -842,14 +856,12 @@ class FloatingBallViewManager(
             recordingAuraLp = null
             return
         }
-        try {
-            viewWm().removeView(aura)
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to remove recording aura overlay", e)
-        } finally {
-            recordingAuraView = null
-            recordingAuraLp = null
-        }
+        // 拆除失败（如 a11y 层 token 失效瞬间）由助手保留引用重试，避免窗口滞留
+        val wm = recordingAuraWm ?: viewWm()
+        removeWindowViewWithRetry(wm, aura, "recording-aura")
+        recordingAuraView = null
+        recordingAuraLp = null
+        recordingAuraWm = null
     }
 
     private fun createRecordingAuraLayoutParams(): WindowManager.LayoutParams {

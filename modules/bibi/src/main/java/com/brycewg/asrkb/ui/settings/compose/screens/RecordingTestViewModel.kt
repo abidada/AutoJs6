@@ -155,22 +155,22 @@ internal class RecordingTestViewModel(
         if (!_uiState.value.canPlay) return
         val file = wavFile ?: return
         stopPlayback()
+        val mediaPlayer = MediaPlayer()
+        // 先入字段再配置：setDataSource/prepare 抛异常时 catch 的 stopPlayback() 才能释放它
+        player = mediaPlayer
         try {
-            val mediaPlayer = MediaPlayer().apply {
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .build()
-                )
-                setDataSource(file.absolutePath)
-                setOnCompletionListener {
-                    stopPlayback()
-                }
-                prepare()
-                start()
+            mediaPlayer.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build()
+            )
+            mediaPlayer.setOnCompletionListener {
+                stopPlayback()
             }
-            player = mediaPlayer
+            mediaPlayer.setDataSource(file.absolutePath)
+            mediaPlayer.prepare()
+            mediaPlayer.start()
             _uiState.update { it.copy(isPlaying = true, statusMessage = null) }
         } catch (t: Throwable) {
             Log.w(TAG, "Failed to play recording test audio", t)

@@ -127,13 +127,17 @@ class AndroidClassLoader(private val parent: ClassLoader, private val cacheDir: 
         }
         try {
             val classFile = generateTempFile(jar.path, false)
-            val zipFile = ZipFile(classFile)
-            val jarFile = ZipFile(jar)
-            for (header in jarFile.fileHeaders) {
-                if (!header.isDirectory) {
-                    zipFile.addStream(jarFile.getInputStream(header), ZipParameters().apply {
-                        fileNameInZip = header.fileName
-                    })
+            ZipFile(classFile).use { zipFile ->
+                ZipFile(jar).use { jarFile ->
+                    for (header in jarFile.fileHeaders) {
+                        if (!header.isDirectory) {
+                            jarFile.getInputStream(header).use { stream ->
+                                zipFile.addStream(stream, ZipParameters().apply {
+                                    fileNameInZip = header.fileName
+                                })
+                            }
+                        }
+                    }
                 }
             }
             val classLoader = dexJar(classFile, cacheFile)
@@ -308,11 +312,14 @@ class AndroidClassLoader(private val parent: ClassLoader, private val cacheDir: 
             } else {
                 // Multi-dex output: pack all classes*.dex into a single jar for DexClassLoader.
                 // zh-CN: 多 dex 输出: 将所有 classes*.dex 打包到单个 jar 文件中供 DexClassLoader 使用.
-                val zip = ZipFile(dexJarFile)
-                dexFiles.forEach { f ->
-                    zip.addStream(f.inputStream(), ZipParameters().apply {
-                        fileNameInZip = f.name
-                    })
+                ZipFile(dexJarFile).use { zip ->
+                    dexFiles.forEach { f ->
+                        f.inputStream().use { stream ->
+                            zip.addStream(stream, ZipParameters().apply {
+                                fileNameInZip = f.name
+                            })
+                        }
+                    }
                 }
                 loadDex(dexJarFile)
             }

@@ -36,15 +36,8 @@ object Pref {
 
     private val sPref by lazy { PreferenceManager.getDefaultSharedPreferences(globalAppContext) }
 
-    private val onSharedPreferenceChangeListener = OnSharedPreferenceChangeListener { _, _ /* key */ ->
-        // if (key == key(R.string.key_guard_mode)) {
-        //     AccessibilityConfig.refreshUnintendedGuardState()
-        // }
-    }
-
     init {
         // AccessibilityConfig.refreshUnintendedGuardState()
-        registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
         if (!containsKey(R.string.key_auto_night_mode_enabled)) {
             ViewUtils.isAutoNightModeEnabled = isFunctional().also {
                 AppCompatDelegate.setDefaultNightMode(

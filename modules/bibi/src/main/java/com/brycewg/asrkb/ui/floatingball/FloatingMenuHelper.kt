@@ -18,6 +18,7 @@ import android.widget.TextView
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.BibiViewThemes
+import com.brycewg.asrkb.ui.removeWindowViewWithRetry
 import com.brycewg.asrkb.util.HapticFeedbackHelper
 import com.google.android.material.color.DynamicColors
 
@@ -111,12 +112,9 @@ class FloatingMenuHelper(rawContext: Context, private val hostProvider: () -> Fl
         fun dismiss() {
             if (dismissed) return
             dismissed = true
-            try {
-                this@FloatingMenuHelper.cancelAllAnimations(root)
-                windowManager.removeView(root)
-            } catch (e: Throwable) {
-                Log.e(TAG, "Failed to remove drag radial root", e)
-            }
+            this@FloatingMenuHelper.cancelAllAnimations(root)
+            // 拆除失败时由助手保留引用重试，避免窗口滞留
+            removeWindowViewWithRetry(windowManager, root, "drag-radial-menu")
             try {
                 onDismiss.invoke()
             } catch (
@@ -735,13 +733,9 @@ class FloatingMenuHelper(rawContext: Context, private val hostProvider: () -> Fl
      */
     fun hideMenu(menuView: View?) {
         menuView?.let { v ->
-            val wm = hostProvider().windowManager
-            try {
-                cancelAllAnimations(v)
-                wm.removeView(v)
-            } catch (e: Throwable) {
-                Log.e(TAG, "Failed to remove menu view", e)
-            }
+            cancelAllAnimations(v)
+            // 拆除失败（如 a11y 层 token 失效瞬间）由助手保留引用重试，避免窗口滞留
+            removeWindowViewWithRetry(hostProvider().windowManager, v, "floating-menu")
         }
     }
 

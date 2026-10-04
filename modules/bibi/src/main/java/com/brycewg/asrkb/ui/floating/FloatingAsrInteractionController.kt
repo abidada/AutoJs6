@@ -84,6 +84,9 @@ internal class FloatingAsrInteractionController(
     /** 会话结束后的延迟任务（决策/驻留迁移/错误展示/自动续听），同一时刻仅一个。 */
     private var postResultRunnable: Runnable? = null
 
+    /** runWhenIdle 返回的取消句柄：与 postResultRunnable 同生命周期，防止滞留 TTS 单例 */
+    private var pendingIdleCancel: (() -> Unit)? = null
+
     /** 本轮会话分发结论：null=无结论（未分发或冷却期静默）。 */
     private var lastDispatchHit: Boolean? = null
 
@@ -273,6 +276,8 @@ internal class FloatingAsrInteractionController(
     private fun cancelPostResultRunnable() {
         postResultRunnable?.let { handler.removeCallbacks(it) }
         postResultRunnable = null
+        pendingIdleCancel?.invoke()
+        pendingIdleCancel = null
     }
 
     /**
@@ -319,7 +324,7 @@ internal class FloatingAsrInteractionController(
                 // TTS 播报未结束：保持监听面板展示反馈，播完再回 READY 并续听
                 val wait = Runnable { /* 播报等待占位（runWhenIdle 内校验 token） */ }
                 postResultRunnable = wait
-                TtsPlaybackCoordinator.runWhenIdle {
+                pendingIdleCancel = TtsPlaybackCoordinator.runWhenIdle {
                     handler.post {
                         if (postResultRunnable !== wait) return@post
                         postResultRunnable = null
@@ -381,7 +386,7 @@ internal class FloatingAsrInteractionController(
             if (isTtsEnabled() && TtsPlaybackCoordinator.isBusy) {
                 val wait = Runnable { /* 播报等待占位（runWhenIdle 内校验 token） */ }
                 postResultRunnable = wait
-                TtsPlaybackCoordinator.runWhenIdle {
+                pendingIdleCancel = TtsPlaybackCoordinator.runWhenIdle {
                     handler.post {
                         if (postResultRunnable !== wait) return@post
                         postResultRunnable = null
@@ -472,6 +477,12 @@ internal class FloatingAsrInteractionController(
         listeningAnnounceToken = null
         TtsPlaybackCoordinator.stopSpeaking()
         stopRecordingForeground()
+        // 回调槽挂在进程级单例上，服务销毁后不清空会滞留整个 Service 图
+        getDispatcher()?.let { d ->
+            d.onHit = null
+            d.onMiss = null
+            d.onExecutionResult = null
+        }
         try {
             menuController.hideAll()
         } catch (e: Throwable) {
