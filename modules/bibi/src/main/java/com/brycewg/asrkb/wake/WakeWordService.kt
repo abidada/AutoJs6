@@ -192,6 +192,7 @@ internal class WakeWordService : Service() {
         var record: AudioRecord? = null
         var retryAttempt = 0
         var readErrors = 0
+        var yielding = false
 
         while (running && prefs.wakeWordEnabled) {
             WakeServiceState.beat()
@@ -205,7 +206,22 @@ internal class WakeWordService : Service() {
                     Log.d(TAG, "loop rebuilt")
                 }
 
-                if (AsrRecordingState.active) {
+                // 让出麦克风的两类情况：识别录音进行中 / TTS 播报进行中。
+                // 播报期间保持 KWS 麦克风打开会让扬声器声音同时进唤醒流——
+                // 一则本机音频与录音并存会截断播报（见 startRecordingForUser 注释），
+                // 二则含唤醒词的播报文案会触发自我唤醒形成打断循环。
+                val ttsBusy = try {
+                    com.brycewg.asrkb.tts.TtsPlaybackCoordinator.isBusy
+                } catch (t: Throwable) {
+                    Log.w(TAG, "Failed to read tts busy state", t)
+                    false
+                }
+                if (AsrRecordingState.active || ttsBusy) {
+                    if (!yielding) {
+                        val reason = if (AsrRecordingState.active) "recording" else "tts-announcing"
+                        Log.d(TAG, "wake mic paused (reason=$reason)")
+                    }
+                    yielding = true
                     // 识别会话进行中：让出麦克风，结束后重建流恢复监听
                     WakeServiceState.update(WakeServiceState.Status.Yielding)
                     releaseAudio()
@@ -213,6 +229,10 @@ internal class WakeWordService : Service() {
                     engine?.recreateStream()
                     Thread.sleep(300)
                     continue
+                }
+                if (yielding) {
+                    yielding = false
+                    Log.d(TAG, "wake mic resumed")
                 }
 
                 if (record == null) {

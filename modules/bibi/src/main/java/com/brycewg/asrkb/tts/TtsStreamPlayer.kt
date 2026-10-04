@@ -3,8 +3,8 @@
  *
  * 从 OfflineSherpaTtsEngine 抽出，供本地离线与 CloneTTS HTTP 引擎共用：
  * - 非阻塞写入 + 停滞保护（WRITE_BLOCKING 在 cancel 暂停轨道后会永久阻塞）；
- * - drain 以「播放头连续 ~300ms 无进展」为播完判据（部分机型 stop 后直接丢缓冲，
- *   仅靠超时会每次白等满 DRAIN_TIMEOUT_MS）；
+ * - drain 等播放头自然追平再收尾，等待期间不调 stop()（部分机型 stop 会丢缓冲
+ *   复位播放头，提前 stop 会吃掉结尾音频，实测见 drain() 注释）；
  * - 音频焦点：播报前申请瞬时 MAY_DUCK（压低媒体音），释放时交还。
  *
  * 线程契约：start/write/drain/release 仅由 TTS 工作线程串行调用；cancel 幂等、任意线程可调。
@@ -33,8 +33,8 @@ internal class TtsStreamPlayer(
         /** 播完等待上限（正常短播报几秒内结束；超时兜底防止工作线程卡死） */
         private const val DRAIN_TIMEOUT_MS = 30_000
 
-        /** 播放头连续无进展的判定轮数（6 × 50ms = 300ms 无进展即视为播完） */
-        private const val DRAIN_STAGNANT_POLLS = 6
+        /** 播放头连续无进展的判定轮数（12 × 50ms = 600ms 无进展视为卡死兜底） */
+        private const val DRAIN_STAGNANT_POLLS = 12
 
         /** 写入停滞保护上限（缓冲满且系统侧长时间不消费时抛错，防工作线程卡死） */
         private const val WRITE_STALL_TIMEOUT_MS = 5_000L
@@ -67,6 +67,7 @@ internal class TtsStreamPlayer(
         val t = buildTrack()
         track = t
         t.play()
+        Log.d(TAG, "Player started: sr=$sampleRate ch=$channelCount")
     }
 
     /** 写入全部 PCM 样本（16bit LE）；cancelled 时静默退出 */
@@ -99,19 +100,19 @@ internal class TtsStreamPlayer(
     }
 
     /**
-     * 等待缓冲播完再返回：cancel() 后 playbackHeadPosition 追平写入帧数即播完。
+     * 等待缓冲播完再返回：playbackHeadPosition 追平写入帧数即播完。
      * onDone 必须晚于声音结束，否则开麦闸口会在尾音期间放行重开麦克风。
+     *
+     * 关键：等待期间【不得】调用 stop()——实测部分机型（华为）stop() 会直接丢弃
+     * 未播缓冲并复位播放头（head 归零、永不追平），提前 stop 会吃掉结尾约一个
+     * 缓冲区（172ms@24kHz）的音频，再靠停滞判定误判完成，表现为播报结尾吞字。
+     * 因此这里只等播放头自然追平，停滞/超时仅作系统级卡死的兜底；
+     * 流结束标记由 [release] 统一收尾。
      */
     fun drain() {
         val t = track ?: return
         val total = writtenFrames
         if (total <= 0L) return
-        try {
-            t.stop()
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to drain audio track", e)
-            return
-        }
         var lastHead = -1L
         var stagnantPolls = 0
         var waited = 0
@@ -124,7 +125,7 @@ internal class TtsStreamPlayer(
             if (head >= total) break
             stagnantPolls = if (head == lastHead) stagnantPolls + 1 else 0
             if (stagnantPolls >= DRAIN_STAGNANT_POLLS) {
-                Log.d(TAG, "Drain finished by head stall (head=$head total=$total)")
+                Log.w(TAG, "Drain stalled: head=$head total=$total (system dropped buffer?)")
                 break
             }
             lastHead = head
@@ -135,6 +136,23 @@ internal class TtsStreamPlayer(
                 break
             }
         }
+        val reason = when {
+            cancelled -> "CANCELLED"
+            waited >= DRAIN_TIMEOUT_MS -> "TIMEOUT"
+            stagnantPolls >= DRAIN_STAGNANT_POLLS -> "STAGNANT"
+            else -> "NATURAL"
+        }
+        val finalHead = try {
+            t.playbackHeadPosition.toLong() and 0xffffffffL
+        } catch (_: Throwable) {
+            -1L
+        }
+        val lostMs = if (finalHead >= 0) {
+            (total - finalHead).coerceAtLeast(0L) * 1000 / sampleRate
+        } else {
+            -1L
+        }
+        Log.d(TAG, "Drain done: reason=$reason head=$finalHead total=$total lostMs=$lostMs waitedMs=$waited")
     }
 
     /** 打断：置位取消并暂停冲刷轨道；幂等，任意线程可调 */

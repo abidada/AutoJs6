@@ -210,15 +210,18 @@ internal class CloneTtsHttpEngine(
         val url = buildTtsUrl(baseUrl, text, speed, voiceAlias)
         val call = client.newCall(Request.Builder().url(url).get().build())
         activeCall = call
+        val t0 = android.os.SystemClock.elapsedRealtime()
         call.execute().use { response ->
             if (!response.isSuccessful) {
                 val body = runCatching { response.body?.string() }.getOrNull()?.trim()?.take(200)
+                Log.w(TAG, "fetch failed: code=${response.code} ms=${android.os.SystemClock.elapsedRealtime() - t0} url=$url body=$body")
                 throw IllegalStateException(
                     "HTTP ${response.code}${if (body.isNullOrBlank()) "" else ": $body"}"
                 )
             }
             val bytes = response.body?.bytes() ?: ByteArray(0)
             if (bytes.isEmpty()) throw IllegalStateException("CloneTTS returned empty body")
+            Log.d(TAG, "fetch ok: ${bytes.size}B ms=${android.os.SystemClock.elapsedRealtime() - t0}")
             return bytes
         }
     }
