@@ -102,7 +102,6 @@
     <string name="label_radial_switch_prompt">切換 AI 潤飾提示詞</string>
     <string name="label_radial_clipboard_upload">上傳剪貼簿</string>
     <string name="label_radial_clipboard_pull">拉取剪貼簿</string>
-    <string name="label_radial_toggle_silence_autostop">錄音判停</string>
     <string name="label_radial_open_history">查看識別歷史</string>
     <string name="label_radial_open_settings">設定</string>
     <string name="label_choose_asr_vendor">選擇 ASR 供應商</string>
@@ -199,7 +198,7 @@
     <string name="voice_dispatch_import_success">匯入完成：新增 %1$d 條、更新 %2$d 條</string>
     <string name="voice_dispatch_import_empty">檔案中沒有規則</string>
     <string name="voice_dispatch_import_failed">匯入失敗：檔案格式不正確</string>
-    <string name="label_voice_ready_collapse">發起語音停留收縮</string>
+    <string name="label_voice_ready_collapse">膠囊的自動收縮延時</string>
     <string name="voice_time_seconds_value">%1$d 秒</string>
     <string name="section_wake_word">語音喚醒</string>
     <string name="label_wake_word_enabled">啟用語音喚醒</string>
@@ -224,6 +223,9 @@
     <string name="label_dispatch_continue_on_miss">分發失敗繼續</string>
     <string name="label_dispatch_feedback_hold">分發反饋展示時長</string>
     <string name="toast_dispatch_continue_switched">分發識別繼續：%1$s</string>
+    <string name="toast_recording_auto_stop_switched">錄音自動停止方式：%1$s</string>
+    <string name="toast_wake_word_switched">語音喚醒：%1$s</string>
+    <string name="toast_tts_switched">語音播報：%1$s</string>
 
     <string name="label_voice_dispatch_cooldown_seconds">冷卻時間：%1$s 秒</string>
     <string name="label_voice_dispatch_cooldown_unlimited">冷卻時間：不限制</string>

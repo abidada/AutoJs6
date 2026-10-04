@@ -102,7 +102,6 @@
     <string name="label_radial_switch_prompt">Switch AI polish prompt</string>
     <string name="label_radial_clipboard_upload">Upload Clipboard</string>
     <string name="label_radial_clipboard_pull">Pull Clipboard</string>
-    <string name="label_radial_toggle_silence_autostop">Toggle auto-stop on silence</string>
     <string name="label_radial_open_history">ASR History</string>
     <string name="label_radial_open_settings">Settings</string>
     <string name="label_choose_asr_vendor">Choose ASR provider</string>
@@ -315,6 +314,9 @@
     <string name="label_dispatch_continue_on_miss">Continue on miss</string>
     <string name="label_dispatch_feedback_hold">Dispatch feedback duration</string>
     <string name="toast_dispatch_continue_switched">Dispatch continue: %1$s</string>
+    <string name="toast_recording_auto_stop_switched">Recording auto-stop mode: %1$s</string>
+    <string name="toast_wake_word_switched">Voice wake-up: %1$s</string>
+    <string name="toast_tts_switched">Voice broadcast: %1$s</string>
 
     <string name="label_voice_dispatch_cooldown_seconds">Cooldown: %1$s s</string>
     <string name="label_voice_dispatch_cooldown_unlimited">Cooldown: unlimited</string>

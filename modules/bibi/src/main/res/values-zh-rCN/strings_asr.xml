@@ -28,4 +28,6 @@
     <string name="asr_vendor_tag_last_used">上次使用</string>
     <string name="asr_vendor_group_configured">已配置</string>
     <string name="asr_vendor_group_unconfigured">未配置</string>
+    <string name="asr_vendor_filter_all">全部</string>
+    <string name="asr_vendor_filter_empty">没有符合条件的服务商</string>
 </resources>

@@ -27,4 +27,6 @@
     <string name="asr_vendor_tag_last_used">前回使用</string>
     <string name="asr_vendor_group_configured">設定済み</string>
     <string name="asr_vendor_group_unconfigured">未設定</string>
+    <string name="asr_vendor_filter_all">すべて</string>
+    <string name="asr_vendor_filter_empty">一致するプロバイダーがありません</string>
 </resources>

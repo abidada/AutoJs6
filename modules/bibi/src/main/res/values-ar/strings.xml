@@ -328,8 +328,6 @@
   <!-- General Toasts -->
   <!-- ============================================== -->
   <string name="toast_accessibility_enabled">خدمة إمكانية الوصول مفعّلة. الإدراج التلقائي متاح الآن.</string>
-  <string name="toast_silence_autostop_on">الإيقاف التلقائي عند الصمت مفعّل</string>
-  <string name="toast_silence_autostop_off">الإيقاف التلقائي عند الصمت معطّل</string>
   <string name="toast_keep_screen_on_while_recording_on">إبقاء الشاشة مضاءة أثناء التسجيل مفعّل</string>
   <string name="toast_keep_screen_on_while_recording_off">إبقاء الشاشة مضاءة أثناء التسجيل معطّل</string>
   <string name="toast_mic_tap_mode_on">تم التبديل إلى الضغط للبدء</string>

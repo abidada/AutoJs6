@@ -27,4 +27,6 @@
     <string name="asr_vendor_tag_last_used">آخر استخدام</string>
     <string name="asr_vendor_group_configured">مُعدّ</string>
     <string name="asr_vendor_group_unconfigured">غير مُعدّ</string>
+    <string name="asr_vendor_filter_all">الكل</string>
+    <string name="asr_vendor_filter_empty">لا يوجد مقدمو خدمة مطابقون</string>
 </resources>

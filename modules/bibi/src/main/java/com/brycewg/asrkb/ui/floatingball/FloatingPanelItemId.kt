@@ -24,11 +24,13 @@ enum class FloatingPanelItemId(
     SwitchPrompt("switch_prompt", R.string.label_radial_switch_prompt, R.drawable.article),
     SwitchAsr("switch_asr", R.string.label_radial_switch_asr, R.drawable.waveform),
     MoveBall("move_ball", R.string.label_radial_move, R.drawable.arrows_out_cardinal),
-    SilenceAutoStop("silence_autostop", R.string.label_radial_toggle_silence_autostop, R.drawable.hand_palm),
+    SilenceAutoStop("silence_autostop", R.string.label_recording_auto_stop_mode, R.drawable.hand_palm),
     PostProc("postproc", R.string.label_radial_postproc, R.drawable.magic_wand),
     History("history", R.string.label_radial_open_history, R.drawable.textbox),
     ClipboardUpload("clipboard_upload", R.string.label_radial_clipboard_upload, R.drawable.cloud_arrow_up),
     ClipboardPull("clipboard_pull", R.string.label_radial_clipboard_pull, R.drawable.cloud_arrow_down),
+    WakeWord("wake_word", R.string.label_wake_word_enabled, R.drawable.microphone),
+    TtsAnnounce("tts_announce", R.string.label_tts_enabled, R.drawable.speaker_high),
     Settings("settings", R.string.label_radial_open_settings, R.drawable.gear);
 
     companion object {

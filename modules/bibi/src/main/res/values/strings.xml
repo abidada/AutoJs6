@@ -337,8 +337,6 @@
   <!-- General Toasts -->
   <!-- ============================================== -->
   <string name="toast_accessibility_enabled">Accessibility service enabled. Auto-insert is now available.</string>
-  <string name="toast_silence_autostop_on">Auto-stop on silence enabled</string>
-  <string name="toast_silence_autostop_off">Auto-stop on silence disabled</string>
   <string name="toast_keep_screen_on_while_recording_on">Keep screen on while recording enabled</string>
   <string name="toast_keep_screen_on_while_recording_off">Keep screen on while recording disabled</string>
   <string name="toast_mic_tap_mode_on">Switched to tap-to-start</string>
@@ -446,6 +444,7 @@
   <string name="btn_disagree">Not now</string>
 
   <!-- Recording test -->
+  <string name="btn_voice_test">Voice Test</string>
   <string name="title_recording_test">Recording Test</string>
   <string name="recording_test_latency_chain">Latency Chain</string>
   <string name="recording_test_status_idle">Ready to record</string>

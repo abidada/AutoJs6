@@ -103,7 +103,6 @@
     <string name="label_radial_switch_prompt">AI校正プロンプトを切り替え</string>
     <string name="label_radial_clipboard_upload">クリップボードをアップロード</string>
     <string name="label_radial_clipboard_pull">クリップボードをプル</string>
-    <string name="label_radial_toggle_silence_autostop">無音時自動停止を切り替え</string>
     <string name="label_radial_open_history">ASR履歴</string>
     <string name="label_radial_open_settings">設定</string>
     <string name="label_choose_asr_vendor">ASRプロバイダーを選択</string>
@@ -225,6 +224,9 @@
     <string name="label_dispatch_continue_on_miss">失敗時のみ継続</string>
     <string name="label_dispatch_feedback_hold">ディスパッチ結果の表示時間</string>
     <string name="toast_dispatch_continue_switched">ディスパッチ継続：%1$s</string>
+    <string name="toast_recording_auto_stop_switched">録音の自動停止方法：%1$s</string>
+    <string name="toast_wake_word_switched">音声ウェイクワード：%1$s</string>
+    <string name="toast_tts_switched">音声読み上げ：%1$s</string>
 
     <string name="label_voice_dispatch_cooldown_seconds">クールダウン：%1$s 秒</string>
     <string name="label_voice_dispatch_cooldown_unlimited">クールダウン：無制限</string>

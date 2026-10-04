@@ -7,8 +7,11 @@
 
 package com.brycewg.asrkb.ui.settings.compose.screens
 
+import android.content.SharedPreferences
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -29,6 +33,8 @@ import com.brycewg.asrkb.asr.AsrVendor
 import com.brycewg.asrkb.asr.LocalModelCheck
 import com.brycewg.asrkb.asr.VadDetector
 import com.brycewg.asrkb.store.DashScopePrefsCompat
+import com.brycewg.asrkb.store.KEY_AUTO_STOP_ON_SILENCE_ENABLED
+import com.brycewg.asrkb.store.KEY_RECORDING_AUTO_STOP_MODE
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.DownloadSourceConfig
 import com.brycewg.asrkb.ui.DownloadSourceOption
@@ -67,6 +73,7 @@ private class LocalModelRefreshHandle {
 fun AsrSettingsScreen(
     uiMode: BibiUiMode,
     onBack: () -> Unit,
+    onOpenVoiceTest: () -> Unit,
     actions: SettingsActionController
 ) {
     val context = LocalContext.current
@@ -201,6 +208,19 @@ fun AsrSettingsScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    // 跨入口实时同步：悬浮菜单等入口修改判停方式时，本页显示同步刷新（值变化才调用，避免回写成环）
+    DisposableEffect(prefs) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_RECORDING_AUTO_STOP_MODE || key == KEY_AUTO_STOP_ON_SILENCE_ENABLED) {
+                viewModel.onExternalRecordingAutoStopModeChanged()
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            prefs.unregisterOnSharedPreferenceChangeListener(listener)
         }
     }
 
@@ -669,7 +689,15 @@ fun AsrSettingsScreen(
         )
     }
 
-    AsrScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+    AsrScaffold(
+        uiMode = uiMode,
+        onBack = onBack,
+        actions = {
+            TextButton(onClick = onOpenVoiceTest) {
+                Text(stringResource(R.string.btn_voice_test))
+            }
+        }
+    ) { innerPadding, scrollModifier ->
         downloadSourceRequest?.let { request ->
             SettingsDownloadSourceSheet(
                 options = request.options,

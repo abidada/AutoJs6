@@ -12,6 +12,7 @@
 
 package com.brycewg.asrkb.ui.settings.compose.screens
 
+import android.content.SharedPreferences
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +34,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.brycewg.asrkb.R
+import com.brycewg.asrkb.store.KEY_TTS_ENABLED
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.tts.CloneTtsVoices
 import com.brycewg.asrkb.tts.TtsLocalModelCatalog
@@ -171,6 +173,19 @@ fun TtsSettingsScreen(
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    // 跨入口实时同步：悬浮菜单等外部入口修改播报总开关时，本页显示同步刷新
+    DisposableEffect(prefs) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_TTS_ENABLED) {
+                ttsEnabled = prefs.ttsEnabled
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
     }
 
     val importLauncher = rememberLauncherForActivityResult(

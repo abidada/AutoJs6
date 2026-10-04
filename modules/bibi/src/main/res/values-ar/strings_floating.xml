@@ -102,7 +102,6 @@
     <string name="label_radial_switch_prompt">تبديل موجّه التلميع بالذكاء الاصطناعي</string>
     <string name="label_radial_clipboard_upload">رفع الحافظة</string>
     <string name="label_radial_clipboard_pull">سحب الحافظة</string>
-    <string name="label_radial_toggle_silence_autostop">تبديل الإيقاف التلقائي عند الصمت</string>
     <string name="label_radial_open_history">سجل ASR</string>
     <string name="label_radial_open_settings">الإعدادات</string>
     <string name="label_choose_asr_vendor">اختر مزود ASR</string>
@@ -224,6 +223,9 @@
     <string name="label_dispatch_continue_on_miss">متابعة عند الفشل فقط</string>
     <string name="label_dispatch_feedback_hold">مدة عرض نتيجة التوزيع</string>
     <string name="toast_dispatch_continue_switched">متابعة التوزيع: %1$s</string>
+    <string name="toast_recording_auto_stop_switched">وضع الإيقاف التلقائي للتسجيل: %1$s</string>
+    <string name="toast_wake_word_switched">الاستيقاظ الصوتي: %1$s</string>
+    <string name="toast_tts_switched">النطق الصوتي: %1$s</string>
 
     <string name="label_voice_dispatch_cooldown_seconds">وقت التبريد: %1$s ث</string>
     <string name="label_voice_dispatch_cooldown_unlimited">وقت التبريد: بلا حد</string>

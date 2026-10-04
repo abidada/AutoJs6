@@ -268,14 +268,6 @@ private fun inputSections(
                 onClick = actions::startOneClickSetup
             ),
             SettingsEntry.Action(
-                id = "recording_test",
-                titleRes = R.string.title_recording_test,
-                icon = Icons.Rounded.Mic,
-                onClick = {
-                    onPushRoute(BibiSettingsRoute.RecordingTest)
-                }
-            ),
-            SettingsEntry.Action(
                 id = "input_settings",
                 titleRes = R.string.title_input_settings,
                 summary = snapshot.inputControlSummary,

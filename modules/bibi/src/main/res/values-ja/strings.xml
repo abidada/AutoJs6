@@ -327,8 +327,6 @@
   <!-- 通用 Toast -->
   <!-- ============================================== -->
   <string name="toast_accessibility_enabled">アクセシビリティサービスが有効になりました。自動挿入が利用可能になりました。</string>
-  <string name="toast_silence_autostop_on">無音時自動停止が有効になりました</string>
-  <string name="toast_silence_autostop_off">無音時自動停止が無効になりました</string>
   <string name="toast_keep_screen_on_while_recording_on">録音中の画面常時点灯が有効になりました</string>
   <string name="toast_keep_screen_on_while_recording_off">録音中の画面常時点灯が無効になりました</string>
   <string name="toast_mic_tap_mode_on">タップで録音開始/停止に切り替えました</string>

@@ -290,6 +290,20 @@ class AsrSettingsViewModel : ViewModel() {
         )
     }
 
+    /**
+     * 跨入口实时同步：悬浮菜单等外部入口修改判停方式时仅读取同步本页状态，
+     * 不回写 Prefs（配合调用方"值变化才调用"的守卫，避免监听回调成环）。
+     */
+    fun onExternalRecordingAutoStopModeChanged() {
+        val mode = prefs.recordingAutoStopMode
+        if (_uiState.value.recordingAutoStopMode != mode) {
+            _uiState.value = _uiState.value.copy(
+                recordingAutoStopMode = mode,
+                autoStopSilenceEnabled = mode == Prefs.RecordingAutoStopMode.SILENCE
+            )
+        }
+    }
+
     fun updateSilenceWindow(windowMs: Int) {
         prefs.autoStopSilenceWindowMs = windowMs
         _uiState.value = _uiState.value.copy(silenceWindowMs = windowMs)

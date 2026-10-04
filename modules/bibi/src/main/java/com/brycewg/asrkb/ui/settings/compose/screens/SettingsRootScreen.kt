@@ -212,6 +212,7 @@ private fun SettingsRouteContent(
         BibiSettingsRoute.Asr -> AsrSettingsScreen(
             uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
+            onOpenVoiceTest = { onPushRoute(BibiSettingsRoute.RecordingTest) },
             actions = actions
         )
 

@@ -1603,6 +1603,47 @@ internal class FloatingAsrInteractionController(
         }
     }
 
+    /** 长按菜单「启用语音唤醒」：直接切换；启停服务与设置页行为一致，设置页开关显示服务实况会自动跟上。 */
+    private fun toggleWakeWordFromMenu() {
+        try {
+            val target = !prefs.wakeWordEnabled
+            if (target && !hasRecordAudioPermission()) {
+                showToast(context.getString(R.string.asr_error_mic_permission_denied))
+                return
+            }
+            prefs.wakeWordEnabled = target
+            if (target) {
+                com.brycewg.asrkb.wake.WakeWordService.start(context)
+            } else {
+                com.brycewg.asrkb.wake.WakeWordService.stop(context)
+            }
+            showToast(
+                context.getString(
+                    R.string.toast_wake_word_switched,
+                    context.getString(if (target) R.string.toggle_on else R.string.toggle_off)
+                )
+            )
+        } catch (e: Throwable) {
+            Log.e(tag, "Failed to toggle wake word", e)
+        }
+    }
+
+    /** 长按菜单「启用语音播报」：直接切换；各播报入口现读偏好，即时生效。 */
+    private fun toggleTtsAnnounceFromMenu() {
+        try {
+            val target = !prefs.ttsEnabled
+            prefs.ttsEnabled = target
+            showToast(
+                context.getString(
+                    R.string.toast_tts_switched,
+                    context.getString(if (target) R.string.toggle_on else R.string.toggle_off)
+                )
+            )
+        } catch (e: Throwable) {
+            Log.e(tag, "Failed to toggle tts announce", e)
+        }
+    }
+
     private fun showHistoryPanelFromMenu() {
         touchActiveGuard = true
         hideVendorMenu()
@@ -1653,14 +1694,74 @@ internal class FloatingAsrInteractionController(
         }
     }
 
-    private fun toggleAutoStopSilenceFromMenu() {
-        try {
-            val newVal = !prefs.autoStopOnSilenceEnabled
-            prefs.autoStopOnSilenceEnabled = newVal
-            val msgRes = if (newVal) R.string.toast_silence_autostop_on else R.string.toast_silence_autostop_off
-            showToast(context.getString(msgRes))
+    /** 长按菜单「录音自动停止方式」：弹出三选项列表面板，点选即生效，与设置页双向实时同步。 */
+    private fun showRecordingAutoStopPickerFromMenu() {
+        touchActiveGuard = true
+        val center = viewManager.getBallCenterSnapshot()
+        val alpha = getMenuAlphaOrDefault()
+        val current = try {
+            prefs.recordingAutoStopMode
         } catch (e: Throwable) {
-            Log.e(tag, "Failed to toggle silence auto-stop", e)
+            Log.w(tag, "Failed to read recording auto stop mode", e)
+            Prefs.RecordingAutoStopMode.MANUAL
+        }
+
+        val entries = listOf(
+            Triple(context.getString(R.string.option_recording_auto_stop_manual), current == Prefs.RecordingAutoStopMode.MANUAL) {
+                applyRecordingAutoStopModeFromMenu(Prefs.RecordingAutoStopMode.MANUAL)
+            },
+            Triple(context.getString(R.string.option_recording_auto_stop_silence), current == Prefs.RecordingAutoStopMode.SILENCE) {
+                applyRecordingAutoStopModeFromMenu(Prefs.RecordingAutoStopMode.SILENCE)
+            },
+            Triple(context.getString(R.string.option_recording_auto_stop_max_duration), current == Prefs.RecordingAutoStopMode.MAX_DURATION) {
+                applyRecordingAutoStopModeFromMenu(Prefs.RecordingAutoStopMode.MAX_DURATION)
+            }
+        )
+
+        menuController.showListPanel(
+            anchorCenter = center,
+            alpha = alpha,
+            title = context.getString(R.string.label_recording_auto_stop_mode),
+            entries = entries
+        ) {
+            touchActiveGuard = false
+            updateVisibilityByPref("recording_auto_stop_panel_dismiss")
+        }
+    }
+
+    private fun applyRecordingAutoStopModeFromMenu(mode: Prefs.RecordingAutoStopMode) {
+        try {
+            val old = try {
+                prefs.recordingAutoStopMode
+            } catch (e: Throwable) {
+                Log.w(tag, "Failed to read old recording auto stop mode", e)
+                Prefs.RecordingAutoStopMode.MANUAL
+            }
+            if (mode != old) {
+                prefs.recordingAutoStopMode = mode
+                // 切到停说判停时预热 VAD，降低首次判停延迟（与设置页行为一致）
+                if (mode == Prefs.RecordingAutoStopMode.SILENCE) {
+                    try {
+                        com.brycewg.asrkb.asr.VadDetector.preload(
+                            context.applicationContext,
+                            16000,
+                            prefs.autoStopSilenceSensitivity
+                        )
+                    } catch (e: Throwable) {
+                        Log.w(tag, "Failed to preload VAD", e)
+                    }
+                }
+            }
+            val label = context.getString(
+                when (mode) {
+                    Prefs.RecordingAutoStopMode.MANUAL -> R.string.option_recording_auto_stop_manual
+                    Prefs.RecordingAutoStopMode.SILENCE -> R.string.option_recording_auto_stop_silence
+                    Prefs.RecordingAutoStopMode.MAX_DURATION -> R.string.option_recording_auto_stop_max_duration
+                }
+            )
+            showToast(context.getString(R.string.toast_recording_auto_stop_switched, label))
+        } catch (e: Throwable) {
+            Log.e(tag, "Failed to switch recording auto stop mode", e)
         }
     }
 
@@ -1765,17 +1866,18 @@ internal class FloatingAsrInteractionController(
                     R.drawable.circles_four_fill
                 }
 
-            FloatingPanelItemId.SilenceAutoStop ->
-                if (try {
-                        prefs.autoStopOnSilenceEnabled
-                    } catch (_: Throwable) {
-                        false
-                    }
-                ) {
+            FloatingPanelItemId.SilenceAutoStop -> {
+                val mode = try {
+                    prefs.recordingAutoStopMode
+                } catch (_: Throwable) {
+                    Prefs.RecordingAutoStopMode.MANUAL
+                }
+                if (mode != Prefs.RecordingAutoStopMode.MANUAL) {
                     R.drawable.hand_palm_fill
                 } else {
                     R.drawable.hand_palm
                 }
+            }
 
             FloatingPanelItemId.PostProc ->
                 if (try {
@@ -1789,6 +1891,30 @@ internal class FloatingAsrInteractionController(
                     R.drawable.magic_wand
                 }
 
+            FloatingPanelItemId.WakeWord ->
+                if (try {
+                        prefs.wakeWordEnabled
+                    } catch (_: Throwable) {
+                        false
+                    }
+                ) {
+                    R.drawable.microphone_fill
+                } else {
+                    R.drawable.microphone
+                }
+
+            FloatingPanelItemId.TtsAnnounce ->
+                if (try {
+                        prefs.ttsEnabled
+                    } catch (_: Throwable) {
+                        false
+                    }
+                ) {
+                    R.drawable.speaker_high_fill
+                } else {
+                    R.drawable.speaker_high
+                }
+
             else -> id.iconRes
         }
         return FloatingMenuHelper.MenuItem(iconRes, label, label) {
@@ -1797,8 +1923,10 @@ internal class FloatingAsrInteractionController(
                 FloatingPanelItemId.SwitchPrompt -> onPickPromptPresetFromMenu()
                 FloatingPanelItemId.SwitchAsr -> onPickAsrVendor()
                 FloatingPanelItemId.MoveBall -> enableMoveModeFromMenu()
-                FloatingPanelItemId.SilenceAutoStop -> toggleAutoStopSilenceFromMenu()
+                FloatingPanelItemId.SilenceAutoStop -> showRecordingAutoStopPickerFromMenu()
                 FloatingPanelItemId.PostProc -> togglePostprocFromMenu()
+                FloatingPanelItemId.WakeWord -> toggleWakeWordFromMenu()
+                FloatingPanelItemId.TtsAnnounce -> toggleTtsAnnounceFromMenu()
                 FloatingPanelItemId.History -> showHistoryPanelFromMenu()
                 FloatingPanelItemId.ClipboardUpload -> uploadClipboardOnceFromMenu()
                 FloatingPanelItemId.ClipboardPull -> pullClipboardOnceFromMenu()

@@ -102,7 +102,6 @@
     <string name="label_radial_switch_prompt">切换 AI 润色 Prompt</string>
     <string name="label_radial_clipboard_upload">上传粘贴板</string>
     <string name="label_radial_clipboard_pull">拉取粘贴板</string>
-    <string name="label_radial_toggle_silence_autostop">录音判停</string>
     <string name="label_radial_open_history">查看识别历史</string>
     <string name="label_radial_open_settings">设置</string>
     <string name="label_choose_asr_vendor">选择 ASR 供应商</string>
@@ -285,7 +284,7 @@
     <string name="voice_dispatch_manual_path_title">手动输入脚本路径</string>
     <string name="voice_dispatch_test_executed">已执行</string>
     <string name="voice_dispatch_test_exec_result">执行结果：%1$s</string>
-    <string name="label_voice_ready_collapse">发起语音停留收缩</string>
+    <string name="label_voice_ready_collapse">胶囊的自动收缩延时</string>
     <string name="voice_time_seconds_value">%1$d 秒</string>
     <string name="section_wake_word">语音唤醒</string>
     <string name="label_wake_word_enabled">启用语音唤醒</string>
@@ -315,6 +314,9 @@
     <string name="label_dispatch_continue_on_miss">分发失败继续</string>
     <string name="label_dispatch_feedback_hold">分发反馈展示时长</string>
     <string name="toast_dispatch_continue_switched">分发识别继续：%1$s</string>
+    <string name="toast_recording_auto_stop_switched">录音自动停止方式：%1$s</string>
+    <string name="toast_wake_word_switched">语音唤醒：%1$s</string>
+    <string name="toast_tts_switched">语音播报：%1$s</string>
 
     <string name="label_voice_dispatch_cooldown_seconds">冷却时间：%1$s 秒</string>
     <string name="label_voice_dispatch_cooldown_unlimited">冷却时间：不限制</string>

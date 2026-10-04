@@ -89,6 +89,8 @@ internal fun AsrSilenceSection(
                 value = silenceWindowMs.toFloat(),
                 valueRange = Prefs.SILENCE_WINDOW_MIN_MS.toFloat()..Prefs.SILENCE_WINDOW_MAX_MS.toFloat(),
                 steps = (maxSec - minSec - 1).coerceAtLeast(0),
+                // 0-15 秒共 14 个 step，超出默认 1..10 的显示门槛，显式开启以与灵敏度滑条样式同步
+                showKeyPoints = true,
                 uiMode = uiMode,
                 highlightId = "silence_window_ms",
                 index = 1,

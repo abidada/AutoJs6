@@ -349,8 +349,6 @@
   <!-- 通用 Toast -->
   <!-- ============================================== -->
   <string name="toast_accessibility_enabled">无障碍服务已启用，现在可以自动插入文本了</string>
-  <string name="toast_silence_autostop_on">已开启录音判停</string>
-  <string name="toast_silence_autostop_off">已关闭录音判停</string>
   <string name="toast_keep_screen_on_while_recording_on">已开启录音屏幕常亮</string>
   <string name="toast_keep_screen_on_while_recording_off">已关闭录音屏幕常亮</string>
   <string name="toast_mic_tap_mode_on">已切换为点按启停</string>
@@ -458,6 +456,7 @@
   <string name="btn_disagree">暂不</string>
 
   <!-- 录音测试 -->
+  <string name="btn_voice_test">语音测试</string>
   <string name="title_recording_test">录音测试</string>
   <string name="recording_test_latency_chain">延迟链路</string>
   <string name="recording_test_status_idle">准备录音</string>

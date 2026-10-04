@@ -12,7 +12,11 @@ import com.brycewg.asrkb.asr.BackupAsrLocalResidency
 import com.brycewg.asrkb.asr.VolcAsrModelCatalog
 import com.brycewg.asrkb.asr.partitionAsrVendorsByConfigured
 import com.brycewg.asrkb.store.Prefs
+import com.brycewg.asrkb.ui.AsrVendorTag
 import com.brycewg.asrkb.ui.AsrVendorUi
+import com.brycewg.asrkb.ui.settings.compose.components.ChoiceSheetFilterLevelOption
+import com.brycewg.asrkb.ui.settings.compose.components.ChoiceSheetFilterSpec
+import com.brycewg.asrkb.ui.settings.compose.components.ChoiceSheetFilterTagOption
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsChoiceGroup
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsChoiceItem
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsChoiceSheetState
@@ -264,7 +268,8 @@ internal fun asrVendorChoiceSheetState(
     // “上次使用”标记：记录切换前的供应商，与当前选中重复（或入口不适用）时不展示
     val lastUsedVendor = if (showLastUsedTag) prefs.lastUsedAsrVendor else null
     val vendorItems = vendorOrder.mapIndexed { index, vendor ->
-        val tags = AsrVendorUi.tags(vendor).map { tag ->
+        val vendorTags = AsrVendorUi.tags(vendor)
+        val tags = vendorTags.map { tag ->
             SettingsChoiceTag(
                 label = context.getString(tag.labelResId),
                 bgColorResId = tag.bgColorResId,
@@ -283,7 +288,8 @@ internal fun asrVendorChoiceSheetState(
         SettingsChoiceItem(
             title = AsrVendorUi.name(context, vendor),
             originalIndex = index,
-            tags = tags
+            tags = tags,
+            filterKeys = vendorTags.map { it.name }.toSet()
         )
     }
     val indexByVendor = vendorOrder.withIndex().associate { it.value to it.index }
@@ -311,6 +317,57 @@ internal fun asrVendorChoiceSheetState(
         selectedIndex = vendorOrder.indexOf(selectedVendor).coerceAtLeast(0),
         onSelected = { selectedIdx ->
             onSelected(vendorOrder.getOrNull(selectedIdx) ?: AsrVendor.Volc)
-        }
+        },
+        filter = asrVendorFilterSpec(context)
+    )
+}
+
+/**
+ * 服务商选择器的筛选条:
+ * 一级 = 部署方式(全部/在线/本地),二级 = 识别模式/效果口碑/特色能力,单选可点消。
+ */
+private fun asrVendorFilterSpec(context: Context): ChoiceSheetFilterSpec {
+    val levels = listOf(
+        ChoiceSheetFilterLevelOption(
+            key = null,
+            label = context.getString(R.string.asr_vendor_filter_all),
+            bgColorResId = R.color.asr_tag_bg_last_used,
+            textColorResId = R.color.asr_tag_fg_last_used
+        ),
+        ChoiceSheetFilterLevelOption(
+            key = AsrVendorTag.Online.name,
+            label = context.getString(AsrVendorTag.Online.labelResId),
+            bgColorResId = AsrVendorTag.Online.bgColorResId,
+            textColorResId = AsrVendorTag.Online.textColorResId
+        ),
+        ChoiceSheetFilterLevelOption(
+            key = AsrVendorTag.Local.name,
+            label = context.getString(AsrVendorTag.Local.labelResId),
+            bgColorResId = AsrVendorTag.Local.bgColorResId,
+            textColorResId = AsrVendorTag.Local.textColorResId
+        )
+    )
+    // dimension: 0=识别模式, 1=效果口碑, 2=特色能力
+    val tagOptions = listOf(
+        AsrVendorTag.Streaming to 0,
+        AsrVendorTag.PseudoStreaming to 0,
+        AsrVendorTag.NonStreaming to 0,
+        AsrVendorTag.Recommended to 1,
+        AsrVendorTag.Accurate to 1,
+        AsrVendorTag.ChineseDialect to 2,
+        AsrVendorTag.Custom to 2
+    ).map { (tag, dimension) ->
+        ChoiceSheetFilterTagOption(
+            key = tag.name,
+            label = context.getString(tag.labelResId),
+            dimension = dimension,
+            bgColorResId = tag.bgColorResId,
+            textColorResId = tag.textColorResId
+        )
+    }
+    return ChoiceSheetFilterSpec(
+        levels = levels,
+        tags = tagOptions,
+        emptyText = context.getString(R.string.asr_vendor_filter_empty)
     )
 }

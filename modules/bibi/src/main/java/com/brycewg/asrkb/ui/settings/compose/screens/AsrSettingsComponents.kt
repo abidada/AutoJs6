@@ -43,12 +43,14 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 internal fun AsrScaffold(
     uiMode: BibiUiMode,
     onBack: () -> Unit,
+    actions: @Composable () -> Unit = {},
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
         uiMode = uiMode,
         titleRes = R.string.title_asr_settings,
         onBack = onBack,
+        actions = actions,
         content = content
     )
 }
