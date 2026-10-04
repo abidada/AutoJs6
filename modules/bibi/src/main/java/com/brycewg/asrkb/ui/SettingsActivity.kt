@@ -39,7 +39,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsUpdateHost
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsUpdateUiState
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsTheme
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import com.brycewg.asrkb.ui.settings.compose.screens.SettingsRootScreen
@@ -122,10 +121,7 @@ class SettingsActivity : BaseActivity() {
                 }
             }
 
-            BibiSettingsTheme(
-                uiMode = uiState.uiMode,
-                themeMode = uiState.themeMode
-            ) {
+            BibiSettingsTheme {
                 val hasUpdateAvailable by remember {
                     derivedStateOf { updateCoordinator.uiState.value is SettingsUpdateUiState.UpdateAvailable }
                 }
@@ -138,11 +134,9 @@ class SettingsActivity : BaseActivity() {
                         onOpenRoute = viewModel::openRoute,
                         onPopRoute = viewModel::pop,
                         onConsumeRouteArg = viewModel::consumeRouteArg,
-                        onSetUiMode = viewModel::setUiMode,
-                        onSetThemeMode = viewModel::setThemeMode,
                         actions = actionController
                     )
-                    settingsOverlayHosts(uiMode = uiState.uiMode)
+                    settingsOverlayHosts()
                 }
             }
         }
@@ -150,10 +144,9 @@ class SettingsActivity : BaseActivity() {
     }
 
     @Composable
-    private fun settingsOverlayHosts(uiMode: BibiUiMode) {
+    private fun settingsOverlayHosts() {
         SettingsUpdateHost(
             state = updateCoordinator.uiState.value,
-            uiMode = uiMode,
             onDismiss = updateCoordinator::dismiss,
             onDownload = updateCoordinator::showDownloadSources,
             onOpenReleasePage = updateCoordinator::openReleasePage,
@@ -163,7 +156,6 @@ class SettingsActivity : BaseActivity() {
         )
         SettingsMessageDialog(
             state = systemActionDialogState.value,
-            uiMode = uiMode,
             onDismiss = { systemActionDialogState.value = null }
         )
     }

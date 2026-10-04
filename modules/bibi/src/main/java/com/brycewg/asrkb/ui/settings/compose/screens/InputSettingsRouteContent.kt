@@ -23,7 +23,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsFeatureExplainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreference
 import com.brycewg.asrkb.ui.settings.compose.components.settingsFeatureExplainerDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
@@ -73,7 +72,6 @@ internal fun inputExplainedSwitchDialogState(
 
 @Composable
 internal fun InputSettingsRouteContent(
-    uiMode: BibiUiMode,
     innerPadding: PaddingValues,
     scrollModifier: Modifier,
     prefs: Prefs,
@@ -91,14 +89,13 @@ internal fun InputSettingsRouteContent(
     val behaviorTrimThresholdOffset = if (uiState.trimTrailingPunct) 1 else 0
 
     SettingsLazyColumn(
-        uiMode = uiMode,
         modifier = Modifier.fillMaxSize(),
         miuixScrollModifier = scrollModifier,
         contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
         verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
     ) {
         item("behavior") {
-            InputSection(uiMode = uiMode, titleRes = R.string.section_input_behavior) {
+            InputSection(titleRes = R.string.section_input_behavior) {
                 InputExplainedSwitch(
                     id = "trim_trailing_punct",
                     titleRes = R.string.label_trim_trailing_punct,
@@ -142,7 +139,6 @@ internal fun InputSettingsRouteContent(
                         valueRange = Prefs.TRIM_FINAL_TRAILING_PUNCT_THRESHOLD_MIN.toFloat()..Prefs.TRIM_FINAL_TRAILING_PUNCT_THRESHOLD_UNLIMITED.toFloat(),
                         steps = Prefs.TRIM_FINAL_TRAILING_PUNCT_THRESHOLD_UNLIMITED -
                             Prefs.TRIM_FINAL_TRAILING_PUNCT_THRESHOLD_MIN - 1,
-                        uiMode = uiMode,
                         showKeyPoints = false,
                         index = 1,
                         count = behaviorItemCount,
@@ -205,7 +201,7 @@ internal fun InputSettingsRouteContent(
         }
 
         item("audio") {
-            InputSection(uiMode = uiMode, titleRes = R.string.section_audio_and_link) {
+            InputSection(titleRes = R.string.section_audio_and_link) {
                 InputExplainedSwitch(
                     id = "duck_media_on_record",
                     titleRes = R.string.label_audio_ducking_on_record,
@@ -354,14 +350,13 @@ internal fun InputSettingsRouteContent(
 
 @Composable
 internal fun InputHapticUiSettingsSection(
-    uiMode: BibiUiMode,
     prefs: Prefs,
     uiState: InputSettingsUiState,
     onUiStateChange: (InputSettingsUiState) -> Unit,
     onRefreshState: () -> Unit
 ) {
     val context = LocalContext.current
-    InputSection(uiMode = uiMode, titleRes = R.string.section_haptic_feedback) {
+    InputSection(titleRes = R.string.section_haptic_feedback) {
         InputSliderPreference(
             titleRes = R.string.label_haptic_feedback_strength,
             valueLabel = { value ->
@@ -375,7 +370,6 @@ internal fun InputHapticUiSettingsSection(
             value = uiState.hapticFeedbackLevel.toFloat(),
             valueRange = Prefs.HAPTIC_FEEDBACK_LEVEL_OFF.toFloat()..Prefs.HAPTIC_FEEDBACK_LEVEL_HEAVY.toFloat(),
             steps = 5,
-            uiMode = uiMode,
             highlightId = "haptic_feedback_strength",
             index = 0,
             count = 1,
@@ -400,12 +394,8 @@ internal fun InputHapticUiSettingsSection(
 
 @Composable
 internal fun InputMainUiSettingsSection(
-    uiMode: BibiUiMode,
     prefs: Prefs,
     uiState: InputSettingsUiState,
-    themeMode: String,
-    onSetUiMode: (BibiUiMode) -> Unit,
-    onSetThemeMode: (String) -> Unit,
     onRefreshState: () -> Unit,
     onApplyExplainedSwitch: InputExplainedSwitchHandler
 ) {
@@ -413,16 +403,7 @@ internal fun InputMainUiSettingsSection(
     val languageOptions = context.languageOptions().mapIndexed { index, label ->
         DropdownOption(languageTagForIndex(index), label)
     }
-    val uiModeOptions = listOf(
-        DropdownOption(BibiUiMode.Miuix.id, stringResource(R.string.settings_ui_mode_miuix)),
-        DropdownOption(BibiUiMode.Material.id, stringResource(R.string.settings_ui_mode_material))
-    )
-    val themeModeOptions = listOf(
-        DropdownOption("system", stringResource(R.string.settings_theme_mode_system)),
-        DropdownOption("light", stringResource(R.string.settings_theme_mode_light)),
-        DropdownOption("dark", stringResource(R.string.settings_theme_mode_dark))
-    )
-    InputSection(uiMode = uiMode, titleRes = R.string.section_main_ui) {
+    InputSection(titleRes = R.string.section_main_ui) {
         SettingsPreference(
             entry = SettingsEntry.Dropdown(
                 id = "language",
@@ -444,30 +425,7 @@ internal fun InputMainUiSettingsSection(
                 }
             ),
             index = 0,
-            count = 5
-        )
-        SettingsPreference(
-            entry = SettingsEntry.Dropdown(
-                id = "settings_ui_mode",
-                titleRes = R.string.settings_ui_mode,
-                summaryRes = R.string.settings_ui_mode_summary,
-                options = uiModeOptions,
-                selectedOptionId = uiMode.id,
-                onSelectedOptionChange = { onSetUiMode(BibiUiMode.fromId(it)) }
-            ),
-            index = 1,
-            count = 5
-        )
-        SettingsPreference(
-            entry = SettingsEntry.Dropdown(
-                id = "settings_theme_mode",
-                titleRes = R.string.settings_theme_mode,
-                options = themeModeOptions,
-                selectedOptionId = themeMode,
-                onSelectedOptionChange = onSetThemeMode
-            ),
-            index = 2,
-            count = 5
+            count = 3
         )
         InputSliderPreference(
             titleRes = R.string.label_voice_ready_collapse,
@@ -477,10 +435,9 @@ internal fun InputMainUiSettingsSection(
             value = prefs.voiceReadyCollapseSeconds.toFloat(),
             valueRange = 5f..60f,
             steps = 54,
-            uiMode = uiMode,
             highlightId = "voice_ready_collapse",
-            index = 3,
-            count = 5,
+            index = 1,
+            count = 3,
             onValueChange = { },
             onValueChangeFinished = { value ->
                 prefs.voiceReadyCollapseSeconds = value.toInt().coerceIn(5, 60)
@@ -503,8 +460,8 @@ internal fun InputMainUiSettingsSection(
                     { applyExcludeFromRecents(context, it) }
                 ) { prefs.hideRecentTaskCard = it }
             },
-            index = 4,
-            count = 5
+            index = 2,
+            count = 3
         )
     }
 }

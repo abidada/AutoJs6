@@ -27,34 +27,27 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text as MaterialText
-import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.ui.res.colorResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.brycewg.asrkb.R
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalBibiSettingsDark
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
-import com.brycewg.asrkb.ui.settings.compose.core.settingsSegmentedItemShape
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.preference.RadioButtonLocation
@@ -168,44 +161,15 @@ internal fun settingsChoiceSheetState(
 @Composable
 internal fun SettingsChoiceSheet(
     state: SettingsChoiceSheetState?,
-    uiMode: BibiUiMode,
     onDismiss: () -> Unit
 ) {
     val visibleState = state?.takeIf { sheetState ->
         sheetState.groups.any { it.items.isNotEmpty() }
     } ?: return
-    when (uiMode) {
-        BibiUiMode.Material -> MaterialChoiceSheet(
-            state = visibleState,
-            onDismiss = onDismiss
-        )
-
-        BibiUiMode.Miuix -> MiuixChoiceSheet(
-            state = visibleState,
-            onDismiss = onDismiss
-        )
-    }
-}
-
-@Composable
-private fun MaterialChoiceSheet(
-    state: SettingsChoiceSheetState?,
-    onDismiss: () -> Unit
-) {
-    if (state == null) return
-    key(state.title, state.groups, state.selectedIndex) {
-        MaterialSettingsSheetScaffold(
-            title = state.title,
-            onDismiss = onDismiss,
-            bottomPadding = 0.dp
-        ) { dismissSheet ->
-            ChoiceSheetList(
-                state = state,
-                uiMode = BibiUiMode.Material,
-                onDismiss = dismissSheet
-            )
-        }
-    }
+    MiuixChoiceSheet(
+        state = visibleState,
+        onDismiss = onDismiss
+    )
 }
 
 @Composable
@@ -243,7 +207,6 @@ private fun MiuixChoiceSheet(
             )
             ChoiceSheetList(
                 state = state,
-                uiMode = BibiUiMode.Miuix,
                 onDismiss = { action ->
                     afterDismiss = action
                     show = false
@@ -256,7 +219,6 @@ private fun MiuixChoiceSheet(
 @Composable
 private fun ChoiceSheetList(
     state: SettingsChoiceSheetState,
-    uiMode: BibiUiMode,
     onDismiss: (afterDismiss: () -> Unit) -> Unit
 ) {
     var selectionHandled by remember(state) { mutableStateOf(false) }
@@ -309,30 +271,26 @@ private fun ChoiceSheetList(
             )
         }
         SettingsSheetLazyColumn(
-            uiMode = uiMode,
             contentPadding = PaddingValues(0.dp)
         ) {
             if (visibleGroups.isEmpty()) {
                 item("choice-sheet-empty") {
-                    ChoiceSheetEmptyText(text = filterEmptyText, uiMode = uiMode)
+                    ChoiceSheetEmptyText(text = filterEmptyText)
                 }
             }
             visibleGroups.forEach { group ->
                 if (group.label.isNotBlank()) {
                     item("header-${group.label}") {
-                        ChoiceGroupHeader(label = group.label, uiMode = uiMode)
+                        ChoiceGroupHeader(label = group.label)
                     }
                 }
                 itemsIndexed(
                     items = group.items,
                     key = { _, item -> item.originalIndex }
-                ) { index, item ->
+                ) { _, item ->
                     ChoiceItemRow(
                         item = item,
                         selected = item.originalIndex == state.selectedIndex,
-                        uiMode = uiMode,
-                        index = index,
-                        count = group.items.size,
                         onClick = {
                             if (selectionHandled) return@ChoiceItemRow
                             selectionHandled = true
@@ -347,28 +305,16 @@ private fun ChoiceSheetList(
 }
 
 @Composable
-private fun ChoiceGroupHeader(label: String, uiMode: BibiUiMode) {
-    when (uiMode) {
-        BibiUiMode.Material -> MaterialText(
-            text = label,
-            modifier = Modifier.padding(
-                horizontal = SettingsLayoutMetrics.SheetGroupHeaderHorizontalPadding,
-                vertical = SettingsLayoutMetrics.SheetGroupHeaderVerticalPadding
-            ),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.labelLarge
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = label,
-            modifier = Modifier.padding(
-                horizontal = SettingsLayoutMetrics.SheetGroupHeaderHorizontalPadding,
-                vertical = SettingsLayoutMetrics.SheetGroupHeaderVerticalPadding
-            ),
-            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            style = MiuixTheme.textStyles.footnote1
-        )
-    }
+private fun ChoiceGroupHeader(label: String) {
+    MiuixText(
+        text = label,
+        modifier = Modifier.padding(
+            horizontal = SettingsLayoutMetrics.SheetGroupHeaderHorizontalPadding,
+            vertical = SettingsLayoutMetrics.SheetGroupHeaderVerticalPadding
+        ),
+        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+        style = MiuixTheme.textStyles.footnote1
+    )
 }
 
 @Composable
@@ -423,7 +369,7 @@ private fun ChoiceSheetFilterBar(
                             .padding(horizontal = 4.dp)
                             .size(width = 1.dp, height = 16.dp)
                             .background(
-                                color = if (isDark) Color(0xFF3D3D3D) else Color(0xFFDCDCDC),
+                                color = MaterialTheme.colorScheme.outlineVariant,
                                 shape = RoundedCornerShape(1.dp)
                             )
                     )
@@ -462,8 +408,8 @@ private fun ChoiceSheetFilterChip(
     val isDark = LocalBibiSettingsDark.current
     val selectedBg = asrTagColor(bgColorResId, isDark)
     val selectedFg = asrTagColor(textColorResId, isDark)
-    val outlineColor = if (isDark) Color(0xFF4D4D4D) else Color(0xFFC4C4C4)
-    val idleFg = if (isDark) Color(0xFFB4B4B4) else Color(0xFF6B6B6B)
+    val outlineColor = MaterialTheme.colorScheme.outlineVariant
+    val idleFg = MaterialTheme.colorScheme.onSurfaceVariant
     val contentAlpha = if (enabled) 1f else 0.38f
     Surface(
         shape = RoundedCornerShape(percent = 50),
@@ -504,86 +450,33 @@ private fun ChoiceSheetFilterChip(
 }
 
 @Composable
-private fun ChoiceSheetEmptyText(text: String, uiMode: BibiUiMode) {
-    when (uiMode) {
-        BibiUiMode.Material -> MaterialText(
-            text = text,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = SettingsLayoutMetrics.SheetGroupHeaderHorizontalPadding, vertical = 40.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = SettingsLayoutMetrics.SheetGroupHeaderHorizontalPadding, vertical = 40.dp),
-            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            textAlign = TextAlign.Center,
-            style = MiuixTheme.textStyles.footnote1
-        )
-    }
+private fun ChoiceSheetEmptyText(text: String) {
+    MiuixText(
+        text = text,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = SettingsLayoutMetrics.SheetGroupHeaderHorizontalPadding, vertical = 40.dp),
+        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+        textAlign = TextAlign.Center,
+        style = MiuixTheme.textStyles.footnote1
+    )
 }
 
 @Composable
 private fun ChoiceItemRow(
     item: SettingsChoiceItem,
     selected: Boolean,
-    uiMode: BibiUiMode,
-    index: Int,
-    count: Int,
     onClick: () -> Unit
 ) {
-    when (uiMode) {
-        BibiUiMode.Material -> Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = SettingsLayoutMetrics.MaterialSectionItemSpacing)
-                .selectable(
-                    selected = selected,
-                    role = Role.RadioButton,
-                    onClick = onClick
-                ),
-            shape = settingsSegmentedItemShape(index, count),
-            color = MaterialTheme.colorScheme.surfaceColorAtElevation(SettingsLayoutMetrics.MaterialSectionElevation),
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ) {
-            ListItem(
-                modifier = Modifier.heightIn(min = SettingsLayoutMetrics.SettingsPreferenceMinHeight),
-                headlineContent = { MaterialText(item.title) },
-                supportingContent = item.tags.takeIf { it.isNotEmpty() }?.let { tags ->
-                    { ChoiceTags(tags = tags) }
-                },
-                trailingContent = {
-                    RadioButton(
-                        selected = selected,
-                        onClick = null
-                    )
-                },
-                overlineContent = null,
-                leadingContent = null,
-                colors = ListItemDefaults.colors(
-                    containerColor = Color.Transparent,
-                    supportingColor = MaterialTheme.colorScheme.outline
-                ),
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp
-            )
+    RadioButtonPreference(
+        title = item.title,
+        selected = selected,
+        onClick = onClick,
+        radioButtonLocation = RadioButtonLocation.End,
+        bottomAction = item.tags.takeIf { it.isNotEmpty() }?.let { tags ->
+            { ChoiceTags(tags = tags) }
         }
-
-        BibiUiMode.Miuix -> RadioButtonPreference(
-            title = item.title,
-            selected = selected,
-            onClick = onClick,
-            radioButtonLocation = RadioButtonLocation.End,
-            bottomAction = item.tags.takeIf { it.isNotEmpty() }?.let { tags ->
-                { ChoiceTags(tags = tags) }
-            }
-        )
-    }
+    )
 }
 
 @Composable
@@ -616,26 +509,8 @@ private fun ChoiceTags(
     }
 }
 
-private fun asrTagColor(@ColorRes colorResId: Int, isDark: Boolean): Color = when (colorResId) {
-    R.color.asr_tag_bg_online -> if (isDark) Color(0xFF1E2B3A) else Color(0xFFE3EBF4)
-    R.color.asr_tag_fg_online -> if (isDark) Color(0xFFBBD4F4) else Color(0xFF2F4A67)
-    R.color.asr_tag_bg_local -> if (isDark) Color(0xFF1D3328) else Color(0xFFE2EEE7)
-    R.color.asr_tag_fg_local -> if (isDark) Color(0xFFBFE6D2) else Color(0xFF2E5A45)
-    R.color.asr_tag_bg_recommended -> if (isDark) Color(0xFF382419) else Color(0xFFF8EBE2)
-    R.color.asr_tag_fg_recommended -> if (isDark) Color(0xFFFFCCA6) else Color(0xFF844C27)
-    R.color.asr_tag_bg_streaming -> if (isDark) Color(0xFF3A321E) else Color(0xFFF2EBD9)
-    R.color.asr_tag_fg_streaming -> if (isDark) Color(0xFFFFE7B6) else Color(0xFF6B5630)
-    R.color.asr_tag_bg_non_streaming -> if (isDark) Color(0xFF263233) else Color(0xFFE6EDEC)
-    R.color.asr_tag_fg_non_streaming -> if (isDark) Color(0xFFCBE0E0) else Color(0xFF3E5B5C)
-    R.color.asr_tag_bg_pseudo_streaming -> if (isDark) Color(0xFF322B1A) else Color(0xFFEFE2C8)
-    R.color.asr_tag_fg_pseudo_streaming -> if (isDark) Color(0xFFFFE7B6) else Color(0xFF6B5630)
-    R.color.asr_tag_bg_custom -> if (isDark) Color(0xFF2B2035) else Color(0xFFEAE4F1)
-    R.color.asr_tag_fg_custom -> if (isDark) Color(0xFFE0C9F2) else Color(0xFF5B3E73)
-    R.color.asr_tag_bg_cn_dialect -> if (isDark) Color(0xFF3A1F28) else Color(0xFFF0DEE4)
-    R.color.asr_tag_fg_cn_dialect -> if (isDark) Color(0xFFFFB8C8) else Color(0xFF6A3D4A)
-    R.color.asr_tag_bg_accurate -> if (isDark) Color(0xFF2A2F38) else Color(0xFFE5E8EF)
-    R.color.asr_tag_fg_accurate -> if (isDark) Color(0xFFD8E0EF) else Color(0xFF3B4557)
-    R.color.asr_tag_bg_last_used -> if (isDark) Color(0xFF2C2C2C) else Color(0xFFECECEC)
-    R.color.asr_tag_fg_last_used -> if (isDark) Color(0xFFC9C9C9) else Color(0xFF4D4D4D)
-    else -> Color.Unspecified
+@Composable
+private fun asrTagColor(@ColorRes colorResId: Int, isDark: Boolean): Color {
+    // colors.xml(values-night 提供暗色版)是标签色的唯一事实源,直接按资源解析,消除双份维护
+    return colorResource(colorResId)
 }

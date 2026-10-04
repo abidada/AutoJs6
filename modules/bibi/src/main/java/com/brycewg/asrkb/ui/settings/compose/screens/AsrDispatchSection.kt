@@ -22,13 +22,11 @@ import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.KEY_DISPATCH_CONTINUE_MODE
 import com.brycewg.asrkb.store.KEY_DISPATCH_FEEDBACK_HOLD_SECONDS
 import com.brycewg.asrkb.store.Prefs
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import kotlin.math.roundToInt
 
 @Composable
 internal fun AsrDispatchSection(
-    uiMode: BibiUiMode,
     prefs: Prefs
 ) {
     var continueMode by remember { mutableStateOf(prefs.dispatchContinueMode) }
@@ -48,7 +46,7 @@ internal fun AsrDispatchSection(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    AsrSection(uiMode = uiMode, titleRes = R.string.section_voice_dispatch) {
+    AsrSection(titleRes = R.string.section_voice_dispatch) {
         AsrDropdownPreference(
             id = "dispatch_continue_mode",
             titleRes = R.string.label_dispatch_continue,
@@ -83,7 +81,6 @@ internal fun AsrDispatchSection(
                 Prefs.DISPATCH_FEEDBACK_HOLD_MAX_SECONDS.toFloat(),
             steps = Prefs.DISPATCH_FEEDBACK_HOLD_MAX_SECONDS -
                 Prefs.DISPATCH_FEEDBACK_HOLD_MIN_SECONDS - 1,
-            uiMode = uiMode,
             highlightId = "dispatch_feedback_hold",
             index = 1,
             count = 2,

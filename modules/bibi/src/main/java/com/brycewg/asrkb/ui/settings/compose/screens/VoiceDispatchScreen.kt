@@ -34,7 +34,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.FilterChip
@@ -61,17 +60,14 @@ import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButton
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
-import com.brycewg.asrkb.ui.settings.compose.components.SettingsMaterialItemSurface
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionTitle
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsTextField
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
-import com.brycewg.asrkb.ui.settings.compose.core.settingsSegmentedItemShape
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -84,7 +80,6 @@ import top.yukonga.miuix.kmp.basic.Switch as MiuixSwitch
 
 @Composable
 internal fun VoiceDispatchRoute(
-    uiMode: BibiUiMode,
     presetScriptPath: String?,
     onConsumePreset: () -> Unit,
     onBack: () -> Unit
@@ -105,7 +100,6 @@ internal fun VoiceDispatchRoute(
 
     if (!editing) {
         VoiceDispatchScreen(
-            uiMode = uiMode,
             onBack = onBack,
             onEditRule = {
                 editingRuleId = it
@@ -114,7 +108,6 @@ internal fun VoiceDispatchRoute(
         )
     } else {
         VoiceDispatchRuleEditScreen(
-            uiMode = uiMode,
             ruleId = editingRuleId,
             presetScriptPath = preset.takeIf { editingRuleId == null },
             onBack = {
@@ -127,7 +120,6 @@ internal fun VoiceDispatchRoute(
 
 @Composable
 internal fun VoiceDispatchScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     onEditRule: (String?) -> Unit
 ) {
@@ -255,7 +247,6 @@ internal fun VoiceDispatchScreen(
     }
 
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_voice_dispatch,
         onBack = onBack,
         // 顶栏两侧簇较宽（新建文字按钮 + 双图标），压缩标题边距防 Miuix 居中标题截断
@@ -270,7 +261,6 @@ internal fun VoiceDispatchScreen(
         },
         actions = {
             TransferTopAction(
-                uiMode = uiMode,
                 icon = Icons.Rounded.Download,
                 contentDescriptionRes = R.string.voice_dispatch_import_desc
             ) {
@@ -280,7 +270,6 @@ internal fun VoiceDispatchScreen(
                 }
             }
             TransferTopAction(
-                uiMode = uiMode,
                 icon = Icons.Rounded.Upload,
                 contentDescriptionRes = R.string.voice_dispatch_export_desc
             ) {
@@ -296,7 +285,6 @@ internal fun VoiceDispatchScreen(
         }
     ) { innerPadding, scrollModifier ->
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
@@ -306,9 +294,8 @@ internal fun VoiceDispatchScreen(
                 Column {
                     SettingsSectionTitle(
                         text = stringResource(R.string.label_voice_duplicate_policy),
-                        uiMode = uiMode
                     )
-                    SettingsSectionContainer(uiMode = uiMode) {
+                    SettingsSectionContainer() {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -350,11 +337,9 @@ internal fun VoiceDispatchScreen(
                 Column {
                     SettingsSectionTitle(
                         text = stringResource(R.string.label_voice_dispatch_test),
-                        uiMode = uiMode
                     )
-                    SettingsSectionContainer(uiMode = uiMode) {
+                    SettingsSectionContainer() {
                         SettingsTextField(
-                            uiMode = uiMode,
                             value = testInput,
                             onValueChange = { testInput = it },
                             label = stringResource(R.string.hint_voice_dispatch_test),
@@ -371,7 +356,6 @@ internal fun VoiceDispatchScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             SettingsActionButton(
-                                uiMode = uiMode,
                                 text = stringResource(R.string.btn_voice_dispatch_test),
                                 onClick = {
                                     val hit = dispatcher.match(testInput)
@@ -414,15 +398,13 @@ internal fun VoiceDispatchScreen(
                 Column {
                     SettingsSectionTitle(
                         text = stringResource(R.string.label_voice_dispatch_rules, rules.size),
-                        uiMode = uiMode
                     )
-                    SettingsSectionContainer(uiMode = uiMode) {
+                    SettingsSectionContainer() {
                         if (rules.isEmpty()) {
-                            AiBodyText(uiMode = uiMode, textRes = R.string.summary_voice_dispatch_empty)
+                            AiBodyText(textRes = R.string.summary_voice_dispatch_empty)
                         } else {
                             rules.forEachIndexed { index, rule ->
                                 VoiceDispatchRuleCard(
-                                    uiMode = uiMode,
                                     rule = rule,
                                     index = index,
                                     count = rules.size,
@@ -463,7 +445,6 @@ internal fun VoiceDispatchScreen(
                 onConfirm = { deleteRule(deleteTarget) }
             )
         },
-        uiMode = uiMode,
         onDismiss = { pendingDeleteRule = null }
     )
     // 导入确认框：展示预合并的新增/更新计数，确认后落盘（智能合并，现有规则保留）
@@ -499,7 +480,6 @@ internal fun VoiceDispatchScreen(
                 }
             )
         },
-        uiMode = uiMode,
         onDismiss = { pendingImport = null }
     )
 }
@@ -518,34 +498,23 @@ private fun dispatchTypeLabel(rule: com.brycewg.asrkb.host.voice.VoiceDispatchRu
         else -> rule.dispatchType.name
     }
 
-/** 顶栏导入/导出图标按钮（Material/Miuix 双模式；36dp 紧凑规格，给居中标题让宽；busy 门禁由调用方 onClick 内处理）。 */
+/** 顶栏导入/导出图标按钮（36dp 紧凑规格，给居中标题让宽；busy 门禁由调用方 onClick 内处理）。 */
 @Composable
 private fun TransferTopAction(
-    uiMode: BibiUiMode,
     icon: ImageVector,
     @StringRes contentDescriptionRes: Int,
     onClick: () -> Unit
 ) {
-    when (uiMode) {
-        BibiUiMode.Material -> IconButton(onClick = onClick, modifier = Modifier.size(36.dp)) {
-            Icon(
-                imageVector = icon,
-                contentDescription = stringResource(contentDescriptionRes),
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        BibiUiMode.Miuix -> MiuixIconButton(
-            onClick = onClick,
-            minWidth = 36.dp,
-            minHeight = 36.dp
-        ) {
-            MiuixIcon(
-                imageVector = icon,
-                contentDescription = stringResource(contentDescriptionRes),
-                modifier = Modifier.size(20.dp)
-            )
-        }
+    MiuixIconButton(
+        onClick = onClick,
+        minWidth = 36.dp,
+        minHeight = 36.dp
+    ) {
+        MiuixIcon(
+            imageVector = icon,
+            contentDescription = stringResource(contentDescriptionRes),
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 
@@ -562,7 +531,6 @@ private fun buildRulesExportFileName(): String = "voice_dispatch_rules_" +
  */
 @Composable
 private fun VoiceDispatchRuleCard(
-    uiMode: BibiUiMode,
     rule: VoiceDispatchRule,
     index: Int,
     count: Int,
@@ -736,44 +704,26 @@ private fun VoiceDispatchRuleCard(
                     )
                 }
                 Spacer(Modifier.weight(1f))
-                when (uiMode) {
-                    BibiUiMode.Material -> Switch(
-                        checked = rule.enabled,
-                        onCheckedChange = { checked ->
-                            hapticTap()
-                            onToggle(checked)
-                        }
-                    )
-
-                    BibiUiMode.Miuix -> MiuixSwitch(
-                        checked = rule.enabled,
-                        onCheckedChange = { checked ->
-                            hapticTap()
-                            onToggle(checked)
-                        }
-                    )
-                }
+                MiuixSwitch(
+                    checked = rule.enabled,
+                    onCheckedChange = { checked ->
+                        hapticTap()
+                        onToggle(checked)
+                    }
+                )
             }
         }
     }
 
-    when (uiMode) {
-        BibiUiMode.Material -> SettingsMaterialItemSurface(
-            shape = settingsSegmentedItemShape(index, count)
-        ) {
-            cardBody()
+    // Miuix 模式所有规则共处一张分区卡片，条目间以细分隔线区分
+    Column {
+        if (index > 0) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
         }
-
-        // Miuix 模式所有规则共处一张分区卡片，条目间以细分隔线区分
-        BibiUiMode.Miuix -> Column {
-            if (index > 0) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-            }
-            cardBody()
-        }
+        cardBody()
     }
 }
 

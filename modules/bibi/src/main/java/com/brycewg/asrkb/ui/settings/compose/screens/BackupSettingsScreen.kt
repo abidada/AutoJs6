@@ -35,7 +35,6 @@ import com.brycewg.asrkb.ui.settings.backup.WebDavBackupHelper
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import java.text.SimpleDateFormat
@@ -49,7 +48,6 @@ private const val TAG = "BackupSettingsScreen"
 
 @Composable
 fun BackupSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     actions: SettingsActionController
 ) {
@@ -104,21 +102,19 @@ fun BackupSettingsScreen(
         }
     }
 
-    BackupScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+    BackupScaffold(onBack = onBack) { innerPadding, scrollModifier ->
         SettingsMessageDialog(
             state = messageDialog,
-            uiMode = uiMode,
             onDismiss = { messageDialog = null }
         )
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
         ) {
             item("file") {
-                BackupSection(uiMode = uiMode, titleRes = R.string.section_file_backup) {
+                BackupSection(titleRes = R.string.section_file_backup) {
                     BackupActionPreference(
                         id = "backup_export_file",
                         titleRes = R.string.btn_export_to_file,
@@ -145,7 +141,7 @@ fun BackupSettingsScreen(
             }
 
             item("webdav") {
-                BackupSection(uiMode = uiMode, titleRes = R.string.section_webdav_sync) {
+                BackupSection(titleRes = R.string.section_webdav_sync) {
                     BackupTextField(
                         value = webdavUrl,
                         onValueChange = {
@@ -153,7 +149,6 @@ fun BackupSettingsScreen(
                             prefs.webdavUrl = it
                         },
                         label = stringResource(R.string.hint_webdav_url),
-                        uiMode = uiMode,
                         keyboardType = KeyboardType.Uri,
                         index = 0,
                         count = 5
@@ -165,7 +160,6 @@ fun BackupSettingsScreen(
                             prefs.webdavUsername = it
                         },
                         label = stringResource(R.string.hint_webdav_username),
-                        uiMode = uiMode,
                         keyboardType = KeyboardType.Text,
                         index = 1,
                         count = 5
@@ -177,7 +171,6 @@ fun BackupSettingsScreen(
                             prefs.webdavPassword = it
                         },
                         label = stringResource(R.string.hint_webdav_password),
-                        uiMode = uiMode,
                         keyboardType = KeyboardType.Password,
                         password = true,
                         index = 2,
@@ -217,7 +210,7 @@ fun BackupSettingsScreen(
                             }
                         }
                     )
-                    BackupBodyText(stringResource(R.string.tip_backup_contains_secrets), uiMode)
+                    BackupBodyText(stringResource(R.string.tip_backup_contains_secrets))
                 }
             }
         }

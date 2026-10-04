@@ -25,12 +25,10 @@ import com.brycewg.asrkb.asr.LlmVendor
 import com.brycewg.asrkb.store.JevClassifierProvider
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.ai.AiPostSettingsViewModel
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 
 @Composable
 internal fun TypeSafeLlmSection(
-    uiMode: BibiUiMode,
     prefs: Prefs,
     onChooseModel: () -> Unit,
     primaryIndexOffset: Int,
@@ -58,7 +56,6 @@ internal fun TypeSafeLlmSection(
         }
     )
     AiTextField(
-        uiMode = uiMode,
         value = apiKey,
         onValueChange = {
             apiKey = it
@@ -71,7 +68,6 @@ internal fun TypeSafeLlmSection(
     )
     if (channel == JevClassifierProvider.CLOUDFLARE) {
         AiTextField(
-            uiMode = uiMode,
             value = accountId,
             onValueChange = {
                 accountId = it
@@ -84,7 +80,6 @@ internal fun TypeSafeLlmSection(
     }
     if (channel == JevClassifierProvider.CUSTOM) {
         AiTextField(
-            uiMode = uiMode,
             value = endpoint,
             onValueChange = {
                 endpoint = it
@@ -95,7 +90,6 @@ internal fun TypeSafeLlmSection(
             count = primaryGroupCount
         )
         AiTextField(
-            uiMode = uiMode,
             value = model,
             onValueChange = {
                 model = it
@@ -109,13 +103,12 @@ internal fun TypeSafeLlmSection(
         AiValuePreference(
             titleRes = R.string.label_llm_model_select,
             value = LlmVendor.TYPESAFE.defaultModel,
-            uiMode = uiMode,
             index = index,
             count = primaryGroupCount,
             onClick = onChooseModel
         )
     }
-    AiBodyText(uiMode = uiMode, textRes = R.string.helper_prompt_selection_jev_only)
+    AiBodyText(textRes = R.string.helper_prompt_selection_jev_only)
 }
 
 private fun jevApiKey(prefs: Prefs, provider: JevClassifierProvider): String = when (provider) {
@@ -136,7 +129,6 @@ private fun setJevApiKey(prefs: Prefs, provider: JevClassifierProvider, value: S
 
 @Composable
 internal fun SfFreeLlmSection(
-    uiMode: BibiUiMode,
     presetModels: List<String>,
     staticModels: List<String>,
     sfUseFreeService: Boolean,
@@ -173,7 +165,6 @@ internal fun SfFreeLlmSection(
     )
     if (!sfUseFreeService) {
         AiTextField(
-            uiMode = uiMode,
             value = sfApiKey,
             onValueChange = actions.onSfApiKeyChange,
             label = stringResource(R.string.label_llm_api_key),
@@ -185,7 +176,6 @@ internal fun SfFreeLlmSection(
     AiValuePreference(
         titleRes = R.string.label_sf_free_llm_model,
         value = sfModel.ifBlank { LlmVendor.SF_FREE.defaultModel },
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         trailingActionIcon = if (!sfUseFreeService) Icons.Rounded.CloudDownload else null,
@@ -195,7 +185,6 @@ internal fun SfFreeLlmSection(
     )
     if (showCustomModel) {
         AiTextField(
-            uiMode = uiMode,
             value = sfModel,
             onValueChange = actions.onCustomModelChange,
             label = stringResource(R.string.label_custom_model_id),
@@ -220,25 +209,23 @@ internal fun SfFreeLlmSection(
             onClick = onShowAdvancedParams
         )
     }
-    AiBodyText(uiMode = uiMode, textRes = R.string.sf_free_register_hint)
-    AiButtonRow(uiMode = uiMode) {
-        AiButton(uiMode = uiMode, textRes = R.string.btn_get_api_key, onClick = actions.onOpenRegister)
+    AiBodyText(textRes = R.string.sf_free_register_hint)
+    AiButtonRow() {
+        AiButton(textRes = R.string.btn_get_api_key, onClick = actions.onOpenRegister)
         AiButton(
-            uiMode = uiMode,
             textRes = R.string.btn_llm_test_call,
             enabled = testEnabled,
             onClick = actions.onTestCall
         )
     }
     if (sfUseFreeService) {
-        AiBodyText(uiMode = uiMode, textRes = R.string.sf_free_service_desc)
+        AiBodyText(textRes = R.string.sf_free_service_desc)
         SiliconFlowPoweredByImage()
     }
 }
 
 @Composable
 internal fun BuiltinLlmSection(
-    uiMode: BibiUiMode,
     vendor: LlmVendor,
     config: AiPostSettingsViewModel.BuiltinVendorConfig,
     presetModels: List<String>,
@@ -267,7 +254,6 @@ internal fun BuiltinLlmSection(
         customModelInputVisible = customModelInputVisible
     )
     AiTextField(
-        uiMode = uiMode,
         value = config.apiKey,
         onValueChange = onApiKeyChange,
         label = stringResource(R.string.label_llm_api_key),
@@ -278,7 +264,6 @@ internal fun BuiltinLlmSection(
     AiValuePreference(
         titleRes = R.string.label_llm_model_select,
         value = displayModel,
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         trailingActionIcon = Icons.Rounded.CloudDownload,
@@ -288,7 +273,6 @@ internal fun BuiltinLlmSection(
     )
     if (showCustomModel) {
         AiTextField(
-            uiMode = uiMode,
             value = displayModel,
             onValueChange = onCustomModelChange,
             label = stringResource(R.string.label_custom_model_id),
@@ -303,12 +287,11 @@ internal fun BuiltinLlmSection(
         count = itemCount,
         onClick = onShowAdvancedParams
     )
-    AiButtonRow(uiMode = uiMode) {
+    AiButtonRow() {
         if (vendor.registerUrl.isNotBlank()) {
-            AiButton(uiMode = uiMode, textRes = R.string.btn_llm_register, onClick = onOpenRegister)
+            AiButton(textRes = R.string.btn_llm_register, onClick = onOpenRegister)
         }
         AiButton(
-            uiMode = uiMode,
             textRes = R.string.btn_llm_test_call,
             enabled = testEnabled,
             onClick = onTestCall
@@ -318,7 +301,6 @@ internal fun BuiltinLlmSection(
 
 @Composable
 internal fun CustomLlmSection(
-    uiMode: BibiUiMode,
     provider: Prefs.LlmProvider?,
     customModelInputVisible: Boolean,
     focusProfileNameAfterAdd: Boolean,
@@ -358,13 +340,11 @@ internal fun CustomLlmSection(
     AiValuePreference(
         titleRes = R.string.label_llm_choose_profile,
         value = displayName,
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onClick = onChooseProfile
     )
     AiTextField(
-        uiMode = uiMode,
         value = profileName,
         onValueChange = onProfileNameChange,
         label = stringResource(R.string.label_llm_profile_name),
@@ -373,7 +353,6 @@ internal fun CustomLlmSection(
         count = itemCount
     )
     AiTextField(
-        uiMode = uiMode,
         value = provider?.endpoint.orEmpty(),
         onValueChange = onEndpointChange,
         label = stringResource(R.string.label_llm_endpoint),
@@ -381,7 +360,6 @@ internal fun CustomLlmSection(
         count = itemCount
     )
     AiTextField(
-        uiMode = uiMode,
         value = provider?.apiKey.orEmpty(),
         onValueChange = onApiKeyChange,
         label = stringResource(R.string.label_llm_api_key),
@@ -392,7 +370,6 @@ internal fun CustomLlmSection(
     AiValuePreference(
         titleRes = R.string.label_llm_model_select,
         value = model.ifBlank { stringResource(R.string.option_custom_model) },
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         trailingActionIcon = if (showFetchButton) Icons.Rounded.CloudDownload else null,
@@ -402,7 +379,6 @@ internal fun CustomLlmSection(
     )
     if (customModelInputVisible) {
         AiTextField(
-            uiMode = uiMode,
             value = model,
             onValueChange = onModelChange,
             label = stringResource(R.string.label_custom_model_id),
@@ -417,11 +393,10 @@ internal fun CustomLlmSection(
         count = itemCount,
         onClick = onShowAdvancedParams
     )
-    AiButtonRow(uiMode = uiMode) {
-        AiButton(uiMode = uiMode, textRes = R.string.btn_llm_add_profile, onClick = onAddProfile)
-        AiButton(uiMode = uiMode, textRes = R.string.btn_llm_delete_profile, onClick = onDeleteProfile)
+    AiButtonRow() {
+        AiButton(textRes = R.string.btn_llm_add_profile, onClick = onAddProfile)
+        AiButton(textRes = R.string.btn_llm_delete_profile, onClick = onDeleteProfile)
         AiButton(
-            uiMode = uiMode,
             textRes = R.string.btn_llm_test_call,
             enabled = testEnabled,
             onClick = onTestCall
@@ -431,7 +406,6 @@ internal fun CustomLlmSection(
 
 @Composable
 internal fun ReasoningSection(
-    uiMode: BibiUiMode,
     threshold: Int,
     showParams: Boolean,
     customParamsEnabled: Boolean,
@@ -461,12 +435,11 @@ internal fun ReasoningSection(
         valueRange = 0f..1f,
         steps = 0,
         showKeyPoints = false,
-        uiMode = uiMode,
         index = index,
         count = count,
         onValueChange = { pos -> onThresholdChange(LlmReasoningThreshold.fromSlider(pos)) }
     )
-    AiBodyText(uiMode = uiMode, textRes = R.string.helper_ai_reasoning_threshold)
+    AiBodyText(textRes = R.string.helper_ai_reasoning_threshold)
     if (showParams) {
         var itemIndex = 0
         val itemCount = 1 + (if (customParamsEnabled) 2 else 0)
@@ -480,7 +453,6 @@ internal fun ReasoningSection(
         )
         if (customParamsEnabled) {
             AiTextField(
-                uiMode = uiMode,
                 value = onJson,
                 onValueChange = onOnJsonChange,
                 label = stringResource(R.string.label_reasoning_params_on_json),
@@ -489,7 +461,6 @@ internal fun ReasoningSection(
                 count = itemCount
             )
             AiTextField(
-                uiMode = uiMode,
                 value = offJson,
                 onValueChange = onOffJsonChange,
                 label = stringResource(R.string.label_reasoning_params_off_json),
@@ -497,7 +468,7 @@ internal fun ReasoningSection(
                 index = itemIndex,
                 count = itemCount
             )
-            AiBodyText(uiMode = uiMode, textRes = R.string.hint_reasoning_params_json)
+            AiBodyText(textRes = R.string.hint_reasoning_params_json)
         }
     }
 }

@@ -179,7 +179,7 @@ class FloatingBallViewManager(
                 null
             }
 
-            val theme = BibiViewThemes.resolve(dynCtx, prefs)
+            val theme = BibiViewThemes.resolve(dynCtx)
 
             // 将相对更重的初始化（波纹背景/自定义进度指示器）延后到下一帧，
             // 以降低 addView 当帧的主线程压力，避免与 IME 显示竞争导致掉帧。
@@ -338,7 +338,7 @@ class FloatingBallViewManager(
     fun applyBallTheme() {
         val v = ballView ?: return
         FloatingBallComposeViewFactory.applyTheme(v, prefs)
-        val theme = BibiViewThemes.resolve(v.context, prefs)
+        val theme = BibiViewThemes.resolve(v.context)
         recordingAuraView?.setAuraColor(theme.primary)
         processingSpinner?.setSpinnerColor(applyAlpha(theme.primary, PROCESSING_SPINNER_PRIMARY_ALPHA))
     }
@@ -802,7 +802,7 @@ class FloatingBallViewManager(
 
     private fun startRecordingAura() {
         val theme = try {
-            BibiViewThemes.resolve(ballView?.context ?: context, prefs)
+            BibiViewThemes.resolve(ballView?.context ?: context)
         } catch (e: Throwable) {
             Log.w(TAG, "Failed to resolve aura theme", e)
             null
@@ -1800,7 +1800,7 @@ class FloatingBallViewManager(
         } catch (e: Throwable) {
             Log.w(TAG, "Failed to cancel icon animation", e)
         }
-        icon.setColorFilter(BibiViewThemes.resolve(icon.context, prefs).error)
+        icon.setColorFilter(BibiViewThemes.resolve(icon.context).error)
 
         var canceled = false
         val shake = ValueAnimator.ofFloat(0f, -16f, 16f, -12f, 12f, -6f, 6f, 0f).apply {

@@ -51,21 +51,17 @@ import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.floatingball.FloatingPanelItemId
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
-import com.brycewg.asrkb.ui.settings.compose.components.SettingsMaterialItemSurface
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionTitle
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
-import com.brycewg.asrkb.ui.settings.compose.core.settingsSegmentedItemShape
 import kotlin.math.abs
 
 @Composable
 internal fun FloatingPanelSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -117,7 +113,6 @@ internal fun FloatingPanelSettingsScreen(
     BackHandler(enabled = isDirty) { pendingExit = true }
 
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_floating_panel_settings,
         onBack = { requestBack() },
         actions = {
@@ -133,14 +128,13 @@ internal fun FloatingPanelSettingsScreen(
         }
     ) { innerPadding, scrollModifier ->
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
         ) {
             item("hint") {
-                SettingsSectionContainer(uiMode = uiMode) {
+                SettingsSectionContainer() {
                     SettingsThemedText(
                         text = stringResource(R.string.desc_floating_panel_settings),
                         style = MaterialTheme.typography.bodySmall,
@@ -156,11 +150,9 @@ internal fun FloatingPanelSettingsScreen(
                 Column {
                     SettingsSectionTitle(
                         text = stringResource(R.string.label_floating_panel_enabled),
-                        uiMode = uiMode
                     )
-                    SettingsSectionContainer(uiMode = uiMode) {
+                    SettingsSectionContainer() {
                         PanelItemsReorderList(
-                            uiMode = uiMode,
                             items = enabledItems,
                             onMove = { from, to ->
                                 enabledItems = enabledItems.toMutableList().apply {
@@ -181,9 +173,8 @@ internal fun FloatingPanelSettingsScreen(
                 Column {
                     SettingsSectionTitle(
                         text = stringResource(R.string.label_floating_panel_available),
-                        uiMode = uiMode
                     )
-                    SettingsSectionContainer(uiMode = uiMode) {
+                    SettingsSectionContainer() {
                         if (availableItems.isEmpty()) {
                             SettingsThemedText(
                                 text = stringResource(R.string.summary_floating_panel_all_added),
@@ -196,7 +187,6 @@ internal fun FloatingPanelSettingsScreen(
                         } else {
                             availableItems.forEachIndexed { index, item ->
                                 AddablePanelRow(
-                                    uiMode = uiMode,
                                     item = item,
                                     index = index,
                                     count = availableItems.size,
@@ -231,7 +221,6 @@ internal fun FloatingPanelSettingsScreen(
         } else {
             null
         },
-        uiMode = uiMode,
         onDismiss = {
             when (exitChoice) {
                 UnsavedExit.SAVE -> onBack()
@@ -268,7 +257,6 @@ private class PanelDragState {
 /** 已启用项列表：行间拼接卡片，长按手柄拖动换位（累计位移超过行高即与相邻项交换）。 */
 @Composable
 private fun PanelItemsReorderList(
-    uiMode: BibiUiMode,
     items: List<FloatingPanelItemId>,
     onMove: (Int, Int) -> Unit,
     onDelete: (FloatingPanelItemId) -> Unit
@@ -297,7 +285,6 @@ private fun PanelItemsReorderList(
                         }
                 ) {
                     PanelItemRow(
-                        uiMode = uiMode,
                         item = item,
                         index = index,
                         count = items.size,
@@ -354,7 +341,6 @@ private fun PanelItemsReorderList(
 /** 已启用面板项行：图标 + 名称 + 移除按钮 + 拖动手柄；行本身无点击交互。 */
 @Composable
 private fun PanelItemRow(
-    uiMode: BibiUiMode,
     item: FloatingPanelItemId,
     index: Int,
     count: Int,
@@ -413,30 +399,21 @@ private fun PanelItemRow(
             )
         }
     }
-    when (uiMode) {
-        BibiUiMode.Material -> SettingsMaterialItemSurface(
-            shape = settingsSegmentedItemShape(index, count)
-        ) {
-            row()
+    // Miuix 模式所有行共处一张分区卡片，行间以细分隔线区分
+    Column {
+        if (index > 0) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
         }
-
-        // Miuix 模式所有行共处一张分区卡片，行间以细分隔线区分
-        BibiUiMode.Miuix -> Column {
-            if (index > 0) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-            }
-            row()
-        }
+        row()
     }
 }
 
 /** 可添加项行：点击整行追加到「已启用项」末尾。 */
 @Composable
 private fun AddablePanelRow(
-    uiMode: BibiUiMode,
     item: FloatingPanelItemId,
     index: Int,
     count: Int,
@@ -478,21 +455,13 @@ private fun AddablePanelRow(
             )
         }
     }
-    when (uiMode) {
-        BibiUiMode.Material -> SettingsMaterialItemSurface(
-            shape = settingsSegmentedItemShape(index, count)
-        ) {
-            row()
+    Column {
+        if (index > 0) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
         }
-
-        BibiUiMode.Miuix -> Column {
-            if (index > 0) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-            }
-            row()
-        }
+        row()
     }
 }

@@ -33,13 +33,11 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogSta
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreference
 import com.brycewg.asrkb.ui.settings.compose.components.rememberSettingsChoiceSheetNavigator
 import com.brycewg.asrkb.ui.settings.compose.components.settingsFeatureExplainerDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
 
 @Composable
 fun PromptSelectionSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     onOpenPreview: () -> Unit
 ) {
@@ -57,35 +55,30 @@ fun PromptSelectionSettingsScreen(
     }
 
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_prompt_selection,
         onBack = onBack
     ) { innerPadding, scrollModifier ->
         SettingsChoiceSheet(
             state = modelPickerSheets.current,
-            uiMode = uiMode,
             onDismiss = modelPickerSheets::onDismiss
         )
         SettingsMessageDialog(
             state = messageDialog,
-            uiMode = uiMode,
             onDismiss = { messageDialog = null }
         )
         SettingsFeatureExplainerDialog(
             state = featureDialog,
-            uiMode = uiMode,
             onDismiss = { featureDialog = null }
         )
 
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
         ) {
             item("prompt_selection_switch") {
-                AiSection(uiMode = uiMode, titleRes = R.string.section_prompt_selection_switch) {
+                AiSection(titleRes = R.string.section_prompt_selection_switch) {
                     AiSwitchPreference(
                         id = "prompt_auto_select_enabled",
                         titleRes = R.string.label_prompt_auto_select_enabled,
@@ -114,7 +107,6 @@ fun PromptSelectionSettingsScreen(
                     )
                     if (state.showInvalidWarning) {
                         AiBodyText(
-                            uiMode = uiMode,
                             textRes = R.string.prompt_selection_warning_invalid
                         )
                     }
@@ -122,11 +114,10 @@ fun PromptSelectionSettingsScreen(
             }
 
             item("prompt_selection_model") {
-                AiSection(uiMode = uiMode, titleRes = R.string.section_prompt_selection_model) {
+                AiSection(titleRes = R.string.section_prompt_selection_model) {
                     AiValuePreference(
                         titleRes = R.string.label_prompt_selection_model,
                         value = llmFeatureModelSummary(context, prefs, prefs.promptSelectorModelRef),
-                        uiMode = uiMode,
                         index = 0,
                         count = 2,
                         onClick = {
@@ -152,7 +143,6 @@ fun PromptSelectionSettingsScreen(
                     state.modelSummary?.let { summary ->
                         if (!summary.available) {
                             AiBodyText(
-                                uiMode = uiMode,
                                 textRes = R.string.prompt_selection_model_unavailable
                             )
                         }
@@ -171,7 +161,7 @@ fun PromptSelectionSettingsScreen(
             }
 
             item("prompt_selection_candidates") {
-                AiSection(uiMode = uiMode, titleRes = R.string.section_prompt_selection_candidates) {
+                AiSection(titleRes = R.string.section_prompt_selection_candidates) {
                     state.candidates.forEachIndexed { index, row ->
                         SettingsPreference(
                             entry = SettingsEntry.Switch(
@@ -197,7 +187,7 @@ fun PromptSelectionSettingsScreen(
                         state = state,
                         minCount = viewModel.minimumCandidateCount()
                     ).forEach { line ->
-                        AiBodyText(uiMode = uiMode, text = line)
+                        AiBodyText(text = line)
                     }
                 }
             }

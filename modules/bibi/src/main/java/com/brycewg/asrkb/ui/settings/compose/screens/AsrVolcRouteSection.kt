@@ -11,7 +11,6 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.ui.settings.asr.AsrSettingsUiState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 
 internal typealias AsrExplainedSwitchApplier = (
     target: Boolean,
@@ -26,7 +25,6 @@ internal typealias AsrExplainedSwitchApplier = (
 @Composable
 internal fun AsrVolcRouteSection(
     context: Context,
-    uiMode: BibiUiMode,
     uiState: AsrSettingsUiState,
     appKey: String,
     accessKey: String,
@@ -47,7 +45,6 @@ internal fun AsrVolcRouteSection(
     primaryGroupCount: Int? = null
 ) {
     VolcengineConfig(
-        uiMode = uiMode,
         appKey = appKey,
         onAppKeyChange = onAppKeyChange,
         accessKey = accessKey,

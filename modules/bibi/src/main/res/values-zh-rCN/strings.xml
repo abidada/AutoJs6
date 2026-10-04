@@ -61,14 +61,6 @@
   <string name="settings_tab_input">输入</string>
   <string name="settings_tab_smart">智能</string>
   <string name="settings_tab_system">系统</string>
-  <string name="settings_ui_mode">界面风格</string>
-  <string name="settings_ui_mode_summary">选择 Miuix 或 Material 风格</string>
-  <string name="settings_ui_mode_miuix">Miuix</string>
-  <string name="settings_ui_mode_material">Material</string>
-  <string name="settings_theme_mode">主题模式</string>
-  <string name="settings_theme_mode_system">跟随系统</string>
-  <string name="settings_theme_mode_light">浅色</string>
-  <string name="settings_theme_mode_dark">深色</string>
   <string name="home_summary_enabled">已开启</string>
   <string name="home_summary_disabled">已关闭</string>
   <string name="home_summary_more_input_disabled">未启用</string>

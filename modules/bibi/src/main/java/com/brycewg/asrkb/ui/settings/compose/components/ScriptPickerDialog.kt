@@ -6,7 +6,7 @@
  * - 点 .js/.auto 脚本选中回填；其余文件置灰不可选；
  * - 搜索框：输入即切换为工作目录内全局递归搜索（名称/路径），清空恢复浏览。
  *
- * 采用 Material3 对话框，独立于列表主题，兼容 Material / Miuix 两种模式。
+ * 采用 Material3 对话框，独立于列表主题。
  * 归属模块：ui/settings/compose/components
  */
 @file:Suppress("FunctionName")
@@ -134,8 +134,7 @@ internal fun ScriptPickerDialog(
                 SettingsSearchField(
                     value = query,
                     onValueChange = { query = it },
-                    label = stringResource(R.string.hint_voice_dispatch_script_search),
-                    uiMode = com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode.Material
+                    label = stringResource(R.string.hint_voice_dispatch_script_search)
                 )
                 if (query.trim().isEmpty()) {
                     // 浏览模式：面包屑 + 返回上级

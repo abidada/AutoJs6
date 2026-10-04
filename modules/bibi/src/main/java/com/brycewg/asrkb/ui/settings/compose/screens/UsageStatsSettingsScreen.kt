@@ -11,9 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,7 +26,6 @@ import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +37,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun UsageStatsSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -49,10 +44,7 @@ fun UsageStatsSettingsScreen(
     val prefs = remember(appContext) { Prefs(appContext) }
     val scope = rememberCoroutineScope()
     val hapticTap = LocalSettingsHapticTap.current
-    val shareCardSeed = when (uiMode) {
-        BibiUiMode.Material -> MaterialTheme.colorScheme.primary
-        BibiUiMode.Miuix -> MiuixTheme.colorScheme.primary
-    }.toArgb()
+    val shareCardSeed = MiuixTheme.colorScheme.primary.toArgb()
     var usageInfo by remember(appContext) { mutableStateOf<AboutUsageInfo?>(null) }
     var shareBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var shareBusy by remember { mutableStateOf(false) }
@@ -89,42 +81,27 @@ fun UsageStatsSettingsScreen(
 
     UsageStatsSharePreviewDialog(
         bitmap = shareBitmap,
-        uiMode = uiMode,
         onDismiss = { shareBitmap = null }
     )
 
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.about_stats_title,
         onBack = onBack,
         actions = {
             val shareLabel = stringResource(R.string.about_stats_share)
-            when (uiMode) {
-                BibiUiMode.Material -> IconButton(
-                    onClick = ::openSharePreview,
-                    enabled = !shareBusy
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = shareLabel
-                    )
+            MiuixIconButton(
+                onClick = {
+                    if (!shareBusy) openSharePreview()
                 }
-
-                BibiUiMode.Miuix -> MiuixIconButton(
-                    onClick = {
-                        if (!shareBusy) openSharePreview()
-                    }
-                ) {
-                    MiuixIcon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = shareLabel
-                    )
-                }
+            ) {
+                MiuixIcon(
+                    imageVector = Icons.Rounded.Share,
+                    contentDescription = shareLabel
+                )
             }
         }
     ) { innerPadding, scrollModifier ->
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
@@ -133,58 +110,48 @@ fun UsageStatsSettingsScreen(
             val info = usageInfo
             item("overview") {
                 UsageStatsSection(
-                    uiMode = uiMode,
                     titleRes = R.string.about_stats_overview,
                     highlightId = "about_stats_overview"
                 ) {
                     if (info == null) {
-                        UsageStatsEmptyText(uiMode = uiMode)
+                        UsageStatsEmptyText()
                     } else {
                         UsageStatsHeroText(
                             text = stringResource(R.string.about_days_with_you, info.daysWithYou),
-                            uiMode = uiMode
                         )
                         UsageStatsMetricRow(
                             labelRes = R.string.about_stats_total_audio_label,
                             value = info.totalAudioFormatted,
-                            uiMode = uiMode
                         )
                         UsageStatsMetricRow(
                             labelRes = R.string.about_stats_total_chars_label,
                             value = info.totalCharsFormatted,
-                            uiMode = uiMode
                         )
                         UsageStatsMetricRow(
                             labelRes = R.string.about_stats_sessions_label,
                             value = info.totalSessionsFormatted,
-                            uiMode = uiMode
                         )
-                        AboutDivider(uiMode = uiMode)
+                        AboutDivider()
                         UsageStatsMetricRow(
                             labelRes = R.string.about_stats_avg_audio_label,
                             value = info.avgAudioFormatted,
-                            uiMode = uiMode
                         )
                         UsageStatsMetricRow(
                             labelRes = R.string.about_stats_avg_chars_label,
                             value = info.avgCharsFormatted,
-                            uiMode = uiMode
                         )
                         UsageStatsMetricRow(
                             labelRes = R.string.about_stats_avg_speed_label,
                             value = info.avgSpeedFormatted,
-                            uiMode = uiMode
                         )
-                        AboutDivider(uiMode = uiMode)
+                        AboutDivider()
                         UsageStatsMetricRow(
                             labelRes = R.string.about_stats_daily_avg_7d_label,
                             value = info.dailyAvg7dFormatted,
-                            uiMode = uiMode
                         )
                         UsageStatsMetricRow(
                             labelRes = R.string.about_stats_weekly_avg_4w_label,
                             value = info.weeklyAvg4wFormatted,
-                            uiMode = uiMode
                         )
                     }
                 }
@@ -192,39 +159,33 @@ fun UsageStatsSettingsScreen(
 
             item("daily") {
                 UsageStatsSection(
-                    uiMode = uiMode,
                     titleRes = R.string.about_last_7_days,
                     highlightId = "about_last_7_days"
                 ) {
                     UsageStatsProgressList(
                         items = info?.dailyItems.orEmpty(),
-                        uiMode = uiMode
                     )
                 }
             }
 
             item("failure") {
                 UsageStatsSection(
-                    uiMode = uiMode,
                     titleRes = R.string.about_online_asr_failure_title,
                     highlightId = "about_online_asr_failure_title"
                 ) {
                     UsageStatsProgressList(
                         items = info?.failureItems.orEmpty(),
-                        uiMode = uiMode
                     )
                 }
             }
 
             item("vendor") {
                 UsageStatsSection(
-                    uiMode = uiMode,
                     titleRes = R.string.about_by_vendor,
                     highlightId = "about_by_vendor"
                 ) {
                     UsageStatsProgressList(
                         items = info?.vendorItems.orEmpty(),
-                        uiMode = uiMode
                     )
                 }
             }

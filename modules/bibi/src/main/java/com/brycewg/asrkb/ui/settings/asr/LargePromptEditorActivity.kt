@@ -30,7 +30,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsTextField
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsTheme
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 
 class LargePromptEditorActivity : BaseActivity() {
@@ -41,13 +40,8 @@ class LargePromptEditorActivity : BaseActivity() {
         prefs = Prefs(this)
         val initialText = intent.getStringExtra(EXTRA_TEXT).orEmpty()
         setContent {
-            val uiMode = BibiUiMode.fromId(prefs.settingsUiMode)
-            BibiSettingsTheme(
-                uiMode = uiMode,
-                themeMode = prefs.settingsThemeMode
-            ) {
+            BibiSettingsTheme {
                 LargePromptEditorScreen(
-                    uiMode = uiMode,
                     initialText = initialText,
                     onDone = ::finishWithResult
                 )
@@ -71,19 +65,16 @@ class LargePromptEditorActivity : BaseActivity() {
 
 @Composable
 private fun LargePromptEditorScreen(
-    uiMode: BibiUiMode,
     initialText: String,
     onDone: (String) -> Unit
 ) {
     var text by rememberSaveable(initialText) { mutableStateOf(initialText) }
     BackHandler { onDone(text) }
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_llm_prompt_editor,
         onBack = { onDone(text) }
     ) { innerPadding, scrollModifier ->
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
@@ -91,7 +82,6 @@ private fun LargePromptEditorScreen(
         ) {
             item("editor") {
                 SettingsTextField(
-                    uiMode = uiMode,
                     value = text,
                     onValueChange = { text = it },
                     label = stringResource(R.string.label_llm_prompt),
@@ -101,9 +91,8 @@ private fun LargePromptEditorScreen(
                 )
             }
             item("done") {
-                SettingsActionButtonRow(uiMode = uiMode) {
+                SettingsActionButtonRow {
                     SettingsActionButton(
-                        uiMode = uiMode,
                         text = stringResource(R.string.btn_llm_prompt_editor_done),
                         onClick = { onDone(text) },
                         modifier = Modifier.weight(1f)

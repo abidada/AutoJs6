@@ -28,12 +28,10 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsFeatureExplainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsFeatureExplainerDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 
 @Composable
 fun InputSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     actions: SettingsActionController
 ) {
@@ -130,24 +128,20 @@ fun InputSettingsScreen(
         )
     }
 
-    InputScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+    InputScaffold(onBack = onBack) { innerPadding, scrollModifier ->
         SettingsChoiceSheet(
             state = choiceSheet,
-            uiMode = uiMode,
             onDismiss = { choiceSheet = null }
         )
         SettingsMessageDialog(
             state = messageDialog,
-            uiMode = uiMode,
             onDismiss = { messageDialog = null }
         )
         SettingsFeatureExplainerDialog(
             state = featureExplainerDialog,
-            uiMode = uiMode,
             onDismiss = { featureExplainerDialog = null }
         )
         InputSettingsRouteContent(
-            uiMode = uiMode,
             innerPadding = innerPadding,
             scrollModifier = scrollModifier,
             prefs = prefs,

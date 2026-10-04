@@ -1,5 +1,5 @@
 /**
- * Compose 设置弹窗操作按钮行，统一 Material 与 Miuix 的 action 布局。
+ * Compose 设置弹窗操作按钮行。
  *
  * 归属模块：ui/settings/compose/components
  */
@@ -12,19 +12,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
@@ -39,7 +30,6 @@ internal data class SettingsDialogAction(
 
 @Composable
 internal fun SettingsDialogActionRow(
-    uiMode: BibiUiMode,
     actions: List<SettingsDialogAction>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
@@ -56,7 +46,6 @@ internal fun SettingsDialogActionRow(
         ) {
             actions.forEach { action ->
                 SettingsDialogActionButton(
-                    uiMode = uiMode,
                     action = action,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -70,7 +59,6 @@ internal fun SettingsDialogActionRow(
     ) {
         actions.forEach { action ->
             SettingsDialogActionButton(
-                uiMode = uiMode,
                 action = action,
                 modifier = Modifier.weight(1f)
             )
@@ -80,7 +68,6 @@ internal fun SettingsDialogActionRow(
 
 @Composable
 private fun SettingsDialogActionButton(
-    uiMode: BibiUiMode,
     action: SettingsDialogAction,
     modifier: Modifier
 ) {
@@ -89,66 +76,15 @@ private fun SettingsDialogActionButton(
         hapticTap()
         action.onClick()
     }
-    when (uiMode) {
-        BibiUiMode.Material -> MaterialDialogActionButton(action, modifier, clickWithHaptic)
-
-        BibiUiMode.Miuix -> MiuixTextButton(
-            text = action.text,
-            onClick = clickWithHaptic,
-            enabled = action.enabled,
-            modifier = modifier,
-            colors = if (action.primary) {
-                MiuixButtonDefaults.textButtonColorsPrimary()
-            } else {
-                MiuixButtonDefaults.textButtonColors()
-            }
-        )
-    }
-}
-
-@Composable
-private fun MaterialDialogActionButton(
-    action: SettingsDialogAction,
-    modifier: Modifier,
-    onClick: () -> Unit
-) {
-    val buttonModifier = modifier.heightIn(min = SettingsLayoutMetrics.ActionButtonMinHeight)
-    val shape = RoundedCornerShape(SettingsLayoutMetrics.ActionButtonCorner)
-    val contentPadding = PaddingValues(
-        horizontal = SettingsLayoutMetrics.ActionButtonInsideHorizontalPadding,
-        vertical = SettingsLayoutMetrics.ActionButtonInsideVerticalPadding
+    MiuixTextButton(
+        text = action.text,
+        onClick = clickWithHaptic,
+        enabled = action.enabled,
+        modifier = modifier,
+        colors = if (action.primary) {
+            MiuixButtonDefaults.textButtonColorsPrimary()
+        } else {
+            MiuixButtonDefaults.textButtonColors()
+        }
     )
-    val content: @Composable () -> Unit = {
-        Text(
-            text = action.text,
-            color = if (!action.enabled && !action.primary) {
-                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-            } else {
-                Color.Unspecified
-            },
-            maxLines = 2,
-            textAlign = TextAlign.Center
-        )
-    }
-    if (action.primary) {
-        Button(
-            onClick = onClick,
-            enabled = action.enabled,
-            modifier = buttonModifier,
-            shape = shape,
-            contentPadding = contentPadding
-        ) {
-            content()
-        }
-    } else {
-        TextButton(
-            onClick = onClick,
-            enabled = action.enabled,
-            modifier = buttonModifier,
-            shape = shape,
-            contentPadding = contentPadding
-        ) {
-            content()
-        }
-    }
 }

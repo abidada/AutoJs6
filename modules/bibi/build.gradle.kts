@@ -122,6 +122,9 @@ dependencies {
 
     // 汉字→带调拼音（自定义唤醒词生成），LGPL
     implementation("com.belerweb:pinyin4j:2.5.1")
+    // material-color-utilities:View 系主题与 Miuix ThemeController(MonetSystem+keyColor)同源算色,
+    // 保证悬浮层与 Compose 设置页从同一种子色生成一致的色板(miui 以 runtime 依赖携带,需显式声明才能编译引用)。
+    implementation("com.materialkolor:material-color-utilities:4.1.1")
     implementation("top.yukonga.miuix.kmp:miuix-ui-android:0.9.1")
     implementation("top.yukonga.miuix.kmp:miuix-icons-android:0.9.1")
     implementation("top.yukonga.miuix.kmp:miuix-preference-android:0.9.1")

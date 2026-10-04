@@ -13,12 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +39,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import java.util.Date
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard
@@ -57,7 +50,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun PromptSelectionPreviewScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -83,14 +75,12 @@ fun PromptSelectionPreviewScreen(
     }
 
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_prompt_selection_preview,
         onBack = onBack,
         bottomBar = {
-            SettingsActionButtonRow(uiMode = uiMode) {
+            SettingsActionButtonRow() {
                 when (state.phase) {
                     PromptSelectionPreviewViewModel.Phase.SELECTING -> SettingsActionButton(
-                        uiMode = uiMode,
                         text = stringResource(
                             R.string.action_start_prompt_selection_preview,
                             state.selectedIds.size
@@ -101,7 +91,6 @@ fun PromptSelectionPreviewScreen(
                     )
 
                     PromptSelectionPreviewViewModel.Phase.RUNNING -> SettingsActionButton(
-                        uiMode = uiMode,
                         text = stringResource(R.string.action_cancel_prompt_selection_preview),
                         onClick = viewModel::cancel,
                         modifier = Modifier.weight(1f)
@@ -109,7 +98,6 @@ fun PromptSelectionPreviewScreen(
 
                     PromptSelectionPreviewViewModel.Phase.COMPLETED,
                     PromptSelectionPreviewViewModel.Phase.CANCELLED -> SettingsActionButton(
-                        uiMode = uiMode,
                         text = stringResource(R.string.action_reselect_preview_records),
                         onClick = viewModel::resetSelection,
                         modifier = Modifier.weight(1f)
@@ -120,11 +108,9 @@ fun PromptSelectionPreviewScreen(
     ) { innerPadding, scrollModifier ->
         SettingsMessageDialog(
             state = fullTextDialog,
-            uiMode = uiMode,
             onDismiss = { fullTextDialog = null }
         )
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
@@ -132,7 +118,7 @@ fun PromptSelectionPreviewScreen(
         ) {
             item("preview_history") {
                 if (state.history.isEmpty()) {
-                    AiBodyText(uiMode = uiMode, textRes = R.string.prompt_selection_preview_empty_history)
+                    AiBodyText(textRes = R.string.prompt_selection_preview_empty_history)
                 }
             }
             val visibleHistory = if (state.phase == PromptSelectionPreviewViewModel.Phase.SELECTING) {
@@ -147,7 +133,6 @@ fun PromptSelectionPreviewScreen(
                     // Only the selected cards remain in the list. Keep their movement animated,
                     // but remove fade animations so unselected cards disappear immediately.
                     modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
-                    uiMode = uiMode,
                     item = item,
                     result = state.results.firstOrNull { it.recordId == item.id },
                     selecting = selecting,
@@ -175,7 +160,6 @@ fun PromptSelectionPreviewScreen(
 @OptIn(ExperimentalFoundationApi::class)
 private fun PreviewHistoryCard(
     modifier: Modifier,
-    uiMode: BibiUiMode,
     item: PromptSelectionPreviewViewModel.HistoryItem,
     result: PromptSelectionPreviewViewModel.PreviewResult?,
     selecting: Boolean,
@@ -185,38 +169,19 @@ private fun PreviewHistoryCard(
     onOpen: () -> Unit
 ) {
     val cardModifier = modifier.fillMaxWidth()
-    when (uiMode) {
-        BibiUiMode.Material -> ElevatedCard(
-            onClick = onOpen,
-            modifier = cardModifier,
-            shape = RoundedCornerShape(SettingsLayoutMetrics.MaterialSectionShape),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = if (checked && selecting) {
-                    MaterialTheme.colorScheme.secondaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainer
-                }
-            )
-        ) {
-            PreviewHistoryCardContent(uiMode, item, result, selecting, checked, enabled, onToggle)
-        }
-
-        BibiUiMode.Miuix -> MiuixCard(
-            modifier = cardModifier,
-            cornerRadius = MiuixCardDefaults.CornerRadius,
-            insideMargin = androidx.compose.foundation.layout.PaddingValues(0.dp),
-            onClick = onOpen,
-            showIndication = true
-        ) {
-            PreviewHistoryCardContent(uiMode, item, result, selecting, checked, enabled, onToggle)
-        }
+    MiuixCard(
+        modifier = cardModifier,
+        cornerRadius = MiuixCardDefaults.CornerRadius,
+        insideMargin = androidx.compose.foundation.layout.PaddingValues(0.dp),
+        onClick = onOpen,
+        showIndication = true
+    ) {
+        PreviewHistoryCardContent(item, result, selecting, checked, enabled, onToggle)
     }
 }
 
 @Composable
 private fun PreviewHistoryCardContent(
-    uiMode: BibiUiMode,
     item: PromptSelectionPreviewViewModel.HistoryItem,
     result: PromptSelectionPreviewViewModel.PreviewResult?,
     selecting: Boolean,
@@ -236,40 +201,24 @@ private fun PreviewHistoryCardContent(
             } else {
                 historyMetadata(item.timestamp, item.vendorId, item.source)
             }
-            if (uiMode == BibiUiMode.Material) {
-                Text(
-                    text = metadata,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = if (result != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                MiuixText(
-                    text = metadata,
-                    style = MiuixTheme.textStyles.body2,
-                    color = if (result != null) {
-                        MiuixTheme.colorScheme.primary
-                    } else {
-                        MiuixTheme.colorScheme.onSurfaceVariantSummary
-                    }
-                )
-            }
+            MiuixText(
+                text = metadata,
+                style = MiuixTheme.textStyles.body2,
+                color = if (result != null) {
+                    MiuixTheme.colorScheme.primary
+                } else {
+                    MiuixTheme.colorScheme.onSurfaceVariantSummary
+                }
+            )
             Spacer(Modifier.size(5.dp))
-            if (uiMode == BibiUiMode.Material) {
-                Text(text = item.summary, style = MaterialTheme.typography.bodyLarge)
-            } else {
-                MiuixText(text = item.summary, style = MiuixTheme.textStyles.body1)
-            }
+            MiuixText(text = item.summary, style = MiuixTheme.textStyles.body1)
         }
         if (selecting) {
-            if (uiMode == BibiUiMode.Material) {
-                Checkbox(checked = checked, onCheckedChange = onToggle, enabled = enabled)
-            } else {
-                MiuixCheckbox(
-                    state = if (checked) ToggleableState.On else ToggleableState.Off,
-                    onClick = { onToggle(!checked) },
-                    enabled = enabled
-                )
-            }
+            MiuixCheckbox(
+                state = if (checked) ToggleableState.On else ToggleableState.Off,
+                onClick = { onToggle(!checked) },
+                enabled = enabled
+            )
         }
     }
 }

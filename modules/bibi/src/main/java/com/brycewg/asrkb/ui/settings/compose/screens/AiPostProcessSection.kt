@@ -10,11 +10,9 @@ package com.brycewg.asrkb.ui.settings.compose.screens
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.brycewg.asrkb.R
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 
 @Composable
 internal fun AiPostProcessSection(
-    uiMode: BibiUiMode,
     postProcessEnabled: Boolean,
     typewriterEnabled: Boolean,
     skipUnderChars: Int,
@@ -24,7 +22,7 @@ internal fun AiPostProcessSection(
     onSkipUnderCharsFinished: () -> Unit,
     onOpenPromptSelection: () -> Unit
 ) {
-    AiSection(uiMode = uiMode, titleRes = R.string.section_post_process_scope) {
+    AiSection(titleRes = R.string.section_post_process_scope) {
         val itemCount = if (postProcessEnabled) 4 else 1
         AiSwitchPreference(
             id = "post_process_enabled",
@@ -56,7 +54,6 @@ internal fun AiPostProcessSection(
                 value = skipUnderChars.toFloat(),
                 valueRange = 0f..100f,
                 steps = 19,
-                uiMode = uiMode,
                 index = 3,
                 count = itemCount,
                 onValueChange = { value ->
@@ -64,14 +61,13 @@ internal fun AiPostProcessSection(
                 },
                 onValueChangeFinished = { onSkipUnderCharsFinished() }
             )
-            AiBodyText(uiMode = uiMode, textRes = R.string.helper_ai_skip_under_chars)
+            AiBodyText(textRes = R.string.helper_ai_skip_under_chars)
         }
     }
 }
 
 @Composable
 internal fun AiEditSection(
-    uiMode: BibiUiMode,
     aiEditPreferLastAsr: Boolean,
     customSystemPromptEnabled: Boolean,
     aiEditSystemPrompt: String,
@@ -80,7 +76,7 @@ internal fun AiEditSection(
     onCustomSystemPromptEnabledChange: (Boolean) -> Unit,
     onAiEditSystemPromptChange: (String) -> Unit
 ) {
-    AiSection(uiMode = uiMode, titleRes = R.string.section_ai_edit) {
+    AiSection(titleRes = R.string.section_ai_edit) {
         val itemCount = if (customSystemPromptEnabled) 3 else 2
         val displaySystemPrompt = aiEditSystemPrompt.ifBlank { defaultSystemPrompt }
         AiSwitchPreference(
@@ -101,7 +97,6 @@ internal fun AiEditSection(
         )
         if (customSystemPromptEnabled) {
             AiTextField(
-                uiMode = uiMode,
                 value = displaySystemPrompt,
                 onValueChange = onAiEditSystemPromptChange,
                 label = stringResource(R.string.label_ai_edit_system_prompt),
@@ -110,10 +105,9 @@ internal fun AiEditSection(
                 index = 2,
                 count = itemCount
             )
-            AiBodyText(uiMode = uiMode, textRes = R.string.helper_ai_edit_system_prompt)
-            AiButtonRow(uiMode = uiMode) {
+            AiBodyText(textRes = R.string.helper_ai_edit_system_prompt)
+            AiButtonRow() {
                 AiButton(
-                    uiMode = uiMode,
                     textRes = R.string.action_reset_to_default,
                     enabled = aiEditSystemPrompt.isNotBlank(),
                     onClick = { onAiEditSystemPromptChange("") }

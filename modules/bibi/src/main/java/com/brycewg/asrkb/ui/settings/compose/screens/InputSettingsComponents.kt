@@ -18,18 +18,15 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSliderPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsValuePreference
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
 
 @Composable
 internal fun InputScaffold(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_input_settings,
         onBack = onBack,
         content = content
@@ -38,11 +35,10 @@ internal fun InputScaffold(
 
 @Composable
 internal fun InputSection(
-    uiMode: BibiUiMode,
     titleRes: Int,
     content: @Composable () -> Unit
 ) {
-    SettingsSectionContainer(uiMode = uiMode, titleRes = titleRes) {
+    SettingsSectionContainer(titleRes = titleRes) {
         content()
     }
 }
@@ -72,7 +68,6 @@ internal fun InputExplainedSwitch(
 internal fun InputValuePreference(
     titleRes: Int,
     value: String,
-    uiMode: BibiUiMode,
     highlightId: String? = null,
     index: Int = 0,
     count: Int = 1,
@@ -82,19 +77,17 @@ internal fun InputValuePreference(
         SettingsValuePreference(
             titleRes = titleRes,
             value = value,
-            uiMode = uiMode,
             index = index,
             count = count,
             onClick = onClick
         )
     }
-    if (highlightId == null) content() else SettingsHighlightContainer(highlightId, uiMode, content)
+    if (highlightId == null) content() else SettingsHighlightContainer(highlightId, content)
 }
 
 @Composable
 internal fun InputKeyboardHeightControl(
     selectedTier: Int,
-    uiMode: BibiUiMode,
     index: Int = 0,
     count: Int = 1,
     onSelected: (Int) -> Unit
@@ -124,7 +117,6 @@ internal fun InputSliderPreference(
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
     steps: Int,
-    uiMode: BibiUiMode,
     showKeyPoints: Boolean = steps in 1..10,
     highlightId: String? = null,
     index: Int = 0,
@@ -133,7 +125,6 @@ internal fun InputSliderPreference(
     onValueChangeFinished: (Float) -> Unit = { _ -> }
 ) {
     SettingsSliderPreference(
-        uiMode = uiMode,
         title = stringResource(titleRes),
         valueLabel = valueLabel,
         value = value,

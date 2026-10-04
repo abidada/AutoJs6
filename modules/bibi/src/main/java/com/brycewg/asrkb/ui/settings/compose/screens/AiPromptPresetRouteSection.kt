@@ -16,11 +16,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.PromptPreset
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 
 @Composable
 internal fun AiPromptPresetRouteSection(
-    uiMode: BibiUiMode,
     preset: PromptPreset?,
     focusTitleAfterAdd: Boolean,
     onFocusedTitle: () -> Unit,
@@ -32,9 +30,8 @@ internal fun AiPromptPresetRouteSection(
     onAddPreset: () -> Unit,
     onDeletePreset: () -> Unit
 ) {
-    AiSection(uiMode = uiMode, titleRes = R.string.label_llm_prompt_presets) {
+    AiSection(titleRes = R.string.label_llm_prompt_presets) {
         PromptPresetSection(
-            uiMode = uiMode,
             preset = preset,
             focusTitleAfterAdd = focusTitleAfterAdd,
             onFocusedTitle = onFocusedTitle,
@@ -51,7 +48,6 @@ internal fun AiPromptPresetRouteSection(
 
 @Composable
 internal fun PromptPresetSection(
-    uiMode: BibiUiMode,
     preset: PromptPreset?,
     focusTitleAfterAdd: Boolean,
     onFocusedTitle: () -> Unit,
@@ -75,13 +71,11 @@ internal fun PromptPresetSection(
     AiValuePreference(
         titleRes = R.string.label_llm_prompt_presets,
         value = preset?.title.orEmpty().ifBlank { stringResource(R.string.untitled_preset) },
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onClick = onChoosePreset
     )
     AiTextField(
-        uiMode = uiMode,
         value = preset?.title.orEmpty(),
         onValueChange = onTitleChange,
         label = stringResource(R.string.label_llm_prompt_title),
@@ -90,7 +84,6 @@ internal fun PromptPresetSection(
         count = itemCount
     )
     AiTextField(
-        uiMode = uiMode,
         value = preset?.skill.orEmpty(),
         onValueChange = onSkillChange,
         label = stringResource(R.string.label_llm_prompt_skill),
@@ -98,7 +91,6 @@ internal fun PromptPresetSection(
         count = itemCount
     )
     AiTextField(
-        uiMode = uiMode,
         value = preset?.content.orEmpty(),
         onValueChange = onContentChange,
         label = stringResource(R.string.label_llm_prompt),
@@ -110,22 +102,19 @@ internal fun PromptPresetSection(
         count = itemCount
     )
     if (preset?.content.orEmpty().lineCount() >= 15) {
-        AiButtonRow(uiMode = uiMode) {
+        AiButtonRow() {
             AiButton(
-                uiMode = uiMode,
                 textRes = R.string.btn_llm_edit_prompt_fullscreen,
                 onClick = onOpenContentEditor
             )
         }
     }
-    AiButtonRow(uiMode = uiMode) {
+    AiButtonRow() {
         AiButton(
-            uiMode = uiMode,
             textRes = R.string.btn_add_preset,
             onClick = onAddPreset
         )
         AiButton(
-            uiMode = uiMode,
             textRes = R.string.btn_delete_preset,
             onClick = onDeletePreset
         )

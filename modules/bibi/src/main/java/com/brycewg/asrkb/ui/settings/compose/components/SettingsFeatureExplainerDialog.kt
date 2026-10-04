@@ -22,10 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
-import androidx.compose.material3.Checkbox as MaterialCheckbox
 import androidx.compose.material3.Icon as MaterialIcon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text as MaterialText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,12 +30,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import com.brycewg.asrkb.R
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import top.yukonga.miuix.kmp.basic.Checkbox as MiuixCheckbox
@@ -127,7 +122,6 @@ internal fun settingsFeatureExplainerDialogState(
 @Composable
 internal fun SettingsFeatureExplainerDialog(
     state: SettingsFeatureExplainerDialogState?,
-    uiMode: BibiUiMode,
     onDismiss: () -> Unit
 ) {
     val visibleState = state ?: return
@@ -161,78 +155,37 @@ internal fun SettingsFeatureExplainerDialog(
         }
     }
 
-    when (uiMode) {
-        BibiUiMode.Material -> {
-            val alpha = animateSettingsDialogExitAlpha(
-                show = exit.show,
-                label = "FeatureExplainerDialogAlpha"
-            )
-            MaterialSettingsDialogExitEffect(show = exit.show, onFinished = ::finishDismiss)
-            MaterialSettingsAlertDialog(
-                onDismissRequest = ::dismissByScrim,
-                modifier = Modifier.graphicsLayer(alpha = alpha),
-                title = visibleState.title,
-                text = {
-                    FeatureExplainerContent(
-                        state = visibleState,
-                        uiMode = uiMode,
-                        dontShowAgain = dontShowAgain,
-                        onDontShowAgainChange = { dontShowAgain = it },
-                        modifier = Modifier.padding(bottom = SettingsLayoutMetrics.SheetBottomPadding)
-                    )
-                },
-                buttons = {
-                    MaterialSettingsDialogButtonRow(
-                        actions = listOf(
-                            MaterialSettingsDialogAction(
-                                text = visibleState.cancelText,
-                                onClick = ::cancel
-                            ),
-                            MaterialSettingsDialogAction(
-                                text = visibleState.confirmText,
-                                onClick = ::confirm
-                            )
-                        )
-                    )
-                }
-            )
-        }
-
-        BibiUiMode.Miuix -> OverlayDialog(
-            show = exit.show,
-            title = visibleState.title,
-            onDismissRequest = ::dismissByScrim,
-            onDismissFinished = ::finishDismiss
-        ) {
-            FeatureExplainerContent(
-                state = visibleState,
-                uiMode = uiMode,
-                dontShowAgain = dontShowAgain,
-                onDontShowAgainChange = { dontShowAgain = it },
-                modifier = Modifier.padding(bottom = SettingsLayoutMetrics.DialogContentBottomPadding)
-            )
-            SettingsDialogActionRow(
-                uiMode = BibiUiMode.Miuix,
-                actions = listOf(
-                    SettingsDialogAction(
-                        text = visibleState.cancelText,
-                        onClick = ::cancel
-                    ),
-                    SettingsDialogAction(
-                        text = visibleState.confirmText,
-                        onClick = ::confirm,
-                        primary = true
-                    )
+    OverlayDialog(
+        show = exit.show,
+        title = visibleState.title,
+        onDismissRequest = ::dismissByScrim,
+        onDismissFinished = ::finishDismiss
+    ) {
+        FeatureExplainerContent(
+            state = visibleState,
+            dontShowAgain = dontShowAgain,
+            onDontShowAgainChange = { dontShowAgain = it },
+            modifier = Modifier.padding(bottom = SettingsLayoutMetrics.DialogContentBottomPadding)
+        )
+        SettingsDialogActionRow(
+            actions = listOf(
+                SettingsDialogAction(
+                    text = visibleState.cancelText,
+                    onClick = ::cancel
+                ),
+                SettingsDialogAction(
+                    text = visibleState.confirmText,
+                    onClick = ::confirm,
+                    primary = true
                 )
             )
-        }
+        )
     }
 }
 
 @Composable
 private fun FeatureExplainerContent(
     state: SettingsFeatureExplainerDialogState,
-    uiMode: BibiUiMode,
     dontShowAgain: Boolean,
     onDontShowAgainChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
@@ -245,24 +198,18 @@ private fun FeatureExplainerContent(
     ) {
         FeatureExplainerText(
             text = state.directionText,
-            uiMode = uiMode,
             accent = true,
             strong = true
         )
         Spacer(modifier = Modifier.height(SettingsLayoutMetrics.FeatureExplainerSectionSpacing))
         FeatureDescriptionRow(
             label = state.fromLabel,
-            description = state.fromDescription,
-            uiMode = uiMode
+            description = state.fromDescription
         )
-        val arrowTint = when (uiMode) {
-            BibiUiMode.Material -> MaterialTheme.colorScheme.primary
-            BibiUiMode.Miuix -> MiuixTheme.colorScheme.primary
-        }
         MaterialIcon(
             imageVector = Icons.Rounded.ArrowDownward,
             contentDescription = null,
-            tint = arrowTint,
+            tint = MiuixTheme.colorScheme.primary,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(vertical = SettingsLayoutMetrics.FeatureExplainerIconVerticalPadding)
@@ -270,14 +217,12 @@ private fun FeatureExplainerContent(
         FeatureDescriptionRow(
             label = state.toLabel,
             description = state.toDescription,
-            uiMode = uiMode,
             strongDescription = true
         )
         state.dontShowAgainText?.let { text ->
             Spacer(modifier = Modifier.height(SettingsLayoutMetrics.FeatureExplainerDontShowSpacing))
             DontShowAgainRow(
                 text = text,
-                uiMode = uiMode,
                 checked = dontShowAgain,
                 onCheckedChange = onDontShowAgainChange
             )
@@ -289,19 +234,16 @@ private fun FeatureExplainerContent(
 private fun FeatureDescriptionRow(
     label: String,
     description: String,
-    uiMode: BibiUiMode,
     strongDescription: Boolean = false
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
         FeatureExplainerText(
             text = label,
-            uiMode = uiMode,
             secondary = true
         )
         Spacer(modifier = Modifier.width(SettingsLayoutMetrics.FeatureExplainerLabelSpacing))
         FeatureExplainerText(
             text = description,
-            uiMode = uiMode,
             strong = strongDescription,
             modifier = Modifier.weight(1f)
         )
@@ -311,7 +253,6 @@ private fun FeatureDescriptionRow(
 @Composable
 internal fun DontShowAgainRow(
     text: String,
-    uiMode: BibiUiMode,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
@@ -326,21 +267,13 @@ internal fun DontShowAgainRow(
             .clickable(role = Role.Checkbox) { changeWithHaptic(!checked) },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        when (uiMode) {
-            BibiUiMode.Material -> MaterialCheckbox(
-                checked = checked,
-                onCheckedChange = ::changeWithHaptic
-            )
-
-            BibiUiMode.Miuix -> MiuixCheckbox(
-                state = if (checked) ToggleableState.On else ToggleableState.Off,
-                onClick = { changeWithHaptic(!checked) }
-            )
-        }
+        MiuixCheckbox(
+            state = if (checked) ToggleableState.On else ToggleableState.Off,
+            onClick = { changeWithHaptic(!checked) }
+        )
         Spacer(modifier = Modifier.width(SettingsLayoutMetrics.FeatureExplainerLabelSpacing))
         FeatureExplainerText(
             text = text,
-            uiMode = uiMode,
             modifier = Modifier.weight(1f)
         )
     }
@@ -349,45 +282,26 @@ internal fun DontShowAgainRow(
 @Composable
 private fun FeatureExplainerText(
     text: String,
-    uiMode: BibiUiMode,
     modifier: Modifier = Modifier,
     strong: Boolean = false,
     secondary: Boolean = false,
     accent: Boolean = false
 ) {
-    when (uiMode) {
-        BibiUiMode.Material -> MaterialText(
-            text = text,
-            modifier = modifier,
-            color = when {
-                accent -> MaterialTheme.colorScheme.primary
-                secondary -> MaterialTheme.colorScheme.onSurfaceVariant
-                else -> MaterialTheme.colorScheme.onSurface
-            },
-            style = if (strong) {
-                MaterialTheme.typography.titleMedium
-            } else {
-                MaterialTheme.typography.bodyMedium
-            },
-            fontWeight = if (strong) FontWeight.SemiBold else FontWeight.Normal
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            modifier = modifier,
-            color = when {
-                accent -> MiuixTheme.colorScheme.primary
-                secondary -> MiuixTheme.colorScheme.onSurfaceVariantSummary
-                else -> MiuixTheme.colorScheme.onSurface
-            },
-            style = if (strong) {
-                MiuixTheme.textStyles.title4
-            } else {
-                MiuixTheme.textStyles.body2
-            },
-            fontWeight = if (strong) FontWeight.SemiBold else FontWeight.Normal
-        )
-    }
+    MiuixText(
+        text = text,
+        modifier = modifier,
+        color = when {
+            accent -> MiuixTheme.colorScheme.primary
+            secondary -> MiuixTheme.colorScheme.onSurfaceVariantSummary
+            else -> MiuixTheme.colorScheme.onSurface
+        },
+        style = if (strong) {
+            MiuixTheme.textStyles.title4
+        } else {
+            MiuixTheme.textStyles.body2
+        },
+        fontWeight = if (strong) FontWeight.SemiBold else FontWeight.Normal
+    )
 }
 
 /** 功能说明弹窗与轻量 notice 弹窗共用的本地免打扰标记，不进入 ASR vendor backup。 */

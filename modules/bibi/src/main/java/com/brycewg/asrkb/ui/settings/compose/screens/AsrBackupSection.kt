@@ -11,11 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.asr.BackupAsrLocalResidency
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 
 @Composable
 internal fun AsrBackupSection(
-    uiMode: BibiUiMode,
     enabled: Boolean,
     vendorName: String,
     sensitivity: Int,
@@ -25,7 +23,7 @@ internal fun AsrBackupSection(
     onSensitivityClick: () -> Unit,
     onLocalResidencyClick: () -> Unit
 ) {
-    AsrSection(uiMode = uiMode, titleRes = R.string.label_backup_asr_engine) {
+    AsrSection(titleRes = R.string.label_backup_asr_engine) {
         val itemCount = if (enabled) 4 else 1
         AsrSwitchPreference(
             id = "backup_asr_enabled",
@@ -39,7 +37,6 @@ internal fun AsrBackupSection(
             AsrValuePreference(
                 titleRes = R.string.label_backup_asr_vendor,
                 value = vendorName,
-                uiMode = uiMode,
                 index = 1,
                 count = itemCount,
                 onClick = onVendorClick
@@ -47,7 +44,6 @@ internal fun AsrBackupSection(
             AsrValuePreference(
                 titleRes = R.string.label_backup_asr_timeout_sensitivity,
                 value = backupTimeoutSensitivityLabel(sensitivity),
-                uiMode = uiMode,
                 index = 2,
                 count = itemCount,
                 onClick = onSensitivityClick
@@ -55,21 +51,17 @@ internal fun AsrBackupSection(
             AsrValuePreference(
                 titleRes = R.string.label_backup_asr_local_residency,
                 value = backupLocalResidencyLabel(localResidency),
-                uiMode = uiMode,
                 index = 3,
                 count = itemCount,
                 onClick = onLocalResidencyClick
             )
             AsrBodyText(
-                uiMode = uiMode,
                 textRes = R.string.hint_backup_asr_uses_existing_config
             )
             AsrBodyText(
-                uiMode = uiMode,
                 textRes = R.string.hint_backup_asr_timeout_sensitivity
             )
             AsrBodyText(
-                uiMode = uiMode,
                 textRes = R.string.hint_backup_asr_local_residency
             )
         }

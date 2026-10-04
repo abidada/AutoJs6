@@ -35,7 +35,6 @@ import com.brycewg.asrkb.ui.floating.floatingInputNeedsAccessibility
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsTheme
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.setup.compose.OnboardingAsrChoice
 import com.brycewg.asrkb.ui.setup.compose.OnboardingDialogHost
 import com.brycewg.asrkb.ui.setup.compose.OnboardingDialogState
@@ -79,14 +78,9 @@ class OnboardingGuideActivity : BaseActivity() {
             val dataCollectionEnabled by dataCollectionEnabledState
             val onboardingDialog by dialogState
             val messageDialog by messageDialogState
-            val uiMode = BibiUiMode.fromId(prefs.settingsUiMode)
 
-            BibiSettingsTheme(
-                uiMode = uiMode,
-                themeMode = prefs.settingsThemeMode
-            ) {
+            BibiSettingsTheme {
                 OnboardingGuideScreen(
-                    uiMode = uiMode,
                     refreshKey = refreshKey,
                     permissionGroups = buildPermissionGroups(),
                     asrChoice = asrChoice,
@@ -102,14 +96,12 @@ class OnboardingGuideActivity : BaseActivity() {
                 )
                 OnboardingDialogHost(
                     state = onboardingDialog,
-                    uiMode = uiMode,
                     onDismiss = ::dismissOnboardingDialog,
                     onConfirmOnlineGuide = ::confirmOnlineGuide,
                     onSelectDownloadSource = ::selectLocalModelDownloadSource
                 )
                 SettingsMessageDialog(
                     state = messageDialog,
-                    uiMode = uiMode,
                     onDismiss = ::dismissOnboardingMessage
                 )
             }

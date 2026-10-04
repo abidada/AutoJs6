@@ -21,16 +21,11 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsFeatureExplainerDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsFeatureExplainerDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 
 @Composable
 fun UiSettingsScreen(
-    uiMode: BibiUiMode,
-    themeMode: String,
-    onBack: () -> Unit,
-    onSetUiMode: (BibiUiMode) -> Unit,
-    onSetThemeMode: (String) -> Unit
+    onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val prefs = remember(context) { Prefs(context) }
@@ -72,12 +67,10 @@ fun UiSettingsScreen(
     }
 
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.section_ui_settings,
         onBack = onBack
     ) { innerPadding, scrollModifier ->
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
@@ -85,19 +78,14 @@ fun UiSettingsScreen(
         ) {
             item("main_ui") {
                 InputMainUiSettingsSection(
-                    uiMode = uiMode,
                     prefs = prefs,
                     uiState = uiState,
-                    themeMode = themeMode,
-                    onSetUiMode = onSetUiMode,
-                    onSetThemeMode = onSetThemeMode,
                     onRefreshState = ::refreshState,
                     onApplyExplainedSwitch = ::applyExplainedSwitch
                 )
             }
             item("haptic_ui") {
                 InputHapticUiSettingsSection(
-                    uiMode = uiMode,
                     prefs = prefs,
                     uiState = uiState,
                     onUiStateChange = { uiState = it },
@@ -107,7 +95,6 @@ fun UiSettingsScreen(
         }
         SettingsFeatureExplainerDialog(
             state = featureExplainerDialog,
-            uiMode = uiMode,
             onDismiss = { featureExplainerDialog = null }
         )
     }

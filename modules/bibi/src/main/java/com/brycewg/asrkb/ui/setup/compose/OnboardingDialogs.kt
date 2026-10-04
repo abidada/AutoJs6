@@ -7,29 +7,19 @@
 
 package com.brycewg.asrkb.ui.setup.compose
 
-import androidx.compose.material3.Text as MaterialText
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.ui.DownloadSourceOption
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsAlertDialog
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogAction
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogButtonRow
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogExitEffect
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDialogAction
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDialogActionRow
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDownloadSourceSheet
-import com.brycewg.asrkb.ui.settings.compose.components.animateSettingsDialogExitAlpha
 import com.brycewg.asrkb.ui.settings.compose.components.rememberSettingsDialogExitController
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 
 @Composable
 internal fun OnboardingDialogHost(
     state: OnboardingDialogState,
-    uiMode: BibiUiMode,
     onDismiss: () -> Unit,
     onConfirmOnlineGuide: () -> Unit,
     onSelectDownloadSource: (DownloadSourceOption) -> Unit
@@ -37,14 +27,12 @@ internal fun OnboardingDialogHost(
     when (state) {
         OnboardingDialogState.None -> Unit
         OnboardingDialogState.OnlineGuide -> OnlineGuideDialog(
-            uiMode = uiMode,
             onDismiss = onDismiss,
             onConfirm = onConfirmOnlineGuide
         )
 
         is OnboardingDialogState.DownloadSources -> SettingsDownloadSourceSheet(
             options = state.options,
-            uiMode = uiMode,
             onDismiss = onDismiss,
             onSelect = onSelectDownloadSource
         )
@@ -53,7 +41,6 @@ internal fun OnboardingDialogHost(
 
 @Composable
 private fun OnlineGuideDialog(
-    uiMode: BibiUiMode,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
@@ -65,50 +52,25 @@ private fun OnlineGuideDialog(
     fun finishDismiss() {
         exit.finish()
     }
-    when (uiMode) {
-        BibiUiMode.Material -> {
-            val alpha = animateSettingsDialogExitAlpha(
-                show = exit.show,
-                label = "OnlineGuideDialogAlpha"
-            )
-            MaterialSettingsDialogExitEffect(show = exit.show, onFinished = ::finishDismiss)
-            MaterialSettingsAlertDialog(
-                onDismissRequest = { exit.dismiss(onDismiss) },
-                modifier = Modifier.graphicsLayer(alpha = alpha),
-                title = title,
-                text = { MaterialText(message) },
-                buttons = {
-                    MaterialSettingsDialogButtonRow(
-                        actions = listOf(
-                            MaterialSettingsDialogAction(cancel, onClick = { exit.dismiss(onDismiss) }),
-                            MaterialSettingsDialogAction(confirm, onClick = { exit.dismiss(onConfirm) })
-                        )
-                    )
-                }
-            )
-        }
-
-        BibiUiMode.Miuix -> OverlayDialog(
-            show = exit.show,
-            title = title,
-            summary = message,
-            onDismissRequest = { exit.dismiss(onDismiss) },
-            onDismissFinished = ::finishDismiss
-        ) {
-            SettingsDialogActionRow(
-                uiMode = BibiUiMode.Miuix,
-                actions = listOf(
-                    SettingsDialogAction(
-                        text = cancel,
-                        onClick = { exit.dismiss(onDismiss) }
-                    ),
-                    SettingsDialogAction(
-                        text = confirm,
-                        onClick = { exit.dismiss(onConfirm) },
-                        primary = true
-                    )
+    OverlayDialog(
+        show = exit.show,
+        title = title,
+        summary = message,
+        onDismissRequest = { exit.dismiss(onDismiss) },
+        onDismissFinished = ::finishDismiss
+    ) {
+        SettingsDialogActionRow(
+            actions = listOf(
+                SettingsDialogAction(
+                    text = cancel,
+                    onClick = { exit.dismiss(onDismiss) }
+                ),
+                SettingsDialogAction(
+                    text = confirm,
+                    onClick = { exit.dismiss(onConfirm) },
+                    primary = true
                 )
             )
-        }
+        )
     }
 }

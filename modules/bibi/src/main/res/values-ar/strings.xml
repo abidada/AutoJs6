@@ -63,14 +63,6 @@
   <string name="settings_tab_input">الإدخال</string>
   <string name="settings_tab_smart">ذكي</string>
   <string name="settings_tab_system">النظام</string>
-  <string name="settings_ui_mode">أسلوب الواجهة</string>
-  <string name="settings_ui_mode_summary">اختر أسلوب Miuix أو Material</string>
-  <string name="settings_ui_mode_miuix">Miuix</string>
-  <string name="settings_ui_mode_material">Material</string>
-  <string name="settings_theme_mode">وضع السمة</string>
-  <string name="settings_theme_mode_system">اتباع النظام</string>
-  <string name="settings_theme_mode_light">فاتح</string>
-  <string name="settings_theme_mode_dark">داكن</string>
   <string name="home_summary_enabled">مفعّل</string>
   <string name="home_summary_disabled">معطّل</string>
   <string name="home_summary_more_input_disabled">غير مفعّل</string>

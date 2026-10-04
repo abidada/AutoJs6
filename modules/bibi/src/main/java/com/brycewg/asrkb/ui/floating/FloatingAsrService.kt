@@ -35,6 +35,7 @@ import com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler
 import com.brycewg.asrkb.ui.floatingball.FloatingBallViewManager
 import com.brycewg.asrkb.ui.floatingball.FloatingMenuHelper
 import com.brycewg.asrkb.ui.floatingball.FloatingWindowHost
+import com.brycewg.asrkb.ui.theme.AppThemeColorBridge
 import com.brycewg.asrkb.util.HapticFeedbackHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -91,6 +92,20 @@ class FloatingAsrService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val handler = Handler(Looper.getMainLooper())
 
+    /** app 宿主主题色/夜模式变化 → 实时刷新悬浮层(等价 ACTION_REFRESH_UI 的视觉刷新路径)。 */
+    private val appThemeListener: (Int, Boolean?) -> Unit = { _, _ ->
+        handler.post {
+            if (!::viewManager.isInitialized || !::listeningPanel.isInitialized) return@post
+            viewManager.applyBallTheme()
+            viewManager.applyBallAlpha()
+            viewManager.updateStateVisual(stateMachine.state, force = true)
+            if (listeningPanel.isShowing) {
+                listeningPanel.hide()
+                listeningPanel.show()
+            }
+        }
+    }
+
     private var imeVisible: Boolean = false
 
     /** IME 移除后不再有输入法可见性来源；恒为 false，仅保留交互控制器签名。 */
@@ -142,6 +157,9 @@ class FloatingAsrService : Service() {
             hostProvider = { resolveWindowHost() }
         )
 
+        AppThemeColorBridge.addThemeListener(appThemeListener)
+        AppThemeColorBridge.initialize(this)
+
         val menuHelper = FloatingMenuHelper(overlayWindowContext) { resolveWindowHost() }
         val menuController = FloatingMenuController(menuHelper)
         interactionController = FloatingAsrInteractionController(
@@ -171,7 +189,6 @@ class FloatingAsrService : Service() {
             appContext = applicationContext,
             overlayContext = overlayWindowContext,
             windowManager = windowManager,
-            prefs = prefs,
             hostProvider = { resolveWindowHost() }
         )
         listeningPanel.onStopClicked = { interactionController.onListeningPanelStopClicked() }
@@ -285,6 +302,7 @@ class FloatingAsrService : Service() {
         Log.d(TAG, "onDestroy")
 
         AsrAccessibilityService.onAvailabilityChanged = null
+        AppThemeColorBridge.removeThemeListener(appThemeListener)
         handler.removeCallbacks(displayRemapRunnable)
         displayListener?.let(displayManager::unregisterDisplayListener)
         displayListener = null

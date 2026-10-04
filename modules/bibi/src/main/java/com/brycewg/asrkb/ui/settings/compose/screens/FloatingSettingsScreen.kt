@@ -47,7 +47,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.settingsChoiceSheetState
 import com.brycewg.asrkb.ui.settings.compose.components.settingsFeatureExplainerDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.wake.WakeServiceState
@@ -68,16 +67,14 @@ private data class FloatingPackageEdits(
  */
 @Composable
 internal fun FloatingSettingsRoute(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     actions: SettingsActionController
 ) {
     var showWakeManager by remember { mutableStateOf(false) }
     if (showWakeManager) {
-        WakeWordManagerScreen(uiMode = uiMode, onBack = { showWakeManager = false })
+        WakeWordManagerScreen(onBack = { showWakeManager = false })
     } else {
         FloatingSettingsScreen(
-            uiMode = uiMode,
             onBack = onBack,
             onOpenWakeManager = { showWakeManager = true },
             actions = actions
@@ -91,7 +88,6 @@ private class FloatingPackagePersistState {
 
 @Composable
 fun FloatingSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     onOpenWakeManager: () -> Unit,
     actions: SettingsActionController
@@ -461,24 +457,20 @@ fun FloatingSettingsScreen(
         }
     }
 
-    FloatingScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+    FloatingScaffold(onBack = onBack) { innerPadding, scrollModifier ->
         SettingsChoiceSheet(
             state = choiceSheet,
-            uiMode = uiMode,
             onDismiss = { choiceSheet = null }
         )
         SettingsFeatureExplainerDialog(
             state = featureExplainerDialog,
-            uiMode = uiMode,
             onDismiss = { featureExplainerDialog = null }
         )
         SettingsMessageDialog(
             state = messageDialog,
-            uiMode = uiMode,
             onDismiss = { messageDialog = null }
         )
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
@@ -486,7 +478,6 @@ fun FloatingSettingsScreen(
         ) {
             item("preview") {
                 FloatingPreviewCard(
-                    uiMode = uiMode,
                     enabled = uiState.asrEnabled,
                     alphaPercent = uiState.alphaPercent,
                     sizeDp = uiState.sizeDp
@@ -494,7 +485,7 @@ fun FloatingSettingsScreen(
             }
 
             item("basic") {
-                FloatingSection(uiMode = uiMode, titleRes = R.string.section_floating_basic) {
+                FloatingSection(titleRes = R.string.section_floating_basic) {
                     val basicItemCount = if (uiState.asrEnabled) 6 else 1
                     FloatingExplainedSwitch(
                         id = "floating_asr",
@@ -551,7 +542,6 @@ fun FloatingSettingsScreen(
                         FloatingValuePreference(
                             titleRes = R.string.label_floating_ball_style,
                             value = resultDisplayModeLabel(prefs.floatingResultDisplayMode),
-                            uiMode = uiMode,
                             index = 3,
                             count = basicItemCount,
                             onClick = { showResultDisplayModeSheet() }
@@ -562,7 +552,6 @@ fun FloatingSettingsScreen(
                             value = uiState.alphaPercent,
                             valueRange = 30f..100f,
                             step = 5,
-                            uiMode = uiMode,
                             index = 4,
                             count = basicItemCount,
                             onValueChange = { value ->
@@ -581,7 +570,6 @@ fun FloatingSettingsScreen(
                             value = uiState.sizeDp.toFloat(),
                             valueRange = 28f..96f,
                             step = 4,
-                            uiMode = uiMode,
                             index = 5,
                             count = basicItemCount,
                             onValueChange = { value ->
@@ -597,7 +585,6 @@ fun FloatingSettingsScreen(
                             }
                         )
                         FloatingResetButton(
-                            uiMode = uiMode,
                             onClick = {
                                 val messageRes = if (resetFloatingPosition(context, prefs, serviceManager)) {
                                     R.string.toast_floating_position_reset
@@ -612,7 +599,7 @@ fun FloatingSettingsScreen(
             }
 
             item("volume_key") {
-                FloatingSection(uiMode = uiMode, titleRes = R.string.section_volume_key_recording) {
+                FloatingSection(titleRes = R.string.section_volume_key_recording) {
                     val volumeItemCount = if (uiState.volumeKeyRecordingEnabled) 3 else 1
                     FloatingExplainedSwitch(
                         id = "volume_key_recording",
@@ -635,7 +622,6 @@ fun FloatingSettingsScreen(
                         FloatingValuePreference(
                             titleRes = R.string.label_volume_key_recording_mode,
                             value = volumeKeyModeLabel(uiState.volumeKeyRecordingMode),
-                            uiMode = uiMode,
                             index = 1,
                             count = volumeItemCount,
                             onClick = {
@@ -664,7 +650,7 @@ fun FloatingSettingsScreen(
             }
 
             item("shake_recording") {
-                FloatingSection(uiMode = uiMode, titleRes = R.string.section_shake_recording) {
+                FloatingSection(titleRes = R.string.section_shake_recording) {
                     val shakeItemCount = if (uiState.shakeRecordingEnabled) 3 else 1
                     FloatingExplainedSwitch(
                         id = "shake_recording",
@@ -687,7 +673,6 @@ fun FloatingSettingsScreen(
                         FloatingValuePreference(
                             titleRes = R.string.label_shake_recording_sensitivity,
                             value = shakeSensitivityLabel(uiState.shakeRecordingSensitivity),
-                            uiMode = uiMode,
                             index = 1,
                             count = shakeItemCount,
                             onClick = { showShakeSensitivitySheet() }
@@ -730,7 +715,7 @@ fun FloatingSettingsScreen(
                         if (uiState.wakeWordEnabled) stringResource(R.string.wake_status_not_running) else null
                     else -> null
                 }
-                FloatingSection(uiMode = uiMode, titleRes = R.string.section_wake_word) {
+                FloatingSection(titleRes = R.string.section_wake_word) {
                     FloatingExplainedSwitch(
                         id = "wake_word_enabled",
                         titleRes = R.string.label_wake_word_enabled,
@@ -770,7 +755,6 @@ fun FloatingSettingsScreen(
                             } else {
                                 prefs.wakeWordSelected
                             },
-                            uiMode = uiMode,
                             index = 1,
                             count = 2,
                             onClick = onOpenWakeManager
@@ -780,7 +764,7 @@ fun FloatingSettingsScreen(
             }
 
             item("compat") {
-                FloatingSection(uiMode = uiMode, titleRes = R.string.section_floating_compat) {
+                FloatingSection(titleRes = R.string.section_floating_compat) {
                     FloatingExplainedSwitch(
                         id = "floating_write_paste",
                         titleRes = R.string.label_floating_write_paste,
@@ -805,7 +789,6 @@ fun FloatingSettingsScreen(
                         },
                         label = stringResource(R.string.label_floating_write_paste_pkgs),
                         helper = stringResource(R.string.hint_floating_write_paste_pkgs),
-                        uiMode = uiMode,
                         index = 1,
                         count = 2
                     )

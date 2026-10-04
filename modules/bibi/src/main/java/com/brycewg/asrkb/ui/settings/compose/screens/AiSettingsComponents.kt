@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -28,19 +27,16 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSliderPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsTextField
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsValuePreference
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun AiScaffold(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_ai_settings,
         onBack = onBack,
         content = content
@@ -49,12 +45,10 @@ internal fun AiScaffold(
 
 @Composable
 internal fun AiSection(
-    uiMode: BibiUiMode,
     titleRes: Int,
     content: @Composable ColumnScope.() -> Unit
 ) {
     SettingsSectionContainer(
-        uiMode = uiMode,
         titleRes = titleRes,
         content = content
     )
@@ -62,7 +56,6 @@ internal fun AiSection(
 
 @Composable
 internal fun AiTextField(
-    uiMode: BibiUiMode,
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -77,7 +70,6 @@ internal fun AiTextField(
     count: Int = 1
 ) {
     SettingsTextField(
-        uiMode = uiMode,
         value = value,
         onValueChange = onValueChange,
         label = label,
@@ -94,34 +86,24 @@ internal fun AiTextField(
 }
 
 @Composable
-internal fun AiBodyText(uiMode: BibiUiMode, textRes: Int) {
-    AiBodyText(uiMode = uiMode, text = stringResource(textRes))
+internal fun AiBodyText(textRes: Int) {
+    AiBodyText(text = stringResource(textRes))
 }
 
 @Composable
-internal fun AiBodyText(uiMode: BibiUiMode, text: String) {
-    when (uiMode) {
-        BibiUiMode.Material -> Text(
-            text = text,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            style = MiuixTheme.textStyles.body2,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
-        )
-    }
+internal fun AiBodyText(text: String) {
+    MiuixText(
+        text = text,
+        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+        style = MiuixTheme.textStyles.body2,
+        modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+    )
 }
 
 @Composable
 internal fun AiValuePreference(
     titleRes: Int,
     value: String,
-    uiMode: BibiUiMode,
     index: Int = 0,
     count: Int = 1,
     trailingActionIcon: ImageVector? = null,
@@ -132,7 +114,6 @@ internal fun AiValuePreference(
     SettingsValuePreference(
         titleRes = titleRes,
         value = value,
-        uiMode = uiMode,
         index = index,
         count = count,
         trailingActionIcon = trailingActionIcon,
@@ -149,7 +130,6 @@ internal fun AiSliderPreference(
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
     steps: Int,
-    uiMode: BibiUiMode,
     showKeyPoints: Boolean = steps in 1..10,
     index: Int = 0,
     count: Int = 1,
@@ -157,7 +137,6 @@ internal fun AiSliderPreference(
     onValueChangeFinished: (Float) -> Unit = { _ -> }
 ) {
     SettingsSliderPreference(
-        uiMode = uiMode,
         title = stringResource(titleRes),
         valueLabel = valueLabel,
         value = value.coerceIn(valueRange.start, valueRange.endInclusive),
@@ -215,22 +194,19 @@ internal fun AiActionPreference(
 
 @Composable
 internal fun AiButtonRow(
-    uiMode: BibiUiMode,
     content: @Composable RowScope.() -> Unit
 ) {
-    SettingsActionButtonRow(uiMode = uiMode, content = content)
+    SettingsActionButtonRow(content = content)
 }
 
 @Composable
 internal fun RowScope.AiButton(
-    uiMode: BibiUiMode,
     textRes: Int,
     enabled: Boolean = true,
     onClick: () -> Unit,
     icon: @Composable (() -> Unit)? = null
 ) {
     SettingsActionButton(
-        uiMode = uiMode,
         text = stringResource(textRes),
         onClick = onClick,
         enabled = enabled,

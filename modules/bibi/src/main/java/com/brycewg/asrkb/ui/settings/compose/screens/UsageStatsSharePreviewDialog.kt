@@ -19,10 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,14 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.core.content.ContextCompat
 import com.brycewg.asrkb.R
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogAction
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogButtonRow
-import com.brycewg.asrkb.ui.settings.compose.components.SETTINGS_DIALOG_EXIT_MILLIS
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDialogAction
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDialogActionRow
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
-import com.brycewg.asrkb.ui.settings.compose.core.settingsDialogShape
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,7 +50,6 @@ import top.yukonga.miuix.kmp.overlay.OverlayDialog
 @Composable
 internal fun UsageStatsSharePreviewDialog(
     bitmap: Bitmap?,
-    uiMode: BibiUiMode,
     onDismiss: () -> Unit
 ) {
     if (bitmap == null) return
@@ -68,18 +59,11 @@ internal fun UsageStatsSharePreviewDialog(
     var busy by remember(bitmap) { mutableStateOf(false) }
     val imageBitmap = remember(bitmap) { bitmap.asImageBitmap() }
     val configuration = LocalConfiguration.current
-    val dialogMaxWidth = minOf(480.dp, configuration.screenWidthDp.dp * 0.92f)
     val previewMaxHeight = configuration.screenHeightDp.dp * 0.72f
 
     fun dismissAnimated() {
         if (!show) return
         show = false
-        if (uiMode == BibiUiMode.Material) {
-            scope.launch {
-                kotlinx.coroutines.delay(SETTINGS_DIALOG_EXIT_MILLIS.toLong())
-                onDismiss()
-            }
-        }
     }
 
     fun runExport(block: suspend () -> Int?) {
@@ -154,54 +138,20 @@ internal fun UsageStatsSharePreviewDialog(
         )
     )
 
-    when (uiMode) {
-        BibiUiMode.Material -> {
-            if (!show) return
-            // 分享预览比常规设置弹窗更高更宽，避免竖图被 DialogMaxWidth/DialogContentMaxHeight 裁切。
-            AlertDialog(
-                onDismissRequest = ::dismissAnimated,
-                modifier = Modifier
-                    .fillMaxWidth(0.92f)
-                    .widthIn(max = dialogMaxWidth),
-                shape = settingsDialogShape(),
-                title = { Text(title) },
-                text = {
-                    SharePreviewBody(
-                        imageBitmap = imageBitmap,
-                        maxHeight = previewMaxHeight
-                    )
-                },
-                confirmButton = {
-                    MaterialSettingsDialogButtonRow(
-                        actions = actions.map { action ->
-                            MaterialSettingsDialogAction(
-                                text = action.text,
-                                onClick = action.onClick,
-                                enabled = action.enabled,
-                                primary = action.primary
-                            )
-                        }
-                    )
-                }
-            )
-        }
-
-        BibiUiMode.Miuix -> OverlayDialog(
-            show = show,
-            title = title,
-            onDismissRequest = ::dismissAnimated,
-            onDismissFinished = onDismiss
-        ) {
-            SharePreviewBody(
-                imageBitmap = imageBitmap,
-                maxHeight = previewMaxHeight,
-                modifier = Modifier.padding(bottom = SettingsLayoutMetrics.DialogContentBottomPadding)
-            )
-            SettingsDialogActionRow(
-                uiMode = uiMode,
-                actions = actions
-            )
-        }
+    OverlayDialog(
+        show = show,
+        title = title,
+        onDismissRequest = ::dismissAnimated,
+        onDismissFinished = onDismiss
+    ) {
+        SharePreviewBody(
+            imageBitmap = imageBitmap,
+            maxHeight = previewMaxHeight,
+            modifier = Modifier.padding(bottom = SettingsLayoutMetrics.DialogContentBottomPadding)
+        )
+        SettingsDialogActionRow(
+            actions = actions
+        )
     }
 }
 

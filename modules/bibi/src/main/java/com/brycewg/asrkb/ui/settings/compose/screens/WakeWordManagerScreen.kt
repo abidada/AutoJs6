@@ -34,7 +34,6 @@ import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.wake.WakeWordStore
 
@@ -45,7 +44,6 @@ private data class WakeWordEntry(
 
 @Composable
 internal fun WakeWordManagerScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -117,7 +115,6 @@ internal fun WakeWordManagerScreen(
     }
 
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_wake_word_manager,
         onBack = onBack,
         actions = {

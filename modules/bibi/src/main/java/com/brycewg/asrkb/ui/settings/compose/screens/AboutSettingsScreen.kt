@@ -33,14 +33,12 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsLongTextDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLongTextDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreferenceGroup
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
 
 @Composable
 fun AboutSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     actions: SettingsActionController
 ) {
@@ -53,29 +51,26 @@ fun AboutSettingsScreen(
     var debugRecording by remember { mutableStateOf(DebugLogManager.isRecording()) }
     var licensesDialog by remember { mutableStateOf<SettingsLongTextDialogState?>(null) }
 
-    AboutScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+    AboutScaffold(onBack = onBack) { innerPadding, scrollModifier ->
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
         ) {
             item("app") {
-                AboutSection(uiMode = uiMode) {
+                AboutSection() {
                     AboutAppIntro(
                         appName = aboutInfo.appName,
                         version = aboutInfo.version,
                         packageName = aboutInfo.packageName,
                         description = stringResource(R.string.about_desc),
-                        uiMode = uiMode
                     )
                 }
             }
 
             item("links") {
                 AboutSection(
-                    uiMode = uiMode,
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     SettingsPreferenceGroup(
@@ -111,14 +106,14 @@ fun AboutSettingsScreen(
             }
 
             item("acknowledgements") {
-                AboutSection(uiMode = uiMode, titleRes = R.string.about_acknowledgements_title) {
-                    AboutText(stringResource(R.string.about_acknowledgements_desc), uiMode)
-                    AboutAcknowledgement(R.string.about_sherpa_onnx_title, R.string.about_sherpa_onnx_desc, uiMode)
-                    AboutAcknowledgement(R.string.about_syncclipboard_title, R.string.about_syncclipboard_desc, uiMode)
-                    AboutAcknowledgement(R.string.about_phosphor_title, R.string.about_phosphor_desc, uiMode)
-                    AboutAcknowledgement(R.string.about_miuix_title, R.string.about_miuix_desc, uiMode)
-                    AboutAcknowledgement(R.string.about_wavelineview_title, R.string.about_wavelineview_desc, uiMode)
-                    AboutAcknowledgement(R.string.about_tenvad_title, R.string.about_tenvad_desc, uiMode)
+                AboutSection(titleRes = R.string.about_acknowledgements_title) {
+                    AboutText(stringResource(R.string.about_acknowledgements_desc))
+                    AboutAcknowledgement(R.string.about_sherpa_onnx_title, R.string.about_sherpa_onnx_desc)
+                    AboutAcknowledgement(R.string.about_syncclipboard_title, R.string.about_syncclipboard_desc)
+                    AboutAcknowledgement(R.string.about_phosphor_title, R.string.about_phosphor_desc)
+                    AboutAcknowledgement(R.string.about_miuix_title, R.string.about_miuix_desc)
+                    AboutAcknowledgement(R.string.about_wavelineview_title, R.string.about_wavelineview_desc)
+                    AboutAcknowledgement(R.string.about_tenvad_title, R.string.about_tenvad_desc)
                     SettingsPreference(
                         SettingsEntry.Action(
                             id = "about_licenses",
@@ -138,10 +133,10 @@ fun AboutSettingsScreen(
             }
 
             item("debug") {
-                AboutSection(uiMode = uiMode, titleRes = R.string.about_debug_title) {
-                    AboutText(stringResource(R.string.about_debug_desc), uiMode)
+                AboutSection(titleRes = R.string.about_debug_title) {
+                    AboutText(stringResource(R.string.about_debug_desc))
                     latestExitInfo?.let { latest ->
-                        AboutText(latest, uiMode)
+                        AboutText(latest)
                     }
                     SettingsPreferenceGroup(
                         SettingsEntry.Action(
@@ -169,7 +164,6 @@ fun AboutSettingsScreen(
     }
     SettingsLongTextDialog(
         state = licensesDialog,
-        uiMode = uiMode,
         onDismiss = { licensesDialog = null }
     )
 }

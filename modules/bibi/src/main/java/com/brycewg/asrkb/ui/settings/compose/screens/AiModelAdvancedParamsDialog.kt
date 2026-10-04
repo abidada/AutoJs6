@@ -18,8 +18,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.brycewg.asrkb.R
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsSheetScaffold
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
@@ -28,7 +26,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 internal fun AiModelAdvancedParamsDialog(
     visible: Boolean,
-    uiMode: BibiUiMode,
     showTemperature: Boolean,
     temperature: Float,
     temperatureRange: ClosedFloatingPointRange<Float>,
@@ -64,14 +61,12 @@ internal fun AiModelAdvancedParamsDialog(
                     value = temperature,
                     valueRange = temperatureRange,
                     steps = temperatureSteps,
-                    uiMode = uiMode,
                     onValueChange = onTemperatureChange,
                     onValueChangeFinished = onTemperatureChangeFinished
                 )
             }
             if (showReasoning) {
                 ReasoningSection(
-                    uiMode = uiMode,
                     threshold = reasoningThreshold,
                     showParams = showCustomReasoningParams,
                     customParamsEnabled = customReasoningParamsEnabled,
@@ -88,40 +83,28 @@ internal fun AiModelAdvancedParamsDialog(
         }
     }
 
-    when (uiMode) {
-        BibiUiMode.Material -> MaterialSettingsSheetScaffold(
-            title = stringResource(R.string.label_llm_more_params),
-            onDismiss = onDismiss,
-            bottomPadding = 0.dp
-        ) {
+    var show by remember { mutableStateOf(true) }
+    OverlayDialog(
+        show = show,
+        onDismissRequest = { show = false },
+        onDismissFinished = onDismiss,
+        insideMargin = DpSize(0.dp, 0.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            MiuixText(
+                text = stringResource(R.string.label_llm_more_params),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = SettingsLayoutMetrics.SheetDialogTitleTopPadding,
+                        bottom = SettingsLayoutMetrics.SheetTitleBottomPadding
+                    ),
+                color = MiuixTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium,
+                style = MiuixTheme.textStyles.title4
+            )
             Content()
-        }
-
-        BibiUiMode.Miuix -> {
-            var show by remember { mutableStateOf(true) }
-            OverlayDialog(
-                show = show,
-                onDismissRequest = { show = false },
-                onDismissFinished = onDismiss,
-                insideMargin = DpSize(0.dp, 0.dp)
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    MiuixText(
-                        text = stringResource(R.string.label_llm_more_params),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                top = SettingsLayoutMetrics.SheetDialogTitleTopPadding,
-                                bottom = SettingsLayoutMetrics.SheetTitleBottomPadding
-                            ),
-                        color = MiuixTheme.colorScheme.onBackground,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Medium,
-                        style = MiuixTheme.textStyles.title4
-                    )
-                    Content()
-                }
-            }
         }
     }
 }

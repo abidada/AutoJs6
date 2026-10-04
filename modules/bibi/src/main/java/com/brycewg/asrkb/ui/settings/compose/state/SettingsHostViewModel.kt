@@ -11,15 +11,12 @@ import androidx.lifecycle.AndroidViewModel
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.floating.FloatingAsrService
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class SettingsHostUiState(
-    val uiMode: BibiUiMode = BibiUiMode.Miuix,
-    val themeMode: String = "system",
     val selectedHomeTab: Int = 0,
     val highlightTargetId: String? = null,
 
@@ -36,10 +33,7 @@ class SettingsHostViewModel(
 ) : AndroidViewModel(application) {
     private val prefs = Prefs(application)
     private val _uiState = MutableStateFlow(
-        SettingsHostUiState(
-            uiMode = BibiUiMode.fromId(prefs.settingsUiMode),
-            themeMode = prefs.settingsThemeMode
-        ).let { state ->
+        SettingsHostUiState().let { state ->
             if (initialRoute == null) {
                 state
             } else {
@@ -48,18 +42,6 @@ class SettingsHostViewModel(
         }
     )
     val uiState: StateFlow<SettingsHostUiState> = _uiState.asStateFlow()
-
-    fun setUiMode(mode: BibiUiMode) {
-        prefs.settingsUiMode = mode.id
-        _uiState.update { it.copy(uiMode = mode) }
-        refreshInputSurfaces()
-    }
-
-    fun setThemeMode(mode: String) {
-        prefs.settingsThemeMode = mode
-        _uiState.update { it.copy(themeMode = prefs.settingsThemeMode) }
-        refreshInputSurfaces()
-    }
 
     fun selectHomeTab(index: Int) {
         _uiState.update { it.copy(selectedHomeTab = index.coerceIn(0, 2)) }

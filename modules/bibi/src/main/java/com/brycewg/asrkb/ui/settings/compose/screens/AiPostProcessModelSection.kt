@@ -16,11 +16,9 @@ import com.brycewg.asrkb.R
 import com.brycewg.asrkb.asr.LlmVendor
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.ai.AiPostSettingsViewModel
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 
 @Composable
 internal fun AiPostProcessModelSection(
-    uiMode: BibiUiMode,
     prefs: Prefs,
     selectedVendor: LlmVendor,
     selectedVendorName: String,
@@ -75,7 +73,7 @@ internal fun AiPostProcessModelSection(
 ) {
     var showAdvancedParams by remember(selectedVendor) { mutableStateOf(false) }
 
-    AiSection(uiMode = uiMode, titleRes = R.string.section_post_process_model) {
+    AiSection(titleRes = R.string.section_post_process_model) {
         val primaryConfigItemCount = when (selectedVendor) {
             LlmVendor.TYPESAFE -> when (prefs.jevClassifierProvider) {
                 com.brycewg.asrkb.store.JevClassifierProvider.CLOUDFLARE -> 4
@@ -103,7 +101,6 @@ internal fun AiPostProcessModelSection(
         AiValuePreference(
             titleRes = R.string.label_llm_vendor,
             value = selectedVendorName,
-            uiMode = uiMode,
             index = 0,
             count = primaryGroupCount,
             onClick = onChooseVendor
@@ -111,7 +108,6 @@ internal fun AiPostProcessModelSection(
         when (selectedVendor) {
             LlmVendor.TYPESAFE -> {
                 TypeSafeLlmSection(
-                    uiMode = uiMode,
                     prefs = prefs,
                     onChooseModel = onChooseBuiltinModel,
                     primaryIndexOffset = 1,
@@ -119,7 +115,6 @@ internal fun AiPostProcessModelSection(
                 )
             }
             LlmVendor.SF_FREE -> SfFreeLlmSection(
-                uiMode = uiMode,
                 presetModels = sfPresetModels,
                 staticModels = sfStaticModels,
                 sfUseFreeService = sfUseFreeService,
@@ -134,7 +129,6 @@ internal fun AiPostProcessModelSection(
             )
 
             LlmVendor.CUSTOM -> CustomLlmSection(
-                uiMode = uiMode,
                 provider = activeProfile,
                 customModelInputVisible = customModelInputVisible,
                 focusProfileNameAfterAdd = focusProfileNameAfterAdd,
@@ -156,7 +150,6 @@ internal fun AiPostProcessModelSection(
             )
 
             else -> BuiltinLlmSection(
-                uiMode = uiMode,
                 vendor = selectedVendor,
                 config = builtinConfig,
                 presetModels = builtinPresetModels,
@@ -183,7 +176,6 @@ internal fun AiPostProcessModelSection(
                 selectedVendor.supportsReasoningControl(sfModel) || showCustomReasoningParams
             AiModelAdvancedParamsDialog(
                 visible = showAdvancedParams,
-                uiMode = uiMode,
                 showTemperature = !sfUseFreeService,
                 temperature = sfTemperature,
                 temperatureRange = 0f..2f,
@@ -207,7 +199,6 @@ internal fun AiPostProcessModelSection(
 
         LlmVendor.CUSTOM -> AiModelAdvancedParamsDialog(
             visible = showAdvancedParams,
-            uiMode = uiMode,
             showTemperature = true,
             temperature = activeProfile?.temperature ?: Prefs.DEFAULT_LLM_TEMPERATURE,
             temperatureRange = 0f..2f,
@@ -235,7 +226,6 @@ internal fun AiPostProcessModelSection(
                 selectedVendor.supportsReasoningControl(model) || showCustomReasoningParams
             AiModelAdvancedParamsDialog(
                 visible = showAdvancedParams,
-                uiMode = uiMode,
                 showTemperature = true,
                 temperature = builtinConfig.temperature,
                 temperatureRange = selectedVendor.temperatureMin..selectedVendor.temperatureMax,

@@ -46,7 +46,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsFeatureExplainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMultiChoiceSheetState
 import com.brycewg.asrkb.ui.settings.compose.components.settingsFeatureExplainerDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -71,7 +70,6 @@ private class LocalModelRefreshHandle {
 
 @Composable
 fun AsrSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     onOpenVoiceTest: () -> Unit,
     actions: SettingsActionController
@@ -690,7 +688,6 @@ fun AsrSettingsScreen(
     }
 
     AsrScaffold(
-        uiMode = uiMode,
         onBack = onBack,
         actions = {
             TextButton(onClick = onOpenVoiceTest) {
@@ -701,7 +698,6 @@ fun AsrSettingsScreen(
         downloadSourceRequest?.let { request ->
             SettingsDownloadSourceSheet(
                 options = request.options,
-                uiMode = uiMode,
                 onDismiss = { downloadSourceRequest = null },
                 onSelect = { option ->
                     runCatching {
@@ -728,7 +724,6 @@ fun AsrSettingsScreen(
             )
         }
         AsrSettingsDialogHost(
-            uiMode = uiMode,
             choiceSheet = choiceSheet,
             multiChoiceSheet = multiChoiceSheet,
             featureExplainerDialog = featureExplainerDialog,
@@ -739,7 +734,6 @@ fun AsrSettingsScreen(
             onDismissMessageDialog = { messageDialog = null }
         )
         AsrSettingsRouteContent(
-            uiMode = uiMode,
             context = context,
             prefs = prefs,
             viewModel = viewModel,

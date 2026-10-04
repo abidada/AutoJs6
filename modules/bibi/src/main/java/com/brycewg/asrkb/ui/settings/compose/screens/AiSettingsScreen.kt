@@ -37,7 +37,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogSta
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMultiChoiceSheetState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsProgressDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.settingsFeatureExplainerDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -46,7 +45,6 @@ private const val AI_TAG = "AiSettingsScreen"
 
 @Composable
 fun AiSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     onOpenPromptSelection: () -> Unit,
     actions: SettingsActionController
@@ -252,9 +250,8 @@ fun AiSettingsScreen(
         )
     }
 
-    AiScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+    AiScaffold(onBack = onBack) { innerPadding, scrollModifier ->
         AiSettingsDialogHost(
-            uiMode = uiMode,
             choiceSheet = choiceSheet,
             multiChoiceSheet = multiChoiceSheet,
             messageDialog = messageDialog,
@@ -269,7 +266,6 @@ fun AiSettingsScreen(
             onDismissLlmTestResultDialog = { llmTestResultDialog = null }
         )
         AiSettingsRouteContent(
-            uiMode = uiMode,
             innerPadding = innerPadding,
             scrollModifier = scrollModifier,
             prefs = prefs,

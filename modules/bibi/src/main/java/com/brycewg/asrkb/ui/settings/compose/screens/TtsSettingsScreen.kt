@@ -49,7 +49,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDownloadSourceSheet
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import java.util.Locale
@@ -65,7 +64,6 @@ private data class TtsDownloadRequest(
 
 @Composable
 fun TtsSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -208,11 +206,10 @@ fun TtsSettingsScreen(
         android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
     }
 
-    TtsScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+    TtsScaffold(onBack = onBack) { innerPadding, scrollModifier ->
         downloadRequest?.let { request ->
             SettingsDownloadSourceSheet(
                 options = request.options,
-                uiMode = uiMode,
                 onDismiss = { downloadRequest = null },
                 onSelect = { option ->
                     runCatching {
@@ -233,14 +230,12 @@ fun TtsSettingsScreen(
         }
         clearDialog?.let { dialog ->
             TtsClearDialogHost(
-                uiMode = uiMode,
                 dialog = dialog,
                 onDismiss = { clearDialog = null }
             )
         }
 
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
@@ -248,7 +243,6 @@ fun TtsSettingsScreen(
         ) {
             item("feedback") {
                 TtsFeedbackSection(
-                    uiMode = uiMode,
                     ttsEnabled = ttsEnabled,
                     speed = speed,
                     onEnabledChange = { checked ->
@@ -265,7 +259,6 @@ fun TtsSettingsScreen(
 
             item("vendor") {
                 TtsVendorSection(
-                    uiMode = uiMode,
                     context = context,
                     prefs = prefs,
                     vendorId = vendorId,
@@ -385,7 +378,6 @@ fun TtsSettingsScreen(
 
             item("audition") {
                 TtsAuditionSection(
-                    uiMode = uiMode,
                     context = context,
                     prefs = prefs,
                     text = auditionText,
@@ -429,12 +421,10 @@ fun TtsSettingsScreen(
 
 @Composable
 private fun TtsScaffold(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_tts_settings,
         onBack = onBack,
         content = content
@@ -443,12 +433,10 @@ private fun TtsScaffold(
 
 @Composable
 private fun TtsClearDialogHost(
-    uiMode: BibiUiMode,
     dialog: SettingsMessageDialogState,
     onDismiss: () -> Unit
 ) {
     AsrSettingsDialogHost(
-        uiMode = uiMode,
         choiceSheet = null,
         multiChoiceSheet = null,
         featureExplainerDialog = null,
@@ -462,13 +450,12 @@ private fun TtsClearDialogHost(
 
 @Composable
 private fun TtsFeedbackSection(
-    uiMode: BibiUiMode,
     ttsEnabled: Boolean,
     speed: Float,
     onEnabledChange: (Boolean) -> Unit,
     onSpeedChange: (Float) -> Unit
 ) {
-    AsrSection(uiMode = uiMode, titleRes = R.string.section_tts_feedback) {
+    AsrSection(titleRes = R.string.section_tts_feedback) {
         // 总开关即全部行为：开启后固定播报「正在听」与分发命中/未命中结果
         var itemIndex = 0
         val itemCount = if (!ttsEnabled) 1 else 2
@@ -487,7 +474,6 @@ private fun TtsFeedbackSection(
             value = speed,
             valueRange = Prefs.TTS_SPEED_MIN..Prefs.TTS_SPEED_MAX,
             steps = 5,
-            uiMode = uiMode,
             index = itemIndex,
             count = itemCount,
             onValueChange = onSpeedChange
@@ -497,7 +483,6 @@ private fun TtsFeedbackSection(
 
 @Composable
 private fun TtsVendorSection(
-    uiMode: BibiUiMode,
     context: android.content.Context,
     prefs: Prefs,
     vendorId: String,
@@ -528,7 +513,7 @@ private fun TtsVendorSection(
     onCloneTtsVoiceChange: (String) -> Unit,
     onCloneTtsTest: () -> Unit
 ) {
-    AsrSection(uiMode = uiMode, titleRes = R.string.section_tts_vendor) {
+    AsrSection(titleRes = R.string.section_tts_vendor) {
         val isCloneTts = TtsVendor.fromId(vendorId) == TtsVendor.CloneTts
         var itemIndex = 0
         if (isCloneTts) {
@@ -546,7 +531,6 @@ private fun TtsVendorSection(
                 onSelectedOptionChange = onVendorChange
             )
             AsrTextField(
-                uiMode = uiMode,
                 value = cloneTtsBaseUrl,
                 onValueChange = onCloneTtsBaseUrlChange,
                 label = stringResource(R.string.label_tts_clone_tts_base_url),
@@ -556,7 +540,6 @@ private fun TtsVendorSection(
             if (cloneTtsVoices.isEmpty()) {
                 // 列表不可用（服务未开/未拉取）：手动输入别名兜底，留空跟随默认音色
                 AsrTextField(
-                    uiMode = uiMode,
                     value = cloneTtsVoice,
                     onValueChange = onCloneTtsVoiceChange,
                     label = stringResource(R.string.label_tts_clone_tts_voice_manual),
@@ -582,7 +565,6 @@ private fun TtsVendorSection(
             }
             if (cloneTtsVoiceLoadFailed) {
                 AsrBodyText(
-                    uiMode = uiMode,
                     text = stringResource(R.string.tts_clone_tts_voice_load_failed)
                 )
             }
@@ -644,7 +626,6 @@ private fun TtsVendorSection(
                 value = numThreads.toFloat(),
                 valueRange = 1f..8f,
                 steps = 6,
-                uiMode = uiMode,
                 index = itemIndex++,
                 count = itemCount,
                 onValueChange = { onNumThreadsChange(it.toInt()) }
@@ -676,24 +657,21 @@ private fun TtsVendorSection(
             // 模型状态与操作（下载/导入/清除）
             val status = operationStatus
                 ?: stringResource(if (modelReady) R.string.tts_status_ready else R.string.tts_status_not_installed)
-            AsrBodyText(uiMode = uiMode, text = status)
-            SettingsActionButtonRow(uiMode = uiMode) {
+            AsrBodyText(text = status)
+            SettingsActionButtonRow() {
                 if (modelReady) {
                     SettingsActionButton(
-                        uiMode = uiMode,
                         text = stringResource(R.string.btn_tts_clear),
                         onClick = onClear,
                         modifier = Modifier.weight(1f)
                     )
                 } else {
                     SettingsActionButton(
-                        uiMode = uiMode,
                         text = stringResource(R.string.btn_tts_download),
                         onClick = { onDownload(TtsLocalModelCatalog.normalizeVariant(variant)) },
                         modifier = Modifier.weight(1f)
                     )
                     SettingsActionButton(
-                        uiMode = uiMode,
                         text = stringResource(R.string.btn_tts_import),
                         onClick = { onImport(TtsLocalModelCatalog.normalizeVariant(variant)) },
                         modifier = Modifier.weight(1f)
@@ -706,7 +684,6 @@ private fun TtsVendorSection(
 
 @Composable
 private fun TtsAuditionSection(
-    uiMode: BibiUiMode,
     context: android.content.Context,
     prefs: Prefs,
     text: String,
@@ -716,9 +693,8 @@ private fun TtsAuditionSection(
     onTextChange: (String) -> Unit,
     onPlay: () -> Unit
 ) {
-    AsrSection(uiMode = uiMode, titleRes = R.string.section_tts_audition) {
+    AsrSection(titleRes = R.string.section_tts_audition) {
         AsrTextField(
-            uiMode = uiMode,
             value = text,
             onValueChange = onTextChange,
             label = stringResource(R.string.label_tts_audition_text),

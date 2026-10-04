@@ -16,6 +16,8 @@ import android.widget.ImageView;
 
 import com.stardust.autojs.core.ui.inflater.ImageLoader;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -150,9 +152,15 @@ public class Drawables {
         @Override
         public Drawable load(View view, Uri uri) {
             try {
-                URL url = new URL(uri.toString());
-                Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                return new BitmapDrawable(view.getResources(), bmp);
+                java.net.URLConnection conn = new URL(uri.toString()).openConnection();
+                try (InputStream stream = conn.getInputStream()) {
+                    Bitmap bmp = BitmapFactory.decodeStream(stream);
+                    return new BitmapDrawable(view.getResources(), bmp);
+                } finally {
+                    if (conn instanceof HttpURLConnection) {
+                        ((HttpURLConnection) conn).disconnect();
+                    }
+                }
             } catch (Exception e) {
                 return null;
             }
@@ -167,8 +175,15 @@ public class Drawables {
         public void load(final View view, final Uri uri, final BitmapCallback callback) {
             new Thread(() -> {
                 try {
-                    URL url = new URL(uri.toString());
-                    final Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                    java.net.URLConnection conn = new URL(uri.toString()).openConnection();
+                    final Bitmap bmp;
+                    try (InputStream stream = conn.getInputStream()) {
+                        bmp = BitmapFactory.decodeStream(stream);
+                    } finally {
+                        if (conn instanceof HttpURLConnection) {
+                            ((HttpURLConnection) conn).disconnect();
+                        }
+                    }
                     view.post(() -> callback.onLoaded(bmp));
                 } catch (Exception e) {
                     e.printStackTrace();

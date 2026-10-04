@@ -66,8 +66,6 @@ internal object PrefsBackup {
         o.put(KEY_HIDE_RECENT_TASK_CARD, hideRecentTaskCard)
         o.put(KEY_KEEP_ALIVE_NOTIFICATION_CLICK_ROUTE, keepAliveNotificationClickRoute)
         o.put(KEY_APP_LANGUAGE_TAG, appLanguageTag)
-        o.put(KEY_SETTINGS_UI_MODE, settingsUiMode)
-        o.put(KEY_SETTINGS_THEME_MODE, settingsThemeMode)
         o.put(KEY_AUTO_UPDATE_CHECK_ENABLED, autoUpdateCheckEnabled)
         o.put(KEY_FLOATING_SWITCHER_ENABLED, floatingSwitcherEnabled)
         o.put(KEY_FLOATING_SWITCHER_ALPHA, floatingSwitcherAlpha)
@@ -375,8 +373,6 @@ internal object PrefsBackup {
                 keepAliveNotificationClickRoute = it
             }
             optString(KEY_APP_LANGUAGE_TAG)?.let { appLanguageTag = it }
-            optString(KEY_SETTINGS_UI_MODE)?.let { settingsUiMode = it }
-            optString(KEY_SETTINGS_THEME_MODE)?.let { settingsThemeMode = it }
             optBool(KEY_AUTO_UPDATE_CHECK_ENABLED)?.let { autoUpdateCheckEnabled = it }
             optBool(KEY_POSTPROC_ENABLED)?.let { postProcessEnabled = it }
             optBool(KEY_POSTPROC_TYPEWRITER_ENABLED)?.let { postprocTypewriterEnabled = it }

@@ -34,7 +34,7 @@ internal object FloatingBallComposeViewFactory {
 
     fun applyTheme(root: View, prefs: Prefs) {
         val context = root.context
-        val theme = BibiViewThemes.resolve(context, prefs)
+        val theme = BibiViewThemes.resolve(context)
         root.findViewById<ImageView>(R.id.edgeHandleIcon)?.imageTintList =
             ColorStateList.valueOf(theme.floatingIcon)
         root.findViewById<ImageView>(R.id.ballIcon)?.imageTintList =

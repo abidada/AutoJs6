@@ -14,13 +14,11 @@ import androidx.compose.ui.res.stringResource
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.components.SliderEditDialogSpec
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import kotlin.math.roundToInt
 
 @Composable
 internal fun AsrSilenceSection(
-    uiMode: BibiUiMode,
     autoStopMode: Prefs.RecordingAutoStopMode,
     silenceWindowMs: Int,
     silenceSensitivity: Int,
@@ -33,7 +31,7 @@ internal fun AsrSilenceSection(
     onMaxDurationChange: (Int) -> Unit,
     onMaxDurationFinished: () -> Unit
 ) {
-    AsrSection(uiMode = uiMode, titleRes = R.string.section_silence_autostop) {
+    AsrSection(titleRes = R.string.section_silence_autostop) {
         val itemCount = when (autoStopMode) {
             Prefs.RecordingAutoStopMode.SILENCE -> 3
             Prefs.RecordingAutoStopMode.MAX_DURATION -> 2
@@ -91,7 +89,6 @@ internal fun AsrSilenceSection(
                 steps = (maxSec - minSec - 1).coerceAtLeast(0),
                 // 0-15 秒共 14 个 step，超出默认 1..10 的显示门槛，显式开启以与灵敏度滑条样式同步
                 showKeyPoints = true,
-                uiMode = uiMode,
                 highlightId = "silence_window_ms",
                 index = 1,
                 count = itemCount,
@@ -124,7 +121,6 @@ internal fun AsrSilenceSection(
                 value = silenceSensitivity.toFloat(),
                 valueRange = 1f..10f,
                 steps = 8,
-                uiMode = uiMode,
                 highlightId = "silence_sensitivity",
                 index = 2,
                 count = itemCount,
@@ -149,7 +145,6 @@ internal fun AsrSilenceSection(
                 value = recordingMaxDurationMs.toFloat(),
                 valueRange = durationRange,
                 steps = maxDurationSliderSteps(),
-                uiMode = uiMode,
                 showKeyPoints = false,
                 highlightId = "recording_max_duration",
                 index = 1,

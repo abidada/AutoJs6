@@ -29,7 +29,6 @@ import android.widget.TextView
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.AsrResultBroadcaster
 import com.brycewg.asrkb.ui.removeWindowViewWithRetry
-import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.BibiViewThemes
 import com.brycewg.asrkb.ui.floatingball.FloatingWindowHost
 
@@ -37,13 +36,10 @@ internal class ListeningPanelHelper(
     private val appContext: Context,
     private val overlayContext: Context,
     private val windowManager: WindowManager,
-    private val prefs: Prefs,
     private val hostProvider: () -> FloatingWindowHost
 ) {
     companion object {
         private const val TAG = "ListeningPanel"
-        private const val PANEL_BG_DARK = 0xF0161618.toInt()
-        private const val HANDLE_BAR_COLOR = 0x55FFFFFF
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -151,13 +147,16 @@ internal class ListeningPanelHelper(
     }
 
     private fun buildPanel(): View {
-        val theme = BibiViewThemes.resolve(overlayContext, prefs)
+        val theme = BibiViewThemes.resolve(overlayContext)
+        // 面板底色跟主题;把手条在暗色下用亮色、亮色下用暗色,保证可见
+        val panelBg = theme.panelBackground
+        val handleColor = if (theme.isDark) 0x55FFFFFF.toInt() else 0x33000000.toInt()
 
         val root = LinearLayout(overlayContext).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(10), dp(16), dp(16))
             background = GradientDrawable().apply {
-                setColor(PANEL_BG_DARK)
+                setColor(panelBg)
                 cornerRadii = floatArrayOf(
                     dp(20f).toFloat(), dp(20f).toFloat(),
                     dp(20f).toFloat(), dp(20f).toFloat(),
@@ -186,7 +185,7 @@ internal class ListeningPanelHelper(
             View(overlayContext).apply {
                 background = InsetDrawable(
                     GradientDrawable().apply {
-                        setColor(HANDLE_BAR_COLOR)
+                        setColor(handleColor)
                         cornerRadius = dp(2f).toFloat()
                     },
                     0, dp(8), 0, dp(8)
@@ -206,7 +205,7 @@ internal class ListeningPanelHelper(
         )
 
         // 识别文本区：限高 + 内部滚动，partial 流式刷新时自动跟底显示最新文字
-        val scroll = FollowScrollView(overlayContext, PANEL_BG_DARK).apply {
+        val scroll = FollowScrollView(overlayContext, panelBg).apply {
             maxHeightPx = maxTextHeightPx()
             isVerticalFadingEdgeEnabled = true
             setFadingEdgeLength(dp(24))
@@ -215,7 +214,7 @@ internal class ListeningPanelHelper(
         scroll.addView(
             TextView(overlayContext).apply {
                 id = R.id.listeningPanelText
-                setTextColor(Color.WHITE)
+                setTextColor(theme.panelContent)
                 textSize = 22f
                 typeface = Typeface.DEFAULT_BOLD
                 setLineSpacing(dp(2f).toFloat(), 1f)

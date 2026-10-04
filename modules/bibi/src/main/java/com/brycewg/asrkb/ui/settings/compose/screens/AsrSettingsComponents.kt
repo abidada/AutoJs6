@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,7 +31,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsSliderPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsTextField
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsValuePreference
 import com.brycewg.asrkb.ui.settings.compose.components.SliderEditDialogSpec
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalBibiSettingsDark
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
@@ -41,13 +39,11 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun AsrScaffold(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     actions: @Composable () -> Unit = {},
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_asr_settings,
         onBack = onBack,
         actions = actions,
@@ -57,12 +53,10 @@ internal fun AsrScaffold(
 
 @Composable
 internal fun AsrSection(
-    uiMode: BibiUiMode,
     titleRes: Int,
     content: @Composable ColumnScope.() -> Unit
 ) {
     SettingsSectionContainer(
-        uiMode = uiMode,
         titleRes = titleRes,
         content = content
     )
@@ -70,7 +64,6 @@ internal fun AsrSection(
 
 @Composable
 internal fun AsrTextField(
-    uiMode: BibiUiMode,
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -84,7 +77,6 @@ internal fun AsrTextField(
     count: Int = 1
 ) {
     SettingsTextField(
-        uiMode = uiMode,
         value = value,
         onValueChange = onValueChange,
         label = label,
@@ -103,7 +95,6 @@ internal fun AsrTextField(
 internal fun AsrValuePreference(
     titleRes: Int,
     value: String,
-    uiMode: BibiUiMode,
     highlightId: String? = null,
     index: Int = 0,
     count: Int = 1,
@@ -113,7 +104,6 @@ internal fun AsrValuePreference(
         SettingsValuePreference(
             titleRes = titleRes,
             value = value,
-            uiMode = uiMode,
             index = index,
             count = count,
             onClick = onClick
@@ -122,7 +112,7 @@ internal fun AsrValuePreference(
     if (highlightId == null) {
         content()
     } else {
-        SettingsHighlightContainer(entryId = highlightId, uiMode = uiMode, content = content)
+        SettingsHighlightContainer(entryId = highlightId, content = content)
     }
 }
 
@@ -190,27 +180,18 @@ internal fun AsrActionPreference(
 }
 
 @Composable
-internal fun AsrBodyText(uiMode: BibiUiMode, textRes: Int, color: Color? = null) {
-    AsrBodyText(uiMode = uiMode, text = stringResource(textRes), color = color)
+internal fun AsrBodyText(textRes: Int, color: Color? = null) {
+    AsrBodyText(text = stringResource(textRes), color = color)
 }
 
 @Composable
-internal fun AsrBodyText(uiMode: BibiUiMode, text: String, color: Color? = null) {
-    when (uiMode) {
-        BibiUiMode.Material -> Text(
-            text = text,
-            color = color ?: MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            color = color ?: MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            style = MiuixTheme.textStyles.body2,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
-        )
-    }
+internal fun AsrBodyText(text: String, color: Color? = null) {
+    MiuixText(
+        text = text,
+        color = color ?: MiuixTheme.colorScheme.onSurfaceVariantSummary,
+        style = MiuixTheme.textStyles.body2,
+        modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+    )
 }
 
 @Composable
@@ -238,7 +219,6 @@ internal fun AsrSliderPreference(
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
     steps: Int,
-    uiMode: BibiUiMode,
     showKeyPoints: Boolean = steps in 1..10,
     startLabel: String? = null,
     endLabel: String? = null,
@@ -250,7 +230,6 @@ internal fun AsrSliderPreference(
     onValueChangeFinished: (Float) -> Unit = { _ -> }
 ) {
     SettingsSliderPreference(
-        uiMode = uiMode,
         title = stringResource(titleRes),
         valueLabel = valueLabel,
         value = value.coerceIn(valueRange.start, valueRange.endInclusive),

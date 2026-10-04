@@ -746,8 +746,8 @@ class FloatingMenuHelper(rawContext: Context, private val hostProvider: () -> Fl
         val layout = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             background = capsuleBackground()
-            val horizontal = if (theme.isMiuix) dp(12) else dp(10)
-            val vertical = if (theme.isMiuix) dp(9) else dp(10)
+            val horizontal = dp(12)
+            val vertical = dp(9)
             setPadding(horizontal, vertical, horizontal, vertical)
             isClickable = true
             isFocusable = true
@@ -814,7 +814,7 @@ class FloatingMenuHelper(rawContext: Context, private val hostProvider: () -> Fl
         HapticFeedbackHelper.performTap(context, prefs, view)
     }
 
-    private fun currentTheme() = BibiViewThemes.resolve(context, prefs)
+    private fun currentTheme() = BibiViewThemes.resolve(context)
 
     private fun panelBackground(): android.graphics.drawable.Drawable {
         val theme = currentTheme()

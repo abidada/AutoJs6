@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHighlightTarget
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsMotion
@@ -46,8 +45,6 @@ fun SettingsRootScreen(
     onOpenRoute: (BibiSettingsRoute, String?) -> Unit,
     onPopRoute: () -> Boolean,
     onConsumeRouteArg: () -> Unit,
-    onSetUiMode: (BibiUiMode) -> Unit,
-    onSetThemeMode: (String) -> Unit,
     actions: SettingsActionController
 ) {
     val canHandleBack = uiState.backStack.size > 1 || uiState.selectedHomeTab != 0
@@ -97,8 +94,6 @@ fun SettingsRootScreen(
                     onOpenRoute = onOpenRoute,
                     onPopRoute = onPopRoute,
                     onConsumeRouteArg = onConsumeRouteArg,
-                    onSetUiMode = onSetUiMode,
-                    onSetThemeMode = onSetThemeMode,
                     actions = actions
                 )
             }
@@ -128,14 +123,11 @@ private fun SettingsRouteContent(
     onOpenRoute: (BibiSettingsRoute, String?) -> Unit,
     onPopRoute: () -> Boolean,
     onConsumeRouteArg: () -> Unit,
-    onSetUiMode: (BibiUiMode) -> Unit,
-    onSetThemeMode: (String) -> Unit,
     actions: SettingsActionController
 ) {
     when (route) {
         BibiSettingsRoute.Home -> SettingsHomeScreen(
             selectedTab = uiState.selectedHomeTab,
-            uiMode = uiState.uiMode,
             hasUpdateAvailable = hasUpdateAvailable,
             onSelectTab = onSelectTab,
             onPushRoute = onPushRoute,
@@ -143,98 +135,79 @@ private fun SettingsRouteContent(
         )
 
         BibiSettingsRoute.About -> AboutSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             actions = actions
         )
 
         BibiSettingsRoute.UsageStats -> UsageStatsSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() }
         )
 
         BibiSettingsRoute.Backup -> BackupSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             actions = actions
         )
 
         BibiSettingsRoute.Input -> InputSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             actions = actions
         )
 
         BibiSettingsRoute.UiSettings -> UiSettingsScreen(
-            uiMode = uiState.uiMode,
-            themeMode = uiState.themeMode,
-            onBack = { onPopRoute() },
-            onSetUiMode = onSetUiMode,
-            onSetThemeMode = onSetThemeMode
+            onBack = { onPopRoute() }
         )
 
         BibiSettingsRoute.RecordingTest -> RecordingTestScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             onOpenAsrSettings = { onPushRoute(BibiSettingsRoute.Asr) }
         )
 
         BibiSettingsRoute.Floating -> FloatingSettingsRoute(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             actions = actions
         )
 
         BibiSettingsRoute.Other -> OtherSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             actions = actions
         )
 
         BibiSettingsRoute.Ai -> AiSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             onOpenPromptSelection = { onPushRoute(BibiSettingsRoute.PromptSelection) },
             actions = actions
         )
 
         BibiSettingsRoute.PromptSelection -> PromptSelectionSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             onOpenPreview = { onPushRoute(BibiSettingsRoute.PromptSelectionPreview) }
         )
 
         BibiSettingsRoute.PromptSelectionPreview -> PromptSelectionPreviewScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() }
         )
 
         BibiSettingsRoute.Asr -> AsrSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             onOpenVoiceTest = { onPushRoute(BibiSettingsRoute.RecordingTest) },
             actions = actions
         )
 
         BibiSettingsRoute.Tts -> TtsSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() }
         )
 
         BibiSettingsRoute.VoiceDispatch -> VoiceDispatchRoute(
-            uiMode = uiState.uiMode,
             presetScriptPath = uiState.routeArg,
             onConsumePreset = onConsumeRouteArg,
             onBack = { onPopRoute() }
         )
 
         BibiSettingsRoute.FloatingPanel -> FloatingPanelSettingsScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() }
         )
 
         BibiSettingsRoute.Search -> SettingsSearchScreen(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             onOpenEntry = { entry ->
                 actions.applySearchEntry(entry)
@@ -243,13 +216,11 @@ private fun SettingsRouteContent(
         )
 
         BibiSettingsRoute.History -> SettingsHistoryRoute(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() },
             onOpenApiLog = { onPushRoute(BibiSettingsRoute.ApiLog) }
         )
 
         BibiSettingsRoute.ApiLog -> SettingsApiLogRoute(
-            uiMode = uiState.uiMode,
             onBack = { onPopRoute() }
         )
     }

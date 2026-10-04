@@ -57,7 +57,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionTitle
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsThemedText
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import kotlin.math.roundToLong
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +64,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 internal fun VoiceDispatchRuleEditScreen(
-    uiMode: BibiUiMode,
     ruleId: String?,
     presetScriptPath: String? = null,
     onBack: () -> Unit
@@ -134,7 +132,6 @@ internal fun VoiceDispatchRuleEditScreen(
         (!regexInvalid) && patternsText.isNotBlank() && !scriptMissing
 
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = if (existing == null) R.string.title_voice_dispatch_new else R.string.title_voice_dispatch_edit,
         onBack = onBack,
         actions = {
@@ -200,7 +197,7 @@ internal fun VoiceDispatchRuleEditScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // ==================== 基础：规则名 + 启用开关 ====================
-            SettingsSectionContainer(uiMode = uiMode) {
+            SettingsSectionContainer() {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -222,9 +219,8 @@ internal fun VoiceDispatchRuleEditScreen(
             // ==================== 触发 ====================
             SettingsSectionTitle(
                 text = stringResource(R.string.section_voice_dispatch_trigger),
-                uiMode = uiMode
             )
-            SettingsSectionContainer(uiMode = uiMode) {
+            SettingsSectionContainer() {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -291,9 +287,8 @@ internal fun VoiceDispatchRuleEditScreen(
             // ==================== 执行 ====================
             SettingsSectionTitle(
                 text = stringResource(R.string.section_voice_dispatch_action),
-                uiMode = uiMode
             )
-            SettingsSectionContainer(uiMode = uiMode) {
+            SettingsSectionContainer() {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -516,9 +511,8 @@ internal fun VoiceDispatchRuleEditScreen(
             // ==================== 高级 ====================
             SettingsSectionTitle(
                 text = stringResource(R.string.section_voice_dispatch_advanced),
-                uiMode = uiMode
             )
-            SettingsSectionContainer(uiMode = uiMode) {
+            SettingsSectionContainer() {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

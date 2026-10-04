@@ -22,10 +22,8 @@ import androidx.compose.ui.unit.dp
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.ui.floating.KeepAliveNotificationClick
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
-import com.brycewg.asrkb.ui.settings.compose.components.SettingsMaterialItemSurface
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSliderPreference
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
@@ -33,7 +31,6 @@ import com.brycewg.asrkb.ui.settings.other.OtherSettingsViewModel
 
 @Composable
 internal fun OtherSettingsRouteContent(
-    uiMode: BibiUiMode,
     innerPadding: PaddingValues,
     scrollModifier: Modifier,
     uiState: OtherSettingsUiState,
@@ -77,7 +74,6 @@ internal fun OtherSettingsRouteContent(
     onOpenSyncClipboardProject: () -> Unit
 ) {
     SettingsLazyColumn(
-        uiMode = uiMode,
         modifier = Modifier.fillMaxSize(),
         miuixScrollModifier = scrollModifier,
         contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
@@ -88,7 +84,7 @@ internal fun OtherSettingsRouteContent(
             val notificationClickOptions = KeepAliveNotificationClick.destinations.map { dest ->
                 DropdownOption(dest.route.id, stringResource(dest.titleRes))
             }
-            OtherSection(uiMode = uiMode, titleRes = R.string.section_general) {
+            OtherSection(titleRes = R.string.section_general) {
                 OtherExplainedSwitch(
                     id = "floating_keep_alive",
                     titleRes = R.string.label_floating_keep_alive_foreground,
@@ -120,7 +116,6 @@ internal fun OtherSettingsRouteContent(
                 )
                 OtherButton(
                     text = stringResource(R.string.label_request_battery_whitelist),
-                    uiMode = uiMode,
                     onClick = onRequestBatteryWhitelist
                 )
             }
@@ -128,7 +123,6 @@ internal fun OtherSettingsRouteContent(
 
         item("privacy") {
             OtherPrivacySection(
-                uiMode = uiMode,
                 uiState = uiState,
                 onDisableAsrHistoryToggle = onDisableAsrHistoryToggle,
                 onAudioRetentionChange = onAudioRetentionChange,
@@ -141,7 +135,6 @@ internal fun OtherSettingsRouteContent(
 
         item("punctuation") {
             OtherPunctuationSection(
-                uiMode = uiMode,
                 punctuation = punctuation,
                 onPunct1Change = onPunct1Change,
                 onPunct2Change = onPunct2Change,
@@ -152,7 +145,6 @@ internal fun OtherSettingsRouteContent(
 
         item("speech_presets") {
             SpeechPresetSection(
-                uiMode = uiMode,
                 state = speechState,
                 focusNameAfterAdd = focusNameAfterAdd,
                 onFocusNameHandled = onFocusNameHandled,
@@ -166,7 +158,6 @@ internal fun OtherSettingsRouteContent(
 
         item("sync_clipboard") {
             SyncClipboardSection(
-                uiMode = uiMode,
                 state = syncState,
                 onEnabledChange = onSyncClipboardEnabledChange,
                 onServerChange = onSyncClipboardServerChange,
@@ -189,7 +180,6 @@ internal fun OtherSettingsRouteContent(
 
 @Composable
 private fun OtherPrivacySection(
-    uiMode: BibiUiMode,
     uiState: OtherSettingsUiState,
     onDisableAsrHistoryToggle: (Boolean) -> Unit,
     onAudioRetentionChange: (Int) -> Unit,
@@ -198,7 +188,7 @@ private fun OtherPrivacySection(
     onDataCollectionToggle: (Boolean) -> Unit,
     onClearClipboardHistory: () -> Unit
 ) {
-    OtherSection(uiMode = uiMode, titleRes = R.string.section_data_retention) {
+    OtherSection(titleRes = R.string.section_data_retention) {
         val context = LocalContext.current
         OtherExplainedSwitch(
             id = "disable_asr_history",
@@ -209,7 +199,6 @@ private fun OtherPrivacySection(
             count = 4
         )
         SettingsSliderPreference(
-            uiMode = uiMode,
             title = stringResource(R.string.label_audio_history_retention_count),
             valueLabel = { value ->
                 context.getString(
@@ -244,7 +233,6 @@ private fun OtherPrivacySection(
         )
         OtherButton(
             text = stringResource(R.string.btn_clear_clipboard_history),
-            uiMode = uiMode,
             onClick = onClearClipboardHistory
         )
     }
@@ -252,7 +240,6 @@ private fun OtherPrivacySection(
 
 @Composable
 private fun OtherPunctuationSection(
-    uiMode: BibiUiMode,
     punctuation: PunctuationFields,
     onPunct1Change: (String) -> Unit,
     onPunct2Change: (String) -> Unit,
@@ -263,13 +250,12 @@ private fun OtherPunctuationSection(
         horizontal = 0.dp,
         vertical = SettingsLayoutMetrics.TextFieldLooseVerticalPadding
     )
-    OtherSection(uiMode = uiMode, titleRes = R.string.custom_punct_section_title) {
+    OtherSection(titleRes = R.string.custom_punct_section_title) {
         val fields: @Composable RowScope.() -> Unit = {
             OtherTextField(
                 value = punctuation.punct1,
                 onValueChange = onPunct1Change,
                 label = stringResource(R.string.label_custom_punct_1),
-                uiMode = uiMode,
                 modifier = Modifier.weight(1f),
                 materialContainer = false,
                 contentPadding = compactFieldPadding
@@ -278,7 +264,6 @@ private fun OtherPunctuationSection(
                 value = punctuation.punct2,
                 onValueChange = onPunct2Change,
                 label = stringResource(R.string.label_custom_punct_2),
-                uiMode = uiMode,
                 modifier = Modifier.weight(1f),
                 materialContainer = false,
                 contentPadding = compactFieldPadding
@@ -287,7 +272,6 @@ private fun OtherPunctuationSection(
                 value = punctuation.punct3,
                 onValueChange = onPunct3Change,
                 label = stringResource(R.string.label_custom_punct_3),
-                uiMode = uiMode,
                 modifier = Modifier.weight(1f),
                 materialContainer = false,
                 contentPadding = compactFieldPadding
@@ -296,7 +280,6 @@ private fun OtherPunctuationSection(
                 value = punctuation.punct4,
                 onValueChange = onPunct4Change,
                 label = stringResource(R.string.label_custom_punct_4),
-                uiMode = uiMode,
                 modifier = Modifier.weight(1f),
                 materialContainer = false,
                 contentPadding = compactFieldPadding
@@ -311,12 +294,6 @@ private fun OtherPunctuationSection(
                 content = fields
             )
         }
-        when (uiMode) {
-            BibiUiMode.Material -> SettingsMaterialItemSurface {
-                row()
-            }
-
-            BibiUiMode.Miuix -> row()
-        }
+        row()
     }
 }

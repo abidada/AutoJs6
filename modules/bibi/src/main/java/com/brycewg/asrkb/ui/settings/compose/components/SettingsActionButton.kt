@@ -1,5 +1,5 @@
 /**
- * Compose 设置页操作按钮组件，统一 Material 与 Miuix 的按钮尺寸。
+ * Compose 设置页操作按钮组件。
  *
  * 归属模块：ui/settings/compose/components
  */
@@ -16,14 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import top.yukonga.miuix.kmp.basic.Button as MiuixButton
@@ -34,7 +29,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun SettingsActionButtonRow(
-    uiMode: BibiUiMode,
     modifier: Modifier = Modifier,
     padded: Boolean = true,
     content: @Composable RowScope.() -> Unit
@@ -59,7 +53,6 @@ internal fun SettingsActionButtonRow(
 
 @Composable
 internal fun SettingsActionButton(
-    uiMode: BibiUiMode,
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -73,59 +66,31 @@ internal fun SettingsActionButton(
         hapticTap()
         onClick()
     }
-    when (uiMode) {
-        BibiUiMode.Material -> Button(
-            onClick = clickWithHaptic,
-            enabled = enabled,
-            modifier = buttonModifier,
-            shape = RoundedCornerShape(SettingsLayoutMetrics.ActionButtonCorner),
-            contentPadding = PaddingValues(
-                horizontal = SettingsLayoutMetrics.ActionButtonInsideHorizontalPadding,
-                vertical = SettingsLayoutMetrics.ActionButtonInsideVerticalPadding
-            )
-        ) {
-            if (leadingContent != null) {
-                leadingContent()
+    MiuixButton(
+        onClick = clickWithHaptic,
+        enabled = enabled,
+        modifier = buttonModifier,
+        cornerRadius = SettingsLayoutMetrics.ActionButtonCorner,
+        minHeight = SettingsLayoutMetrics.ActionButtonMinHeight,
+        insideMargin = PaddingValues(
+            horizontal = SettingsLayoutMetrics.ActionButtonInsideHorizontalPadding,
+            vertical = SettingsLayoutMetrics.ActionButtonInsideVerticalPadding
+        ),
+        colors = MiuixButtonDefaults.buttonColorsPrimary()
+    ) {
+        if (leadingContent != null) {
+            leadingContent()
+            Spacer(Modifier.size(SettingsLayoutMetrics.ActionButtonIconSpacing))
+        } else {
+            leadingIcon?.let {
+                MiuixIcon(
+                    imageVector = it,
+                    contentDescription = null,
+                    modifier = Modifier.size(SettingsLayoutMetrics.ActionButtonIconSize)
+                )
                 Spacer(Modifier.size(SettingsLayoutMetrics.ActionButtonIconSpacing))
-            } else {
-                leadingIcon?.let {
-                    Icon(
-                        imageVector = it,
-                        contentDescription = null,
-                        modifier = Modifier.size(SettingsLayoutMetrics.ActionButtonIconSize)
-                    )
-                    Spacer(Modifier.size(SettingsLayoutMetrics.ActionButtonIconSpacing))
-                }
             }
-            Text(text)
         }
-
-        BibiUiMode.Miuix -> MiuixButton(
-            onClick = clickWithHaptic,
-            enabled = enabled,
-            modifier = buttonModifier,
-            cornerRadius = SettingsLayoutMetrics.ActionButtonCorner,
-            minHeight = SettingsLayoutMetrics.ActionButtonMinHeight,
-            insideMargin = PaddingValues(
-                horizontal = SettingsLayoutMetrics.ActionButtonInsideHorizontalPadding,
-                vertical = SettingsLayoutMetrics.ActionButtonInsideVerticalPadding
-            ),
-            colors = MiuixButtonDefaults.buttonColorsPrimary()
-        ) {
-            if (leadingContent != null) {
-                leadingContent()
-                Spacer(Modifier.size(SettingsLayoutMetrics.ActionButtonIconSpacing))
-            } else {
-                leadingIcon?.let {
-                    MiuixIcon(
-                        imageVector = it,
-                        contentDescription = null,
-                        modifier = Modifier.size(SettingsLayoutMetrics.ActionButtonIconSize)
-                    )
-                    Spacer(Modifier.size(SettingsLayoutMetrics.ActionButtonIconSpacing))
-                }
-            }
-            MiuixText(text = text, style = MiuixTheme.textStyles.button)
-        }
+        MiuixText(text = text, style = MiuixTheme.textStyles.button)
     }
 }

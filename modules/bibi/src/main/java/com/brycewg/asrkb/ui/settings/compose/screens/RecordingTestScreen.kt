@@ -31,10 +31,6 @@ import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -65,7 +61,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
@@ -77,7 +72,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun RecordingTestScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     onOpenAsrSettings: () -> Unit
 ) {
@@ -105,30 +99,26 @@ internal fun RecordingTestScreen(
     }
 
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_recording_test,
         onBack = onBack,
         bottomBar = {
             RecordingTestBottomBar(
-                uiMode = uiMode,
                 isRecording = state.isRecording,
                 onClick = viewModel::toggleRecording
             )
         }
     ) { innerPadding, scrollModifier ->
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
         ) {
             item("overview") {
-                RecordingOverviewSection(uiMode = uiMode, state = state)
+                RecordingOverviewSection(state = state)
             }
             item("audio") {
                 RecordingAudioSection(
-                    uiMode = uiMode,
                     state = state,
                     onPlay = viewModel::replay,
                     onReset = viewModel::resetRecording
@@ -136,7 +126,6 @@ internal fun RecordingTestScreen(
             }
             item("pipeline") {
                 RecognitionPipelineSection(
-                    uiMode = uiMode,
                     state = state,
                     onPromptSelected = viewModel::selectPromptPreset,
                     onAiProcess = viewModel::processAi,
@@ -144,7 +133,7 @@ internal fun RecordingTestScreen(
                 )
             }
             item("results") {
-                RecordingResultsSection(uiMode = uiMode, state = state)
+                RecordingResultsSection(state = state)
             }
         }
     }
@@ -152,10 +141,9 @@ internal fun RecordingTestScreen(
 
 @Composable
 private fun RecordingOverviewSection(
-    uiMode: BibiUiMode,
     state: RecordingTestUiState
 ) {
-    RecordingSection(uiMode = uiMode, titleRes = R.string.recording_test_latency_chain) {
+    RecordingSection(titleRes = R.string.recording_test_latency_chain) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -167,29 +155,25 @@ private fun RecordingOverviewSection(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                RecordingStatusPill(uiMode = uiMode, state = state)
+                RecordingStatusPill(state = state)
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                     RecordingText(
-                        uiMode = uiMode,
                         text = stringResource(R.string.recording_test_total_label),
                         style = RecordingTextStyle.Label
                     )
                     RecordingText(
-                        uiMode = uiMode,
                         text = formatRecordingTestDuration(state.totalLatencyMs),
                         style = RecordingTextStyle.Display
                     )
                 }
             }
-            LatencySegments(uiMode = uiMode, state = state)
+            LatencySegments(state = state)
             RecordingMetricList {
                 RecordingMetricRow(
-                    uiMode = uiMode,
                     label = stringResource(R.string.recording_test_press_time),
                     value = formatRecordingTestTimestamp(state.pressWallTimeMs)
                 )
                 RecordingMetricRow(
-                    uiMode = uiMode,
                     label = stringResource(R.string.recording_test_first_frame_time),
                     value = formatRecordingTestTimestamp(state.firstFrameWallTimeMs)
                 )
@@ -200,7 +184,6 @@ private fun RecordingOverviewSection(
 
 @Composable
 private fun RecordingStatusPill(
-    uiMode: BibiUiMode,
     state: RecordingTestUiState
 ) {
     val (text, icon, color) = when {
@@ -225,8 +208,8 @@ private fun RecordingStatusPill(
             RecordingAccentColor.Neutral
         )
     }
-    val containerColor = recordingAccentContainerColor(uiMode, color)
-    val contentColor = recordingAccentContentColor(uiMode, color)
+    val containerColor = recordingAccentContainerColor(color)
+    val contentColor = recordingAccentContentColor(color)
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(18.dp))
@@ -235,9 +218,8 @@ private fun RecordingStatusPill(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        RecordingIcon(uiMode = uiMode, imageVector = icon, tint = contentColor, size = 18.dp)
+        RecordingIcon(imageVector = icon, tint = contentColor, size = 18.dp)
         RecordingText(
-            uiMode = uiMode,
             text = text,
             color = contentColor,
             style = RecordingTextStyle.LabelStrong
@@ -247,7 +229,6 @@ private fun RecordingStatusPill(
 
 @Composable
 private fun LatencySegments(
-    uiMode: BibiUiMode,
     state: RecordingTestUiState
 ) {
     val segments = listOf(
@@ -279,8 +260,8 @@ private fun LatencySegments(
             val hasLatency = value != null
             val weight = ((value ?: (knownTotal / 3L).coerceAtLeast(1L)).toFloat() / knownTotal)
                 .coerceAtLeast(0.24f)
-            val segmentColor = recordingLatencySegmentColor(uiMode, segment.color, hasLatency)
-            val contentColor = recordingLatencySegmentContentColor(uiMode, segment.color, hasLatency)
+            val segmentColor = recordingLatencySegmentColor(segment.color, hasLatency)
+            val contentColor = recordingLatencySegmentContentColor(segment.color, hasLatency)
             Column(
                 modifier = Modifier
                     .weight(weight)
@@ -291,14 +272,12 @@ private fun LatencySegments(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 RecordingText(
-                    uiMode = uiMode,
                     text = segment.label,
                     color = contentColor,
                     style = RecordingTextStyle.Label,
                     maxLines = 1
                 )
                 RecordingText(
-                    uiMode = uiMode,
                     text = formatRecordingTestDuration(value),
                     color = contentColor,
                     style = RecordingTextStyle.Caption,
@@ -311,46 +290,40 @@ private fun LatencySegments(
 
 @Composable
 private fun RecordingAudioSection(
-    uiMode: BibiUiMode,
     state: RecordingTestUiState,
     onPlay: () -> Unit,
     onReset: () -> Unit
 ) {
-    RecordingSection(uiMode = uiMode, titleRes = R.string.recording_test_audio_title) {
+    RecordingSection(titleRes = R.string.recording_test_audio_title) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            AudioLevelMeter(uiMode = uiMode, state = state)
+            AudioLevelMeter(state = state)
             RecordingMetricList {
                 RecordingMetricRow(
-                    uiMode = uiMode,
                     label = stringResource(R.string.recording_test_duration_label),
                     value = String.format(Locale.US, "%.1fs", state.durationMs / 1_000.0)
                 )
                 RecordingMetricRow(
-                    uiMode = uiMode,
                     label = stringResource(R.string.recording_test_current_level_label),
                     value = formatDb(state.currentDb)
                 )
                 RecordingMetricRow(
-                    uiMode = uiMode,
                     label = stringResource(R.string.recording_test_peak_level_label),
                     value = formatDb(state.peakDb)
                 )
                 RecordingMetricRow(
-                    uiMode = uiMode,
                     label = stringResource(R.string.recording_test_silence_label),
                     value = state.silentPercent?.let { percent ->
                         stringResource(R.string.recording_test_percent_value, percent)
                     } ?: "--"
                 )
             }
-            SettingsActionButtonRow(uiMode = uiMode, padded = false) {
+            SettingsActionButtonRow(padded = false) {
                 SettingsActionButton(
-                    uiMode = uiMode,
                     text = if (state.isPlaying) {
                         stringResource(R.string.recording_test_playing)
                     } else {
@@ -362,7 +335,6 @@ private fun RecordingAudioSection(
                     modifier = Modifier.weight(1f)
                 )
                 SettingsActionButton(
-                    uiMode = uiMode,
                     text = stringResource(R.string.recording_test_rerecord),
                     enabled = state.hasAudio && !state.isRecording,
                     leadingIcon = Icons.Rounded.Refresh,
@@ -376,19 +348,16 @@ private fun RecordingAudioSection(
 
 @Composable
 private fun AudioLevelMeter(
-    uiMode: BibiUiMode,
     state: RecordingTestUiState
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         RecordingMeterRow(
-            uiMode = uiMode,
             label = stringResource(R.string.recording_test_current_level_label),
             value = formatDb(state.currentDb),
             progress = levelProgress(state.currentDb),
             color = RecordingAccentColor.Primary
         )
         RecordingMeterRow(
-            uiMode = uiMode,
             label = stringResource(R.string.recording_test_peak_level_label),
             value = formatDb(state.peakDb),
             progress = levelProgress(state.peakDb),
@@ -399,7 +368,6 @@ private fun AudioLevelMeter(
 
 @Composable
 private fun RecordingMeterRow(
-    uiMode: BibiUiMode,
     label: String,
     value: String,
     progress: Float,
@@ -407,11 +375,10 @@ private fun RecordingMeterRow(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            RecordingText(uiMode = uiMode, text = label, style = RecordingTextStyle.Caption)
-            RecordingText(uiMode = uiMode, text = value, style = RecordingTextStyle.CaptionStrong)
+            RecordingText(text = label, style = RecordingTextStyle.Caption)
+            RecordingText(text = value, style = RecordingTextStyle.CaptionStrong)
         }
         RecordingProgressIndicator(
-            uiMode = uiMode,
             progress = progress,
             color = color
         )
@@ -420,7 +387,6 @@ private fun RecordingMeterRow(
 
 @Composable
 private fun RecognitionPipelineSection(
-    uiMode: BibiUiMode,
     state: RecordingTestUiState,
     onPromptSelected: (String) -> Unit,
     onAiProcess: () -> Unit,
@@ -440,7 +406,7 @@ private fun RecognitionPipelineSection(
         ?: ""
     val noPromptLabel = stringResource(R.string.recording_test_no_prompt)
 
-    RecordingSection(uiMode = uiMode, titleRes = R.string.recording_test_recognition_title) {
+    RecordingSection(titleRes = R.string.recording_test_recognition_title) {
         SettingsPreference(
             entry = SettingsEntry.Action(
                 id = "recording_test_asr",
@@ -469,9 +435,8 @@ private fun RecognitionPipelineSection(
             index = 1,
             count = 2
         )
-        SettingsActionButtonRow(uiMode = uiMode) {
+        SettingsActionButtonRow() {
             SettingsActionButton(
-                uiMode = uiMode,
                 text = stringResource(R.string.recording_test_auto_transcribe),
                 enabled = false,
                 leadingIcon = if (state.isTranscribing) null else Icons.Rounded.TextFields,
@@ -484,7 +449,6 @@ private fun RecognitionPipelineSection(
                 modifier = Modifier.weight(1f)
             )
             SettingsActionButton(
-                uiMode = uiMode,
                 text = stringResource(R.string.recording_test_ai_process),
                 enabled = state.canAiProcess,
                 leadingIcon = if (state.isAiProcessing) null else Icons.Rounded.AutoFixHigh,
@@ -526,10 +490,9 @@ private fun backupAsrStrategyLabel(strategy: AsrParallelEngineDecision): String 
 
 @Composable
 private fun RecordingResultsSection(
-    uiMode: BibiUiMode,
     state: RecordingTestUiState
 ) {
-    RecordingSection(uiMode = uiMode, titleRes = R.string.recording_test_result_compare) {
+    RecordingSection(titleRes = R.string.recording_test_result_compare) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -537,7 +500,6 @@ private fun RecordingResultsSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             ResultBlock(
-                uiMode = uiMode,
                 label = stringResource(R.string.recording_test_raw_result),
                 value = state.rawText.ifBlank { stringResource(R.string.recording_test_empty_result_placeholder) },
                 icon = Icons.Rounded.TextFields,
@@ -545,7 +507,6 @@ private fun RecordingResultsSection(
                 empty = state.rawText.isBlank()
             )
             ResultBlock(
-                uiMode = uiMode,
                 label = stringResource(R.string.recording_test_ai_result),
                 value = state.aiText.ifBlank { stringResource(R.string.recording_test_empty_result_placeholder) },
                 icon = Icons.Rounded.AutoFixHigh,
@@ -553,7 +514,7 @@ private fun RecordingResultsSection(
                 empty = state.aiText.isBlank()
             )
             state.statusMessage?.takeIf { it.isNotBlank() }?.let { message ->
-                RecordingStatusMessage(uiMode = uiMode, message = message)
+                RecordingStatusMessage(message = message)
             }
         }
     }
@@ -561,7 +522,6 @@ private fun RecordingResultsSection(
 
 @Composable
 private fun ResultBlock(
-    uiMode: BibiUiMode,
     label: String,
     value: String,
     icon: ImageVector,
@@ -572,7 +532,7 @@ private fun ResultBlock(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(recordingNeutralContainerColor(uiMode))
+            .background(recordingNeutralContainerColor())
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -581,21 +541,18 @@ private fun ResultBlock(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             RecordingIcon(
-                uiMode = uiMode,
                 imageVector = icon,
-                tint = recordingAccentSolidColor(uiMode, accent),
+                tint = recordingAccentSolidColor(accent),
                 size = 18.dp
             )
             RecordingText(
-                uiMode = uiMode,
                 text = label,
                 style = RecordingTextStyle.LabelStrong
             )
         }
         RecordingText(
-            uiMode = uiMode,
             text = value,
-            color = if (empty) recordingSecondaryTextColor(uiMode) else recordingPrimaryTextColor(uiMode),
+            color = if (empty) recordingSecondaryTextColor() else recordingPrimaryTextColor(),
             style = RecordingTextStyle.Body,
             maxLines = 5
         )
@@ -604,20 +561,18 @@ private fun ResultBlock(
 
 @Composable
 private fun RecordingStatusMessage(
-    uiMode: BibiUiMode,
     message: String
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(recordingErrorContainerColor(uiMode))
+            .background(recordingErrorContainerColor())
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
         RecordingText(
-            uiMode = uiMode,
             text = message,
-            color = recordingErrorContentColor(uiMode),
+            color = recordingErrorContentColor(),
             style = RecordingTextStyle.Body,
             maxLines = 3
         )
@@ -637,7 +592,6 @@ private fun RecordingMetricList(
 
 @Composable
 private fun RecordingMetricRow(
-    uiMode: BibiUiMode,
     label: String,
     value: String
 ) {
@@ -647,14 +601,12 @@ private fun RecordingMetricRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         RecordingText(
-            uiMode = uiMode,
             text = label,
-            color = recordingSecondaryTextColor(uiMode),
+            color = recordingSecondaryTextColor(),
             style = RecordingTextStyle.Body,
             modifier = Modifier.weight(1f)
         )
         RecordingText(
-            uiMode = uiMode,
             text = value,
             style = RecordingTextStyle.BodyStrong,
             maxLines = 1
@@ -664,12 +616,10 @@ private fun RecordingMetricRow(
 
 @Composable
 private fun RecordingSection(
-    uiMode: BibiUiMode,
     titleRes: Int,
     content: @Composable ColumnScope.() -> Unit
 ) {
     SettingsSectionContainer(
-        uiMode = uiMode,
         titleRes = titleRes
     ) {
         content()
@@ -678,7 +628,6 @@ private fun RecordingSection(
 
 @Composable
 private fun RecordingProgressIndicator(
-    uiMode: BibiUiMode,
     progress: Float,
     color: RecordingAccentColor
 ) {
@@ -686,27 +635,17 @@ private fun RecordingProgressIndicator(
         .fillMaxWidth()
         .height(8.dp)
         .clip(RoundedCornerShape(4.dp))
-    when (uiMode) {
-        BibiUiMode.Material -> LinearProgressIndicator(
-            progress = { progress.coerceIn(0f, 1f) },
-            modifier = modifier,
-            color = recordingAccentSolidColor(uiMode, color),
-            trackColor = recordingNeutralContainerColor(uiMode)
+    MiuixLinearProgressIndicator(
+        progress = progress.coerceIn(0f, 1f),
+        modifier = modifier,
+        colors = ProgressIndicatorDefaults.progressIndicatorColors(
+            foregroundColor = recordingAccentSolidColor(color)
         )
-
-        BibiUiMode.Miuix -> MiuixLinearProgressIndicator(
-            progress = progress.coerceIn(0f, 1f),
-            modifier = modifier,
-            colors = ProgressIndicatorDefaults.progressIndicatorColors(
-                foregroundColor = recordingAccentSolidColor(uiMode, color)
-            )
-        )
-    }
+    )
 }
 
 @Composable
 private fun RecordingTestBottomBar(
-    uiMode: BibiUiMode,
     isRecording: Boolean,
     onClick: () -> Unit
 ) {
@@ -714,52 +653,16 @@ private fun RecordingTestBottomBar(
         topStart = SettingsLayoutMetrics.BottomBarTopCorner,
         topEnd = SettingsLayoutMetrics.BottomBarTopCorner
     )
-    when (uiMode) {
-        BibiUiMode.Material -> Surface(
-            shadowElevation = SettingsLayoutMetrics.BottomBarElevation,
-            tonalElevation = SettingsLayoutMetrics.BottomBarElevation,
-            shape = shape
-        ) {
-            RecordingTestBottomBarContent(
-                uiMode = uiMode,
-                isRecording = isRecording,
-                onClick = onClick
-            )
-        }
-
-        BibiUiMode.Miuix -> Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(shape)
-                .background(MiuixTheme.colorScheme.surfaceVariant)
-                .heightIn(min = SettingsLayoutMetrics.BottomBarMinHeight)
-                .padding(horizontal = 24.dp, vertical = 10.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            RecordingTestRecordButton(
-                uiMode = uiMode,
-                isRecording = isRecording,
-                onClick = onClick
-            )
-        }
-    }
-}
-
-@Composable
-private fun RecordingTestBottomBarContent(
-    uiMode: BibiUiMode,
-    isRecording: Boolean,
-    onClick: () -> Unit
-) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(shape)
+            .background(MiuixTheme.colorScheme.surfaceVariant)
             .heightIn(min = SettingsLayoutMetrics.BottomBarMinHeight)
             .padding(horizontal = 24.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         RecordingTestRecordButton(
-            uiMode = uiMode,
             isRecording = isRecording,
             onClick = onClick
         )
@@ -768,12 +671,10 @@ private fun RecordingTestBottomBarContent(
 
 @Composable
 private fun RecordingTestRecordButton(
-    uiMode: BibiUiMode,
     isRecording: Boolean,
     onClick: () -> Unit
 ) {
     SettingsActionButton(
-        uiMode = uiMode,
         text = if (isRecording) {
             stringResource(R.string.recording_test_stop)
         } else {
@@ -795,31 +696,20 @@ private fun RecordingBusyIndicator() {
 
 @Composable
 private fun RecordingIcon(
-    uiMode: BibiUiMode,
     imageVector: ImageVector,
     tint: Color,
     size: androidx.compose.ui.unit.Dp
 ) {
-    when (uiMode) {
-        BibiUiMode.Material -> Icon(
-            imageVector = imageVector,
-            contentDescription = null,
-            modifier = Modifier.size(size),
-            tint = tint
-        )
-
-        BibiUiMode.Miuix -> top.yukonga.miuix.kmp.basic.Icon(
-            imageVector = imageVector,
-            contentDescription = null,
-            modifier = Modifier.size(size),
-            tint = tint
-        )
-    }
+    top.yukonga.miuix.kmp.basic.Icon(
+        imageVector = imageVector,
+        contentDescription = null,
+        modifier = Modifier.size(size),
+        tint = tint
+    )
 }
 
 @Composable
 private fun RecordingText(
-    uiMode: BibiUiMode,
     text: String,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
@@ -829,61 +719,35 @@ private fun RecordingText(
     val resolvedColor = if (color == Color.Unspecified) {
         when (style) {
             RecordingTextStyle.Caption,
-            RecordingTextStyle.Label -> recordingSecondaryTextColor(uiMode)
-            else -> recordingPrimaryTextColor(uiMode)
+            RecordingTextStyle.Label -> recordingSecondaryTextColor()
+            else -> recordingPrimaryTextColor()
         }
     } else {
         color
     }
-    when (uiMode) {
-        BibiUiMode.Material -> Text(
-            text = text,
-            modifier = modifier,
-            color = resolvedColor,
-            style = when (style) {
-                RecordingTextStyle.Display -> MaterialTheme.typography.headlineSmall
-                RecordingTextStyle.Body,
-                RecordingTextStyle.BodyStrong -> MaterialTheme.typography.bodyMedium
-                RecordingTextStyle.Label,
-                RecordingTextStyle.LabelStrong -> MaterialTheme.typography.labelLarge
-                RecordingTextStyle.Caption,
-                RecordingTextStyle.CaptionStrong -> MaterialTheme.typography.labelSmall
-            },
-            fontWeight = when (style) {
-                RecordingTextStyle.Display,
-                RecordingTextStyle.BodyStrong,
-                RecordingTextStyle.LabelStrong,
-                RecordingTextStyle.CaptionStrong -> FontWeight.SemiBold
-                else -> FontWeight.Normal
-            },
-            maxLines = maxLines,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            modifier = modifier,
-            color = resolvedColor,
-            style = when (style) {
-                RecordingTextStyle.Display -> MiuixTheme.textStyles.title2
-                RecordingTextStyle.Body,
-                RecordingTextStyle.BodyStrong -> MiuixTheme.textStyles.body2
-                RecordingTextStyle.Label,
-                RecordingTextStyle.LabelStrong -> MiuixTheme.textStyles.body1
-                RecordingTextStyle.Caption,
-                RecordingTextStyle.CaptionStrong -> MiuixTheme.textStyles.footnote1
-            },
-            fontWeight = when (style) {
-                RecordingTextStyle.Display,
-                RecordingTextStyle.BodyStrong,
-                RecordingTextStyle.LabelStrong,
-                RecordingTextStyle.CaptionStrong -> FontWeight.SemiBold
-                else -> FontWeight.Normal
-            },
-            maxLines = maxLines,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
+    MiuixText(
+        text = text,
+        modifier = modifier,
+        color = resolvedColor,
+        style = when (style) {
+            RecordingTextStyle.Display -> MiuixTheme.textStyles.title2
+            RecordingTextStyle.Body,
+            RecordingTextStyle.BodyStrong -> MiuixTheme.textStyles.body2
+            RecordingTextStyle.Label,
+            RecordingTextStyle.LabelStrong -> MiuixTheme.textStyles.body1
+            RecordingTextStyle.Caption,
+            RecordingTextStyle.CaptionStrong -> MiuixTheme.textStyles.footnote1
+        },
+        fontWeight = when (style) {
+            RecordingTextStyle.Display,
+            RecordingTextStyle.BodyStrong,
+            RecordingTextStyle.LabelStrong,
+            RecordingTextStyle.CaptionStrong -> FontWeight.SemiBold
+            else -> FontWeight.Normal
+        },
+        maxLines = maxLines,
+        overflow = TextOverflow.Ellipsis
+    )
 }
 
 private data class RecordingLatencySegment(
@@ -911,7 +775,6 @@ private enum class RecordingAccentColor {
 
 @Composable
 private fun recordingLatencySegmentColor(
-    uiMode: BibiUiMode,
     bandColor: RecordingLatencyBandColor,
     completed: Boolean
 ): Color {
@@ -921,19 +784,15 @@ private fun recordingLatencySegmentColor(
         RecordingLatencyBandColor.Orange -> colorResource(R.color.recording_latency_orange)
     }
     if (completed) return solidColor
-    return when (uiMode) {
-        BibiUiMode.Material -> solidColor.copy(alpha = 0.16f)
-        BibiUiMode.Miuix -> solidColor.copy(alpha = 0.18f)
-    }
+    return solidColor.copy(alpha = 0.18f)
 }
 
 @Composable
 private fun recordingLatencySegmentContentColor(
-    uiMode: BibiUiMode,
     bandColor: RecordingLatencyBandColor,
     completed: Boolean
 ): Color {
-    if (!completed) return recordingSecondaryTextColor(uiMode)
+    if (!completed) return recordingSecondaryTextColor()
     return when (bandColor) {
         RecordingLatencyBandColor.Green -> colorResource(R.color.recording_latency_on_green)
         RecordingLatencyBandColor.Blue -> colorResource(R.color.recording_latency_on_blue)
@@ -949,94 +808,43 @@ private enum class RecordingLatencyBandColor {
 
 @Composable
 private fun recordingAccentSolidColor(
-    uiMode: BibiUiMode,
     accent: RecordingAccentColor
-): Color = when (uiMode) {
-    BibiUiMode.Material -> when (accent) {
-        RecordingAccentColor.Primary -> MaterialTheme.colorScheme.primary
-        RecordingAccentColor.Secondary -> MaterialTheme.colorScheme.secondary
-        RecordingAccentColor.Tertiary -> MaterialTheme.colorScheme.tertiary
-        RecordingAccentColor.Neutral -> MaterialTheme.colorScheme.outline
-    }
-    BibiUiMode.Miuix -> when (accent) {
-        RecordingAccentColor.Primary -> MiuixTheme.colorScheme.primary
-        RecordingAccentColor.Secondary -> MiuixTheme.colorScheme.secondary
-        RecordingAccentColor.Tertiary -> MiuixTheme.colorScheme.secondaryVariant
-        RecordingAccentColor.Neutral -> MiuixTheme.colorScheme.onSurfaceVariantSummary
-    }
+): Color = when (accent) {
+    RecordingAccentColor.Primary -> MiuixTheme.colorScheme.primary
+    RecordingAccentColor.Secondary -> MiuixTheme.colorScheme.secondary
+    RecordingAccentColor.Tertiary -> MiuixTheme.colorScheme.secondaryVariant
+    RecordingAccentColor.Neutral -> MiuixTheme.colorScheme.onSurfaceVariantSummary
 }
 
 @Composable
 private fun recordingAccentContainerColor(
-    uiMode: BibiUiMode,
     accent: RecordingAccentColor
-): Color = when (uiMode) {
-    BibiUiMode.Material -> when (accent) {
-        RecordingAccentColor.Primary -> MaterialTheme.colorScheme.primaryContainer
-        RecordingAccentColor.Secondary -> MaterialTheme.colorScheme.secondaryContainer
-        RecordingAccentColor.Tertiary -> MaterialTheme.colorScheme.tertiaryContainer
-        RecordingAccentColor.Neutral -> MaterialTheme.colorScheme.surfaceContainerHighest
-    }
-    BibiUiMode.Miuix -> recordingAccentSolidColor(uiMode, accent).copy(alpha = 0.14f)
-}
+): Color = recordingAccentSolidColor(accent).copy(alpha = 0.14f)
 
 @Composable
 private fun recordingAccentContentColor(
-    uiMode: BibiUiMode,
     accent: RecordingAccentColor
-): Color = when (uiMode) {
-    BibiUiMode.Material -> when (accent) {
-        RecordingAccentColor.Primary -> MaterialTheme.colorScheme.onPrimaryContainer
-        RecordingAccentColor.Secondary -> MaterialTheme.colorScheme.onSecondaryContainer
-        RecordingAccentColor.Tertiary -> MaterialTheme.colorScheme.onTertiaryContainer
-        RecordingAccentColor.Neutral -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    BibiUiMode.Miuix -> recordingAccentSolidColor(uiMode, accent)
-}
+): Color = recordingAccentSolidColor(accent)
 
 @Composable
 private fun recordingAccentOnSolidColor(
-    uiMode: BibiUiMode,
     accent: RecordingAccentColor
-): Color = when (uiMode) {
-    BibiUiMode.Material -> when (accent) {
-        RecordingAccentColor.Primary -> MaterialTheme.colorScheme.onPrimary
-        RecordingAccentColor.Secondary -> MaterialTheme.colorScheme.onSecondary
-        RecordingAccentColor.Tertiary -> MaterialTheme.colorScheme.onTertiary
-        RecordingAccentColor.Neutral -> MaterialTheme.colorScheme.onSurface
-    }
-    BibiUiMode.Miuix -> MiuixTheme.colorScheme.onSurface
-}
+): Color = MiuixTheme.colorScheme.onSurface
 
 @Composable
-private fun recordingNeutralContainerColor(uiMode: BibiUiMode): Color = when (uiMode) {
-    BibiUiMode.Material -> MaterialTheme.colorScheme.surfaceContainerHighest
-    BibiUiMode.Miuix -> MiuixTheme.colorScheme.surfaceVariant
-}
+private fun recordingNeutralContainerColor(): Color = MiuixTheme.colorScheme.surfaceVariant
 
 @Composable
-private fun recordingPrimaryTextColor(uiMode: BibiUiMode): Color = when (uiMode) {
-    BibiUiMode.Material -> MaterialTheme.colorScheme.onSurface
-    BibiUiMode.Miuix -> MiuixTheme.colorScheme.onSurface
-}
+private fun recordingPrimaryTextColor(): Color = MiuixTheme.colorScheme.onSurface
 
 @Composable
-private fun recordingSecondaryTextColor(uiMode: BibiUiMode): Color = when (uiMode) {
-    BibiUiMode.Material -> MaterialTheme.colorScheme.onSurfaceVariant
-    BibiUiMode.Miuix -> MiuixTheme.colorScheme.onSurfaceVariantSummary
-}
+private fun recordingSecondaryTextColor(): Color = MiuixTheme.colorScheme.onSurfaceVariantSummary
 
 @Composable
-private fun recordingErrorContainerColor(uiMode: BibiUiMode): Color = when (uiMode) {
-    BibiUiMode.Material -> MaterialTheme.colorScheme.errorContainer
-    BibiUiMode.Miuix -> MiuixTheme.colorScheme.error.copy(alpha = 0.14f)
-}
+private fun recordingErrorContainerColor(): Color = MiuixTheme.colorScheme.error.copy(alpha = 0.14f)
 
 @Composable
-private fun recordingErrorContentColor(uiMode: BibiUiMode): Color = when (uiMode) {
-    BibiUiMode.Material -> MaterialTheme.colorScheme.onErrorContainer
-    BibiUiMode.Miuix -> MiuixTheme.colorScheme.error
-}
+private fun recordingErrorContentColor(): Color = MiuixTheme.colorScheme.error
 
 private fun levelProgress(value: Float?): Float {
     if (value == null) return 0f

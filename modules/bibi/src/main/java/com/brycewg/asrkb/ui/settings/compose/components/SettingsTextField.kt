@@ -1,5 +1,5 @@
 /**
- * Compose 设置页文本输入组件，统一 Material 与 Miuix 的输入框密度。
+ * Compose 设置页文本输入组件。
  *
  * 归属模块：ui/settings/compose/components
  */
@@ -17,19 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +39,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.brycewg.asrkb.R
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import kotlinx.coroutines.delay
@@ -61,7 +52,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun SettingsTextField(
-    uiMode: BibiUiMode,
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -150,102 +140,44 @@ internal fun SettingsTextField(
         }
     val fieldModifier = containerModifier.padding(effectiveContentPadding)
 
-    when (uiMode) {
-        BibiUiMode.Material -> {
-            val containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                SettingsLayoutMetrics.MaterialSectionElevation
-            )
-            val content: @Composable () -> Unit = {
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(effectiveContentPadding),
-                    enabled = enabled,
-                    label = { Text(label) },
-                    placeholder = placeholder?.let { { Text(it) } },
-                    supportingText = helper?.let { { Text(it) } },
-                    singleLine = singleLine,
-                    minLines = minLines,
-                    maxLines = maxLines,
-                    shape = RoundedCornerShape(SettingsLayoutMetrics.TextFieldCorner),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = containerColor,
-                        unfocusedContainerColor = containerColor,
-                        disabledContainerColor = containerColor
-                    ),
-                    visualTransformation = resolvedVisualTransformation,
-                    keyboardOptions = resolvedKeyboardOptions,
-                    keyboardActions = keyboardActions,
-                    trailingIcon = if (showPasswordToggle) {
-                        {
-                            IconButton(onClick = togglePasswordVisibility) {
-                                Icon(
-                                    imageVector = passwordToggleIcon,
-                                    contentDescription = passwordToggleLabel
-                                )
-                            }
-                        }
-                    } else {
-                        null
+    Column(
+        modifier = fieldModifier
+    ) {
+        MiuixTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = enabled,
+            label = label,
+            singleLine = singleLine,
+            minLines = minLines,
+            maxLines = maxLines,
+            cornerRadius = SettingsLayoutMetrics.TextFieldCorner,
+            visualTransformation = resolvedVisualTransformation,
+            keyboardOptions = resolvedKeyboardOptions,
+            keyboardActions = keyboardActions,
+            trailingIcon = if (showPasswordToggle) {
+                {
+                    MiuixIconButton(onClick = togglePasswordVisibility) {
+                        MiuixIcon(
+                            imageVector = passwordToggleIcon,
+                            contentDescription = passwordToggleLabel,
+                            modifier = Modifier.size(20.dp),
+                            tint = MiuixTheme.colorScheme.onSurfaceVariantActions
+                        )
                     }
-                )
-            }
-            if (materialContainer) {
-                SettingsMaterialItemSurface(
-                    index = index,
-                    count = count,
-                    modifier = containerModifier
-                ) {
-                    content()
                 }
             } else {
-                Column(modifier = containerModifier) {
-                    content()
-                }
+                null
             }
-        }
-
-        BibiUiMode.Miuix -> Column(
-            modifier = fieldModifier
-        ) {
-            MiuixTextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = Modifier.fillMaxWidth(),
-                enabled = enabled,
-                label = label,
-                singleLine = singleLine,
-                minLines = minLines,
-                maxLines = maxLines,
-                cornerRadius = SettingsLayoutMetrics.TextFieldCorner,
-                visualTransformation = resolvedVisualTransformation,
-                keyboardOptions = resolvedKeyboardOptions,
-                keyboardActions = keyboardActions,
-                trailingIcon = if (showPasswordToggle) {
-                    {
-                        MiuixIconButton(onClick = togglePasswordVisibility) {
-                            MiuixIcon(
-                                imageVector = passwordToggleIcon,
-                                contentDescription = passwordToggleLabel,
-                                modifier = Modifier.size(20.dp),
-                                tint = MiuixTheme.colorScheme.onSurfaceVariantActions
-                            )
-                        }
-                    }
-                } else {
-                    null
-                }
+        )
+        if (!miuixHelper.isNullOrBlank()) {
+            MiuixText(
+                text = miuixHelper,
+                modifier = Modifier.padding(top = 6.dp),
+                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                style = MiuixTheme.textStyles.footnote1
             )
-            if (!miuixHelper.isNullOrBlank()) {
-                MiuixText(
-                    text = miuixHelper,
-                    modifier = Modifier.padding(top = 6.dp),
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    style = MiuixTheme.textStyles.footnote1
-                )
-            }
         }
     }
 }

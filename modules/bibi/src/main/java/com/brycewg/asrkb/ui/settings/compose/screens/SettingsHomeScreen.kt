@@ -61,7 +61,6 @@ import com.brycewg.asrkb.ui.AsrVendorUi
 import com.brycewg.asrkb.ui.floating.floatingInputNeedsAccessibility
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsHomeSearchEntry
 import com.brycewg.asrkb.ui.settings.compose.core.BibiSettingsRoute
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
@@ -73,7 +72,6 @@ import kotlinx.coroutines.withContext
 @Composable
 fun SettingsHomeScreen(
     selectedTab: Int,
-    uiMode: BibiUiMode,
     hasUpdateAvailable: Boolean,
     onSelectTab: (Int) -> Unit,
     onPushRoute: (BibiSettingsRoute) -> Unit,
@@ -182,7 +180,6 @@ fun SettingsHomeScreen(
     }
 
     SettingsHomeScaffold(
-        uiMode = uiMode,
         tabs = tabs,
         selectedTab = homePagerState.selectedPage,
         onSelectTab = { page ->
@@ -208,7 +205,6 @@ fun SettingsHomeScreen(
         )
         Column(modifier = Modifier.fillMaxSize()) {
             SettingsHomeSearchEntry(
-                uiMode = uiMode,
                 onClick = { onPushRoute(BibiSettingsRoute.Search) },
                 modifier = searchBarPadding.fillMaxWidth()
             )
@@ -222,21 +218,18 @@ fun SettingsHomeScreen(
                 when (page) {
                     0 -> SettingsSectionList(
                         sections = inputPageSections,
-                        uiMode = uiMode,
                         modifier = scrollModifier,
                         contentPadding = listContentPadding
                     )
 
                     1 -> SettingsSectionList(
                         sections = smartPageSections,
-                        uiMode = uiMode,
                         modifier = scrollModifier,
                         contentPadding = listContentPadding
                     )
 
                     else -> SettingsSectionList(
                         sections = systemPageSections,
-                        uiMode = uiMode,
                         modifier = scrollModifier,
                         contentPadding = listContentPadding
                     )

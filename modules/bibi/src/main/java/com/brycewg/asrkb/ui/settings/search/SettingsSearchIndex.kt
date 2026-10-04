@@ -154,8 +154,6 @@ object SettingsSearchIndex {
             add(DeclarativeEntry(title, screen, route, section, keywords.toList()))
         }
         item(R.string.label_language, R.string.section_main_ui)
-        item(R.string.settings_ui_mode, R.string.section_main_ui)
-        item(R.string.settings_theme_mode, R.string.section_main_ui)
         item(R.string.label_hide_recent_task_card, R.string.section_main_ui)
         item(R.string.label_haptic_feedback_strength, R.string.section_haptic_feedback)
     }

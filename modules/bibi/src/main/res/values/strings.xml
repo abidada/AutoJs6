@@ -63,14 +63,6 @@
   <string name="settings_tab_input">Input</string>
   <string name="settings_tab_smart">Smart</string>
   <string name="settings_tab_system">System</string>
-  <string name="settings_ui_mode">UI style</string>
-  <string name="settings_ui_mode_summary">Choose Miuix or Material style</string>
-  <string name="settings_ui_mode_miuix">Miuix</string>
-  <string name="settings_ui_mode_material">Material</string>
-  <string name="settings_theme_mode">Theme mode</string>
-  <string name="settings_theme_mode_system">Follow system</string>
-  <string name="settings_theme_mode_light">Light</string>
-  <string name="settings_theme_mode_dark">Dark</string>
   <string name="home_summary_enabled">Enabled</string>
   <string name="home_summary_disabled">Disabled</string>
   <string name="home_summary_more_input_disabled">Not enabled</string>

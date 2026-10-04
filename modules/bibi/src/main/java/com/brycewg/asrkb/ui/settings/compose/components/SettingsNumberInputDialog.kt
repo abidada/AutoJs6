@@ -5,7 +5,7 @@
  * 输入框右侧提供 +/- 快捷按钮按 1 步进调整并钳位到 [min, max]。
  * 校验逻辑由调用方通过 onConfirm 回调提供：返回 null 表示校验通过并关闭，
  * 返回非空字符串表示错误提示，对话框保持打开并展示该提示。
- * 采用 Material3 对话框，独立于列表主题，兼容 Material / Miuix 两种模式。
+ * 采用 Material3 对话框，独立于列表主题。
  *
  * 归属模块：ui/settings/compose/components
  */

@@ -8,9 +8,7 @@
 package com.brycewg.asrkb.ui.history.compose.history
 
 import android.content.Context
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,12 +41,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Article
 import androidx.compose.material.icons.rounded.ContentCopy
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,9 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -83,10 +73,6 @@ import com.brycewg.asrkb.store.AsrHistoryTimingStage
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.history.AsrHistoryFailDisplay
 import com.brycewg.asrkb.ui.history.AsrHistoryRerunErrorMessages
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsAlertDialog
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogAction
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogButtonRow
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogExitEffect
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsAssistChip
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDialogAction
@@ -98,11 +84,9 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsSearchField
 import com.brycewg.asrkb.ui.settings.compose.components.TimingBarInterval
 import com.brycewg.asrkb.ui.settings.compose.components.TimingIntervalBar
 import com.brycewg.asrkb.ui.settings.compose.components.TimingLegendRow
-import com.brycewg.asrkb.ui.settings.compose.components.animateSettingsDialogExitAlpha
 import com.brycewg.asrkb.ui.settings.compose.components.hasFeatureExplainerFlag
 import com.brycewg.asrkb.ui.settings.compose.components.rememberSettingsDialogExitController
 import com.brycewg.asrkb.ui.settings.compose.components.saveFeatureExplainerFlag
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -119,7 +103,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun AsrHistoryScreen(
-    uiMode: BibiUiMode,
     records: List<AsrHistoryStore.AsrHistoryRecord>,
     query: String,
     filterState: HistoryFilterState,
@@ -227,7 +210,6 @@ fun AsrHistoryScreen(
     }
 
     HistoryScaffold(
-        uiMode = uiMode,
         onBack = onBack,
         onOpenApiLog = {
             onHapticTap()
@@ -249,7 +231,6 @@ fun AsrHistoryScreen(
                     .widthIn(max = dimensionResource(R.dimen.settings_form_max_width))
             ) {
                 HistoryActionBar(
-                    uiMode = uiMode,
                     selectedCount = selectedVisibleIds.size,
                     hasData = filteredRecords.isNotEmpty(),
                     filterActive = filterState.vendorIds.isNotEmpty() ||
@@ -262,15 +243,13 @@ fun AsrHistoryScreen(
                 )
                 HistorySearchField(
                     value = query,
-                    onValueChange = onQueryChange,
-                    uiMode = uiMode
+                    onValueChange = onQueryChange
                 )
                 if (rows.isEmpty()) {
-                    EmptyHistoryState(uiMode = uiMode)
+                    EmptyHistoryState()
                 } else {
                     HistoryList(
                         rows = rows,
-                        uiMode = uiMode,
                         vendorOptions = vendorOptions,
                         selectedCount = selectedVisibleIds.size,
                         listState = listState,
@@ -292,7 +271,6 @@ fun AsrHistoryScreen(
 
     if (showFilterDialog) {
         HistoryFilterDialog(
-            uiMode = uiMode,
             vendorOptions = vendorOptions,
             filterState = filterState,
             onDismiss = { showFilterDialog = false },
@@ -308,7 +286,6 @@ fun AsrHistoryScreen(
     }
     if (showDeleteDialog) {
         DeleteSelectedDialog(
-            uiMode = uiMode,
             selectedCount = selectedVisibleIds.size,
             onDismiss = { showDeleteDialog = false },
             onConfirm = {
@@ -320,7 +297,6 @@ fun AsrHistoryScreen(
     selectedRecord?.let { record ->
         HistoryDetailsDialog(
             record = record,
-            uiMode = uiMode,
             hasAudio = record.id in audioRecordIds,
             llmAvailable = llmAvailable,
             working = rerunJob?.isActive == true,
@@ -351,14 +327,12 @@ fun AsrHistoryScreen(
     }
     SettingsNoticeDialog(
         state = rerecognitionNotice,
-        uiMode = uiMode,
         onDismiss = { rerecognitionNotice = null }
     )
 }
 
 @Composable
 private fun HistoryScaffold(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     onOpenApiLog: () -> Unit,
     hasRecentApiErrors: Boolean,
@@ -366,34 +340,19 @@ private fun HistoryScaffold(
 ) {
     val apiLogLabel = stringResource(R.string.menu_api_log)
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_asr_history,
         onBack = onBack,
         actions = {
-            when (uiMode) {
-                BibiUiMode.Material -> IconButton(onClick = onOpenApiLog) {
-                    Icon(
-                        Icons.AutoMirrored.Rounded.Article,
-                        contentDescription = apiLogLabel,
-                        tint = if (hasRecentApiErrors) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        }
-                    )
-                }
-
-                BibiUiMode.Miuix -> MiuixIconButton(onClick = onOpenApiLog) {
-                    MiuixIcon(
-                        Icons.AutoMirrored.Rounded.Article,
-                        contentDescription = apiLogLabel,
-                        tint = if (hasRecentApiErrors) {
-                            MiuixTheme.colorScheme.error
-                        } else {
-                            MiuixTheme.colorScheme.onSurfaceVariantActions
-                        }
-                    )
-                }
+            MiuixIconButton(onClick = onOpenApiLog) {
+                MiuixIcon(
+                    Icons.AutoMirrored.Rounded.Article,
+                    contentDescription = apiLogLabel,
+                    tint = if (hasRecentApiErrors) {
+                        MiuixTheme.colorScheme.error
+                    } else {
+                        MiuixTheme.colorScheme.onSurfaceVariantActions
+                    }
+                )
             }
         },
         content = content
@@ -402,7 +361,6 @@ private fun HistoryScaffold(
 
 @Composable
 private fun HistoryActionBar(
-    uiMode: BibiUiMode,
     selectedCount: Int,
     hasData: Boolean,
     filterActive: Boolean,
@@ -420,14 +378,12 @@ private fun HistoryActionBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         SettingsFilterChip(
-            uiMode = uiMode,
             label = stringResource(R.string.menu_filter),
             selected = filterActive,
             onClick = onFilter
         )
         if (selectedCount == 0 && hasData) {
             SettingsFilterChip(
-                uiMode = uiMode,
                 label = stringResource(R.string.menu_select_all),
                 selected = false,
                 onClick = onSelectAll
@@ -435,19 +391,16 @@ private fun HistoryActionBar(
         }
         if (selectedCount > 0) {
             SettingsFilterChip(
-                uiMode = uiMode,
                 label = stringResource(R.string.menu_clear_selection),
                 selected = false,
                 onClick = onClearSelection
             )
             SettingsFilterChip(
-                uiMode = uiMode,
                 label = stringResource(R.string.menu_delete_selected),
                 selected = false,
                 onClick = onDeleteSelected
             )
             SettingsAssistChip(
-                uiMode = uiMode,
                 label = selectedCount.toString()
             )
         }
@@ -457,14 +410,12 @@ private fun HistoryActionBar(
 @Composable
 private fun HistorySearchField(
     value: String,
-    onValueChange: (String) -> Unit,
-    uiMode: BibiUiMode
+    onValueChange: (String) -> Unit
 ) {
     SettingsSearchField(
         value = value,
         onValueChange = onValueChange,
         label = stringResource(R.string.hint_search_history),
-        uiMode = uiMode,
         modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
     )
 }
@@ -472,7 +423,6 @@ private fun HistorySearchField(
 @Composable
 private fun HistoryList(
     rows: List<HistoryRow>,
-    uiMode: BibiUiMode,
     vendorOptions: List<HistoryVendorOption>,
     selectedCount: Int,
     listState: androidx.compose.foundation.lazy.LazyListState,
@@ -499,10 +449,9 @@ private fun HistoryList(
             }
         ) { row ->
             when (row) {
-                is HistoryRow.Header -> SectionHeader(section = row.section, uiMode = uiMode)
+                is HistoryRow.Header -> SectionHeader(section = row.section)
                 is HistoryRow.Item -> HistoryItemCard(
                     row = row,
-                    uiMode = uiMode,
                     vendorOptions = vendorOptions,
                     selectedCount = selectedCount,
                     onToggleSelection = onToggleSelection,
@@ -515,7 +464,7 @@ private fun HistoryList(
 }
 
 @Composable
-private fun SectionHeader(section: HistorySection, uiMode: BibiUiMode) {
+private fun SectionHeader(section: HistorySection) {
     val title = when (section) {
         HistorySection.WITHIN_2H -> stringResource(R.string.history_section_2h)
         HistorySection.TODAY -> stringResource(R.string.history_section_today)
@@ -525,17 +474,14 @@ private fun SectionHeader(section: HistorySection, uiMode: BibiUiMode) {
     }
     HistoryText(
         text = title,
-        uiMode = uiMode,
         modifier = Modifier.padding(top = 8.dp, start = 4.dp, end = 4.dp),
         header = true
     )
 }
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 private fun HistoryItemCard(
     row: HistoryRow.Item,
-    uiMode: BibiUiMode,
     vendorOptions: List<HistoryVendorOption>,
     selectedCount: Int,
     onToggleSelection: (String) -> Unit,
@@ -547,65 +493,35 @@ private fun HistoryItemCard(
         if (selectedCount > 0) onToggleSelection(record.id) else onOpenDetails(record)
     }
     val onLongClick = { onToggleSelection(record.id) }
-    when (uiMode) {
-        BibiUiMode.Material -> {
-            // clickable 必须落在 clip(shape) 之内，否则按压遮罩会画出直角方框。
-            val shape = RoundedCornerShape(SettingsLayoutMetrics.MaterialSectionShape)
-            ElevatedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(shape)
-                    .combinedClickable(
-                        onClick = onClick,
-                        onLongClick = onLongClick
-                    ),
-                shape = shape,
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = if (row.selected) {
-                        MaterialTheme.colorScheme.secondaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainer
-                    }
-                )
-            ) {
-                HistoryItemContent(record, uiMode, vendorOptions, onCopy)
-            }
-        }
-
-        BibiUiMode.Miuix -> {
-            // 使用 Card 自带 onClick/onLongPress，指示器画在圆角 clip 内，避免外层再叠一层遮罩。
-            val cornerRadius = MiuixCardDefaults.CornerRadius
-            MiuixCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (row.selected) {
-                            Modifier.border(
-                                width = 1.dp,
-                                color = MiuixTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(cornerRadius)
-                            )
-                        } else {
-                            Modifier
-                        }
-                    ),
-                cornerRadius = cornerRadius,
-                insideMargin = PaddingValues(0.dp),
-                onClick = onClick,
-                onLongPress = onLongClick,
-                showIndication = true
-            ) {
-                HistoryItemContent(record, uiMode, vendorOptions, onCopy)
-            }
-        }
+    // 使用 Card 自带 onClick/onLongPress，指示器画在圆角 clip 内，避免外层再叠一层遮罩。
+    val cornerRadius = MiuixCardDefaults.CornerRadius
+    MiuixCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (row.selected) {
+                    Modifier.border(
+                        width = 1.dp,
+                        color = MiuixTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(cornerRadius)
+                    )
+                } else {
+                    Modifier
+                }
+            ),
+        cornerRadius = cornerRadius,
+        insideMargin = PaddingValues(0.dp),
+        onClick = onClick,
+        onLongPress = onLongClick,
+        showIndication = true
+    ) {
+        HistoryItemContent(record, vendorOptions, onCopy)
     }
 }
 
 @Composable
 private fun HistoryItemContent(
     record: AsrHistoryStore.AsrHistoryRecord,
-    uiMode: BibiUiMode,
     vendorOptions: List<HistoryVendorOption>,
     onCopy: (String) -> Unit
 ) {
@@ -630,12 +546,10 @@ private fun HistoryItemContent(
         ) {
             HistoryText(
                 text = timestamp,
-                uiMode = uiMode,
                 timestamp = true,
                 modifier = Modifier.weight(1f)
             )
             SettingsAssistChip(
-                uiMode = uiMode,
                 label = stringResource(R.string.btn_copy),
                 icon = Icons.Rounded.ContentCopy,
                 onClick = copyText?.let { text -> { onCopy(text) } }
@@ -643,14 +557,12 @@ private fun HistoryItemContent(
         }
         HistoryText(
             text = bodyText,
-            uiMode = uiMode,
             emphasized = true,
             error = record.isUnsuccessful,
             maxLines = 4
         )
         HistoryText(
             text = buildMeta(record, vendorOptions),
-            uiMode = uiMode,
             compact = true,
             secondary = true,
             maxLines = 3
@@ -706,7 +618,6 @@ private fun buildMeta(
 @Composable
 private fun HistoryDetailsDialog(
     record: AsrHistoryStore.AsrHistoryRecord,
-    uiMode: BibiUiMode,
     hasAudio: Boolean,
     llmAvailable: Boolean,
     working: Boolean,
@@ -741,79 +652,36 @@ private fun HistoryDetailsDialog(
             primary = true
         )
     )
-    when (uiMode) {
-        BibiUiMode.Material -> {
-            val alpha = animateSettingsDialogExitAlpha(
-                show = exit.show,
-                label = "HistoryDetailsDialogAlpha"
+    // OverlayDialog 的 title 与 content 同列且不分配 remaining height。
+    // 标题改在自适应列内绘制，才能把剩余高度留给正文并钉住底部按钮。
+    OverlayDialog(
+        show = exit.show,
+        onDismissRequest = ::dismissDialog,
+        onDismissFinished = ::finishDismiss
+    ) {
+        HistoryDetailsAdaptiveBody { bounded ->
+            MiuixText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                text = title,
+                fontSize = MiuixTheme.textStyles.title4.fontSize,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                color = MiuixTheme.colorScheme.onBackground
             )
-            MaterialSettingsDialogExitEffect(show = exit.show, onFinished = ::finishDismiss)
-            MaterialSettingsAlertDialog(
-                title = title,
-                onDismissRequest = ::dismissDialog,
-                modifier = Modifier.graphicsLayer(alpha = alpha),
-                text = {
-                    HistoryDetailsAdaptiveBody { bounded ->
-                        HistoryDetailsSections(
-                            record = record,
-                            uiMode = uiMode,
-                            hasAudio = hasAudio,
-                            llmAvailable = llmAvailable,
-                            working = working,
-                            error = error,
-                            onCopy = onCopy,
-                            modifier = if (bounded) Modifier.weight(1f, fill = false) else Modifier,
-                            constrainResultSections = bounded
-                        )
-                    }
-                },
-                buttons = {
-                    MaterialSettingsDialogButtonRow(
-                        actions.map {
-                            MaterialSettingsDialogAction(
-                                text = it.text,
-                                onClick = it.onClick,
-                                enabled = it.enabled,
-                                primary = it.primary
-                            )
-                        }
-                    )
-                }
+            HistoryDetailsSections(
+                record = record,
+                hasAudio = hasAudio,
+                llmAvailable = llmAvailable,
+                working = working,
+                error = error,
+                onCopy = onCopy,
+                modifier = if (bounded) Modifier.weight(1f, fill = false) else Modifier,
+                constrainResultSections = bounded
             )
-        }
-
-        // OverlayDialog 的 title 与 content 同列且不分配 remaining height。
-        // 标题改在自适应列内绘制，才能把剩余高度留给正文并钉住底部按钮。
-        BibiUiMode.Miuix -> OverlayDialog(
-            show = exit.show,
-            onDismissRequest = ::dismissDialog,
-            onDismissFinished = ::finishDismiss
-        ) {
-            HistoryDetailsAdaptiveBody { bounded ->
-                MiuixText(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    text = title,
-                    fontSize = MiuixTheme.textStyles.title4.fontSize,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    color = MiuixTheme.colorScheme.onBackground
-                )
-                HistoryDetailsSections(
-                    record = record,
-                    uiMode = uiMode,
-                    hasAudio = hasAudio,
-                    llmAvailable = llmAvailable,
-                    working = working,
-                    error = error,
-                    onCopy = onCopy,
-                    modifier = if (bounded) Modifier.weight(1f, fill = false) else Modifier,
-                    constrainResultSections = bounded
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                SettingsDialogActionRow(uiMode = uiMode, actions = actions)
-            }
+            Spacer(modifier = Modifier.height(12.dp))
+            SettingsDialogActionRow(actions = actions)
         }
     }
 }
@@ -837,7 +705,6 @@ private fun HistoryDetailsAdaptiveBody(
 @Composable
 private fun HistoryDetailsSections(
     record: AsrHistoryStore.AsrHistoryRecord,
-    uiMode: BibiUiMode,
     hasAudio: Boolean,
     llmAvailable: Boolean,
     working: Boolean,
@@ -853,17 +720,15 @@ private fun HistoryDetailsSections(
         if (record.isUnsuccessful) {
             HistoryText(
                 text = AsrHistoryFailDisplay.format(LocalContext.current, record),
-                uiMode = uiMode,
                 emphasized = true,
                 error = true
             )
         }
-        HistoryTimingTraceSection(record = record, uiMode = uiMode)
+        HistoryTimingTraceSection(record = record)
         HistoryResultSection(
             title = stringResource(R.string.history_raw_text),
             value = record.rawText ?: stringResource(R.string.history_raw_unavailable),
             canCopy = !record.rawText.isNullOrBlank(),
-            uiMode = uiMode,
             onCopy = { record.rawText?.let(onCopy) },
             modifier = if (constrainResultSections) Modifier.weight(1f, fill = false) else Modifier,
             fillBody = constrainResultSections
@@ -878,7 +743,6 @@ private fun HistoryDetailsSections(
                 }
             },
             canCopy = record.text.isNotBlank(),
-            uiMode = uiMode,
             onCopy = { onCopy(record.text) },
             modifier = if (constrainResultSections) Modifier.weight(1f, fill = false) else Modifier,
             fillBody = constrainResultSections
@@ -886,7 +750,6 @@ private fun HistoryDetailsSections(
         if (!hasAudio) {
             HistoryText(
                 text = stringResource(R.string.history_audio_unavailable),
-                uiMode = uiMode,
                 compact = true,
                 secondary = true
             )
@@ -894,7 +757,6 @@ private fun HistoryDetailsSections(
         if (!llmAvailable) {
             HistoryText(
                 text = stringResource(R.string.history_llm_unavailable),
-                uiMode = uiMode,
                 compact = true,
                 secondary = true
             )
@@ -902,7 +764,6 @@ private fun HistoryDetailsSections(
         if (working) {
             HistoryText(
                 text = stringResource(R.string.history_rerun_working),
-                uiMode = uiMode,
                 secondary = true
             )
         }
@@ -912,7 +773,6 @@ private fun HistoryDetailsSections(
                     LocalContext.current,
                     it
                 ),
-                uiMode = uiMode,
                 secondary = true
             )
         }
@@ -939,14 +799,12 @@ private fun promptSelectionPart(record: AsrHistoryStore.AsrHistoryRecord): Strin
 
 @Composable
 private fun HistoryTimingTraceSection(
-    record: AsrHistoryStore.AsrHistoryRecord,
-    uiMode: BibiUiMode
+    record: AsrHistoryStore.AsrHistoryRecord
 ) {
     val trace = record.timingTrace
     if (trace == null) {
         HistoryText(
             text = stringResource(R.string.history_timing_legacy_unavailable),
-            uiMode = uiMode,
             compact = true,
             secondary = true
         )
@@ -990,7 +848,6 @@ private fun HistoryTimingTraceSection(
                 origin,
                 stringResource(R.string.history_timing_total, totalDuration)
             ),
-            uiMode = uiMode,
             compact = true,
             secondary = true
         )
@@ -1011,16 +868,15 @@ private fun HistoryTimingTraceSection(
                 totalDuration,
                 stageDescription
             ),
-            trackColor = historyTimingTrackColor(uiMode)
+            trackColor = MiuixTheme.colorScheme.surfaceVariant
         )
-        HistoryTimingLegendGrid(stages = visibleStages, uiMode = uiMode)
+        HistoryTimingLegendGrid(stages = visibleStages)
     }
 }
 
 @Composable
 private fun HistoryTimingLegendGrid(
-    stages: List<HistoryTimingStageStyle>,
-    uiMode: BibiUiMode
+    stages: List<HistoryTimingStageStyle>
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         stages.forEach { stage ->
@@ -1028,7 +884,6 @@ private fun HistoryTimingLegendGrid(
                 label = stage.label,
                 value = formatHistoryTimingDuration(stage.durationMs),
                 color = stage.color,
-                uiMode = uiMode,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = SettingsLayoutMetrics.ProDialogTinySpacing)
@@ -1096,12 +951,6 @@ private fun formatHistoryTimingDuration(durationMs: Long): String {
     }
 }
 
-@Composable
-private fun historyTimingTrackColor(uiMode: BibiUiMode): Color = when (uiMode) {
-    BibiUiMode.Material -> MaterialTheme.colorScheme.surfaceVariant
-    BibiUiMode.Miuix -> MiuixTheme.colorScheme.surfaceVariant
-}
-
 private data class HistoryTimingStageStyle(
     val stage: AsrHistoryTimingStage,
     val label: String,
@@ -1114,7 +963,6 @@ private fun HistoryResultSection(
     title: String,
     value: String,
     canCopy: Boolean,
-    uiMode: BibiUiMode,
     onCopy: () -> Unit,
     modifier: Modifier = Modifier,
     fillBody: Boolean = false
@@ -1128,9 +976,8 @@ private fun HistoryResultSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            HistoryText(text = title, uiMode = uiMode, header = true)
+            HistoryText(text = title, header = true)
             SettingsAssistChip(
-                uiMode = uiMode,
                 label = stringResource(R.string.btn_copy),
                 icon = Icons.Rounded.ContentCopy,
                 onClick = onCopy.takeIf { canCopy }
@@ -1152,7 +999,6 @@ private fun HistoryResultSection(
             SelectionContainer {
                 HistoryText(
                     text = value,
-                    uiMode = uiMode,
                     maxLines = Int.MAX_VALUE,
                     overflow = TextOverflow.Clip
                 )
@@ -1162,7 +1008,7 @@ private fun HistoryResultSection(
 }
 
 @Composable
-private fun EmptyHistoryState(uiMode: BibiUiMode) {
+private fun EmptyHistoryState() {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -1171,7 +1017,6 @@ private fun EmptyHistoryState(uiMode: BibiUiMode) {
     ) {
         HistoryText(
             text = stringResource(R.string.empty_history),
-            uiMode = uiMode,
             secondary = true
         )
     }
@@ -1180,7 +1025,6 @@ private fun EmptyHistoryState(uiMode: BibiUiMode) {
 @Composable
 private fun HistoryText(
     text: String,
-    uiMode: BibiUiMode,
     modifier: Modifier = Modifier,
     header: Boolean = false,
     timestamp: Boolean = false,
@@ -1195,51 +1039,28 @@ private fun HistoryText(
         header || emphasized -> FontWeight.SemiBold
         else -> FontWeight.Normal
     }
-    when (uiMode) {
-        BibiUiMode.Material -> Text(
-            text = text,
-            modifier = modifier,
-            // Material 默认正文字号偏小；时间戳与正文分别上调，贴近 Miuix 视觉权重。
-            style = when {
-                header -> MaterialTheme.typography.titleSmall
-                timestamp -> MaterialTheme.typography.bodyMedium
-                compact -> MaterialTheme.typography.bodySmall
-                else -> MaterialTheme.typography.bodyLarge
-            },
-            fontWeight = fontWeight,
-            color = when {
-                error -> MaterialTheme.colorScheme.error
-                secondary -> MaterialTheme.colorScheme.onSurfaceVariant
-                else -> MaterialTheme.colorScheme.onSurface
-            },
-            maxLines = maxLines,
-            overflow = overflow
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            modifier = modifier,
-            style = when {
-                header -> MiuixTheme.textStyles.body2
-                timestamp -> MiuixTheme.textStyles.body2
-                compact -> MiuixTheme.textStyles.footnote1
-                else -> MiuixTheme.textStyles.body1
-            },
-            fontWeight = fontWeight,
-            color = when {
-                error -> MiuixTheme.colorScheme.error
-                secondary -> MiuixTheme.colorScheme.onSurfaceVariantSummary
-                else -> MiuixTheme.colorScheme.onSurface
-            },
-            maxLines = maxLines,
-            overflow = overflow
-        )
-    }
+    MiuixText(
+        text = text,
+        modifier = modifier,
+        style = when {
+            header -> MiuixTheme.textStyles.body2
+            timestamp -> MiuixTheme.textStyles.body2
+            compact -> MiuixTheme.textStyles.footnote1
+            else -> MiuixTheme.textStyles.body1
+        },
+        fontWeight = fontWeight,
+        color = when {
+            error -> MiuixTheme.colorScheme.error
+            secondary -> MiuixTheme.colorScheme.onSurfaceVariantSummary
+            else -> MiuixTheme.colorScheme.onSurface
+        },
+        maxLines = maxLines,
+        overflow = overflow
+    )
 }
 
 @Composable
 private fun DeleteSelectedDialog(
-    uiMode: BibiUiMode,
     selectedCount: Int,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
@@ -1253,57 +1074,31 @@ private fun DeleteSelectedDialog(
         exit.finish()
     }
 
-    when (uiMode) {
-        BibiUiMode.Material -> {
-            val alpha = animateSettingsDialogExitAlpha(
-                show = exit.show,
-                label = "DeleteSelectedDialogAlpha"
-            )
-            MaterialSettingsDialogExitEffect(show = exit.show, onFinished = ::finishDismiss)
-            MaterialSettingsAlertDialog(
-                onDismissRequest = { exit.dismiss(onDismiss) },
-                modifier = Modifier.graphicsLayer(alpha = alpha),
-                title = title,
-                text = { Text(message) },
-                buttons = {
-                    MaterialSettingsDialogButtonRow(
-                        actions = listOf(
-                            MaterialSettingsDialogAction(cancel, onClick = { exit.dismiss(onDismiss) }),
-                            MaterialSettingsDialogAction(confirm, onClick = { exit.dismiss(onConfirm) })
-                        )
-                    )
-                }
-            )
-        }
-
-        BibiUiMode.Miuix -> OverlayDialog(
-            show = exit.show,
-            title = title,
-            summary = message,
-            onDismissRequest = { exit.dismiss(onDismiss) },
-            onDismissFinished = ::finishDismiss
-        ) {
-            SettingsDialogActionRow(
-                uiMode = BibiUiMode.Miuix,
-                actions = listOf(
-                    SettingsDialogAction(
-                        text = cancel,
-                        onClick = { exit.dismiss(onDismiss) }
-                    ),
-                    SettingsDialogAction(
-                        text = confirm,
-                        onClick = { exit.dismiss(onConfirm) },
-                        primary = true
-                    )
+    OverlayDialog(
+        show = exit.show,
+        title = title,
+        summary = message,
+        onDismissRequest = { exit.dismiss(onDismiss) },
+        onDismissFinished = ::finishDismiss
+    ) {
+        SettingsDialogActionRow(
+            actions = listOf(
+                SettingsDialogAction(
+                    text = cancel,
+                    onClick = { exit.dismiss(onDismiss) }
+                ),
+                SettingsDialogAction(
+                    text = confirm,
+                    onClick = { exit.dismiss(onConfirm) },
+                    primary = true
                 )
             )
-        }
+        )
     }
 }
 
 @Composable
 private fun HistoryFilterDialog(
-    uiMode: BibiUiMode,
     vendorOptions: List<HistoryVendorOption>,
     filterState: HistoryFilterState,
     onDismiss: () -> Unit,
@@ -1341,7 +1136,6 @@ private fun HistoryFilterDialog(
 
     val content: @Composable () -> Unit = {
         FilterDialogContent(
-            uiMode = uiMode,
             vendorOptions = vendorOptions,
             vendorIds = tempVendorIds,
             sources = tempSources,
@@ -1358,7 +1152,6 @@ private fun HistoryFilterDialog(
             verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.ActionButtonSpacing)
         ) {
             SettingsDialogActionRow(
-                uiMode = uiMode,
                 actions = listOf(
                     SettingsDialogAction(
                         text = reset,
@@ -1367,7 +1160,6 @@ private fun HistoryFilterDialog(
                 )
             )
             SettingsDialogActionRow(
-                uiMode = uiMode,
                 actions = listOf(
                     SettingsDialogAction(
                         text = cancel,
@@ -1383,39 +1175,21 @@ private fun HistoryFilterDialog(
         }
     }
 
-    when (uiMode) {
-        BibiUiMode.Material -> {
-            val alpha = animateSettingsDialogExitAlpha(
-                show = exit.show,
-                label = "HistoryFilterDialogAlpha"
-            )
-            MaterialSettingsDialogExitEffect(show = exit.show, onFinished = ::finishDismiss)
-            MaterialSettingsAlertDialog(
-                onDismissRequest = { exit.dismiss(onDismiss) },
-                modifier = Modifier.graphicsLayer(alpha = alpha),
-                title = title,
-                text = content,
-                buttons = actionButtons
-            )
-        }
-
-        BibiUiMode.Miuix -> OverlayDialog(
-            show = exit.show,
-            title = title,
-            onDismissRequest = { exit.dismiss(onDismiss) },
-            onDismissFinished = ::finishDismiss
-        ) {
-            content()
-            Spacer(modifier = Modifier.height(12.dp))
-            actionButtons()
-        }
+    OverlayDialog(
+        show = exit.show,
+        title = title,
+        onDismissRequest = { exit.dismiss(onDismiss) },
+        onDismissFinished = ::finishDismiss
+    ) {
+        content()
+        Spacer(modifier = Modifier.height(12.dp))
+        actionButtons()
     }
 }
 
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
 private fun FilterDialogContent(
-    uiMode: BibiUiMode,
     vendorOptions: List<HistoryVendorOption>,
     vendorIds: Set<String>,
     sources: Set<String>,
@@ -1443,7 +1217,7 @@ private fun FilterDialogContent(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        FilterGroupTitle(text = stringResource(R.string.label_vendor), uiMode = uiMode)
+        FilterGroupTitle(text = stringResource(R.string.label_vendor))
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -1451,14 +1225,12 @@ private fun FilterDialogContent(
             FilterOptionChip(
                 label = stringResource(R.string.filter_all),
                 selected = vendorIds.isEmpty(),
-                uiMode = uiMode,
                 onClick = { onVendorIdsChange(emptySet()) }
             )
             vendorOptions.forEach { vendor ->
                 FilterOptionChip(
                     label = vendor.label,
                     selected = vendor.id in vendorIds,
-                    uiMode = uiMode,
                     onClick = {
                         val next = if (vendor.id in vendorIds) {
                             vendorIds - vendor.id
@@ -1471,7 +1243,7 @@ private fun FilterDialogContent(
             }
         }
 
-        FilterGroupTitle(text = stringResource(R.string.label_source), uiMode = uiMode)
+        FilterGroupTitle(text = stringResource(R.string.label_source))
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -1479,20 +1251,18 @@ private fun FilterDialogContent(
             FilterOptionChip(
                 label = stringResource(R.string.filter_all),
                 selected = sources.isEmpty(),
-                uiMode = uiMode,
                 onClick = { onSourcesChange(emptySet()) }
             )
             sourceOptions.forEach { (id, label) ->
                 FilterOptionChip(
                     label = label,
                     selected = sources.firstOrNull() == id,
-                    uiMode = uiMode,
                     onClick = { onSourcesChange(setOf(id)) }
                 )
             }
         }
 
-        FilterGroupTitle(text = stringResource(R.string.label_time), uiMode = uiMode)
+        FilterGroupTitle(text = stringResource(R.string.label_time))
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -1501,7 +1271,6 @@ private fun FilterDialogContent(
                 FilterOptionChip(
                     label = label,
                     selected = timeFilter == filter,
-                    uiMode = uiMode,
                     onClick = { onTimeFilterChange(filter) }
                 )
             }
@@ -1510,10 +1279,9 @@ private fun FilterDialogContent(
 }
 
 @Composable
-private fun FilterGroupTitle(text: String, uiMode: BibiUiMode) {
+private fun FilterGroupTitle(text: String) {
     HistoryText(
         text = text,
-        uiMode = uiMode,
         header = true,
         maxLines = 1
     )
@@ -1523,11 +1291,9 @@ private fun FilterGroupTitle(text: String, uiMode: BibiUiMode) {
 private fun FilterOptionChip(
     label: String,
     selected: Boolean,
-    uiMode: BibiUiMode,
     onClick: () -> Unit
 ) {
     SettingsFilterChip(
-        uiMode = uiMode,
         label = label,
         selected = selected,
         onClick = onClick

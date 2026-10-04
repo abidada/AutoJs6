@@ -32,14 +32,12 @@ import com.brycewg.asrkb.store.VendorFieldRole
 import com.brycewg.asrkb.store.isOpenAiCustomTranscriptionsEndpoint
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButton
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButtonRow
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
 internal fun CurrentAsrVendorConfig(
-    uiMode: BibiUiMode,
     selectedVendor: AsrVendor,
     sfFreeAsrEnabled: Boolean,
     onSfFreeAsrEnabledChange: (Boolean) -> Unit,
@@ -195,12 +193,10 @@ internal fun CurrentAsrVendorConfig(
                 AsrValuePreference(
                     titleRes = R.string.label_sf_model_select,
                     value = sfFreeAsrModel.ifBlank { Prefs.DEFAULT_SF_FREE_ASR_MODEL },
-                    uiMode = uiMode,
                     onClick = onChooseSfFreeAsrModel
                 )
             } else {
                 AsrTextField(
-                    uiMode = uiMode,
                     value = sfApiKey,
                     onValueChange = onSfApiKeyChange,
                     label = stringResource(R.string.label_sf_api_key),
@@ -211,13 +207,12 @@ internal fun CurrentAsrVendorConfig(
                 AsrValuePreference(
                     titleRes = R.string.label_sf_model_select,
                     value = sfModel.ifBlank { Prefs.DEFAULT_SF_MODEL },
-                    uiMode = uiMode,
                     index = 1,
                     count = 2,
                     onClick = onChooseSfModel
                 )
             }
-            AsrBodyText(uiMode = uiMode, textRes = R.string.sf_free_description)
+            AsrBodyText(textRes = R.string.sf_free_description)
             SiliconFlowPoweredByImage()
         }
 
@@ -225,7 +220,6 @@ internal fun CurrentAsrVendorConfig(
             var itemIndex = primaryIndexOffset
             val itemCount = primaryGroupCount ?: 4
             AsrTextField(
-                uiMode = uiMode,
                 value = elevenApiKey,
                 onValueChange = onElevenApiKeyChange,
                 label = stringResource(R.string.label_eleven_api_key),
@@ -264,7 +258,6 @@ internal fun CurrentAsrVendorConfig(
             var itemIndex = primaryIndexOffset
             val itemCount = primaryGroupCount ?: 4
             AsrTextField(
-                uiMode = uiMode,
                 value = baiduAppId,
                 onValueChange = onBaiduAppIdChange,
                 label = stringResource(R.string.label_baidu_app_id),
@@ -272,7 +265,6 @@ internal fun CurrentAsrVendorConfig(
                 count = itemCount
             )
             AsrTextField(
-                uiMode = uiMode,
                 value = baiduApiKey,
                 onValueChange = onBaiduApiKeyChange,
                 label = stringResource(R.string.label_baidu_api_key),
@@ -281,7 +273,6 @@ internal fun CurrentAsrVendorConfig(
                 count = itemCount
             )
             AsrTextField(
-                uiMode = uiMode,
                 value = baiduSecret,
                 onValueChange = onBaiduSecretChange,
                 label = stringResource(R.string.label_baidu_secret),
@@ -328,7 +319,6 @@ internal fun CurrentAsrVendorConfig(
             )
             if (showCustomEndpoint) {
                 AsrTextField(
-                    uiMode = uiMode,
                     value = stepAudioEndpoint,
                     onValueChange = onStepAudioEndpointChange,
                     label = stringResource(R.string.label_stepaudio_endpoint),
@@ -337,7 +327,6 @@ internal fun CurrentAsrVendorConfig(
                 )
             }
             AsrTextField(
-                uiMode = uiMode,
                 value = stepAudioApiKey,
                 onValueChange = onStepAudioApiKeyChange,
                 label = stringResource(R.string.label_stepaudio_api_key),
@@ -355,7 +344,6 @@ internal fun CurrentAsrVendorConfig(
             )
             if (stepAudioCustomModelVisible) {
                 AsrTextField(
-                    uiMode = uiMode,
                     value = stepAudioCustomModelDraft,
                     onValueChange = onStepAudioCustomModelDraftChange,
                     label = stringResource(R.string.label_stepaudio_custom_model),
@@ -394,7 +382,6 @@ internal fun CurrentAsrVendorConfig(
             var itemIndex = primaryIndexOffset
             val itemCount = primaryGroupCount ?: 2
             AsrTextField(
-                uiMode = uiMode,
                 value = zhipuApiKey,
                 onValueChange = onZhipuApiKeyChange,
                 label = stringResource(R.string.label_zhipu_api_key),
@@ -408,20 +395,18 @@ internal fun CurrentAsrVendorConfig(
                 value = zhipuTemperature,
                 valueRange = 0f..1f,
                 steps = 19,
-                uiMode = uiMode,
                 index = itemIndex,
                 count = itemCount,
                 onValueChange = onZhipuTemperatureChange,
                 onValueChangeFinished = { onZhipuTemperatureFinished() }
             )
-            AsrBodyText(uiMode = uiMode, textRes = R.string.zhipu_temperature_hint)
+            AsrBodyText(textRes = R.string.zhipu_temperature_hint)
         }
 
         AsrVendor.Cohere -> {
             var itemIndex = primaryIndexOffset
             val itemCount = primaryGroupCount ?: coherePrimaryItemCount(cohereCustomModelVisible)
             AsrTextField(
-                uiMode = uiMode,
                 value = cohereApiKey,
                 onValueChange = onCohereApiKeyChange,
                 label = stringResource(R.string.label_cohere_api_key),
@@ -458,7 +443,6 @@ internal fun CurrentAsrVendorConfig(
             )
             if (cohereCustomModelVisible) {
                 AsrTextField(
-                    uiMode = uiMode,
                     value = cohereCustomModelDraft,
                     onValueChange = onCohereCustomModelDraftChange,
                     label = stringResource(R.string.label_custom_model_id),
@@ -522,7 +506,6 @@ internal fun CurrentAsrVendorConfig(
                 onSelectedOptionChange = { onGeminiAsrModeChange(GeminiAsrMode.fromId(it)) }
             )
             itemIndex = CommonOnlineAsrTextFields(
-                uiMode = uiMode,
                 fields = commonFields,
                 startIndex = itemIndex,
                 count = itemCount
@@ -548,7 +531,6 @@ internal fun CurrentAsrVendorConfig(
                 )
                 if (geminiTranscribeCustomLanguageVisible) {
                     AsrTextField(
-                        uiMode = uiMode,
                         value = geminiTranscribeLanguage,
                         onValueChange = onGeminiTranscribeLanguageChange,
                         label = stringResource(R.string.label_gemini_transcribe_custom_language),
@@ -586,7 +568,6 @@ internal fun CurrentAsrVendorConfig(
             )
             val itemCount = primaryGroupCount ?: commonFields.size + 1
             itemIndex = CommonOnlineAsrTextFields(
-                uiMode = uiMode,
                 fields = commonFields,
                 startIndex = itemIndex,
                 count = itemCount
@@ -623,7 +604,6 @@ internal fun CurrentAsrVendorConfig(
             )
             if (mimoEndpointPreset == Prefs.MIMO_ENDPOINT_PRESET_CUSTOM) {
                 AsrTextField(
-                    uiMode = uiMode,
                     value = mimoEndpoint,
                     onValueChange = onMimoEndpointChange,
                     label = stringResource(R.string.label_mimo_asr_endpoint),
@@ -632,7 +612,6 @@ internal fun CurrentAsrVendorConfig(
                 )
             }
             AsrTextField(
-                uiMode = uiMode,
                 value = mimoApiKey,
                 onValueChange = onMimoApiKeyChange,
                 label = stringResource(R.string.label_mimo_asr_api_key),
@@ -671,7 +650,6 @@ internal fun CurrentAsrVendorConfig(
                     onCheckedChange = onMimoDisableThinkingChange
                 )
                 AsrTextField(
-                    uiMode = uiMode,
                     value = mimoPrompt,
                     onValueChange = onMimoPromptChange,
                     label = stringResource(R.string.label_mimo_asr_prompt),
@@ -692,7 +670,6 @@ internal fun CurrentAsrVendorConfig(
 
         AsrVendor.OpenAI -> {
             OpenAiAsrConfig(
-                uiMode = uiMode,
                 profiles = openAiProviders,
                 activeProviderId = openAiActiveProviderId,
                 onProviderSelected = onOpenAiProviderSelected,
@@ -724,7 +701,6 @@ internal fun CurrentAsrVendorConfig(
 
         AsrVendor.Soniox -> {
             SonioxAsrConfig(
-                uiMode = uiMode,
                 apiKey = sonioxApiKey,
                 onApiKeyChange = onSonioxApiKeyChange,
                 streaming = sonioxStreaming,
@@ -747,7 +723,6 @@ internal fun CurrentAsrVendorConfig(
 
 @Composable
 private fun CommonOnlineAsrTextFields(
-    uiMode: BibiUiMode,
     fields: List<OnlineAsrTextFieldSpec>,
     startIndex: Int,
     count: Int
@@ -759,7 +734,6 @@ private fun CommonOnlineAsrTextFields(
     )
     rows.forEach { row ->
         AsrTextField(
-            uiMode = uiMode,
             value = row.value,
             onValueChange = row.onValueChange,
             label = stringResource(row.labelRes),
@@ -919,7 +893,6 @@ internal fun openRouterCommonTextFields(
 
 @Composable
 private fun OpenAiAsrConfig(
-    uiMode: BibiUiMode,
     profiles: List<Prefs.OpenAiAsrProvider>,
     activeProviderId: String,
     onProviderSelected: (String) -> Unit,
@@ -964,7 +937,6 @@ private fun OpenAiAsrConfig(
         )
     }
     AsrTextField(
-        uiMode = uiMode,
         value = profileName,
         onValueChange = onProfileNameChange,
         label = stringResource(R.string.label_openai_profile_name),
@@ -972,7 +944,6 @@ private fun OpenAiAsrConfig(
         count = itemCount
     )
     AsrTextField(
-        uiMode = uiMode,
         value = endpoint,
         onValueChange = onEndpointChange,
         label = stringResource(R.string.label_openai_asr_endpoint),
@@ -981,12 +952,10 @@ private fun OpenAiAsrConfig(
     )
     if (!useCompletions && isOpenAiCustomTranscriptionsEndpoint(endpoint)) {
         AsrBodyText(
-            uiMode = uiMode,
             textRes = R.string.hint_openai_custom_endpoint_wav_upload
         )
     }
     AsrTextField(
-        uiMode = uiMode,
         value = apiKey,
         onValueChange = onApiKeyChange,
         label = stringResource(R.string.label_openai_api_key),
@@ -995,7 +964,6 @@ private fun OpenAiAsrConfig(
         count = itemCount
     )
     AsrTextField(
-        uiMode = uiMode,
         value = model,
         onValueChange = onModelChange,
         label = stringResource(R.string.label_openai_model),
@@ -1040,7 +1008,6 @@ private fun OpenAiAsrConfig(
     )
     if (usePrompt) {
         AsrTextField(
-            uiMode = uiMode,
             value = prompt,
             onValueChange = onPromptChange,
             label = stringResource(R.string.label_openai_prompt),
@@ -1057,15 +1024,13 @@ private fun OpenAiAsrConfig(
         count = itemCount,
         onClick = onOpenGuide
     )
-    SettingsActionButtonRow(uiMode = uiMode) {
+    SettingsActionButtonRow() {
         SettingsActionButton(
-            uiMode = uiMode,
             text = stringResource(R.string.btn_openai_add_profile),
             onClick = onProviderAdded,
             modifier = Modifier.weight(1f)
         )
         SettingsActionButton(
-            uiMode = uiMode,
             text = stringResource(R.string.btn_openai_delete_profile),
             onClick = { onProviderDeleted() },
             enabled = profiles.size > 1,
@@ -1076,7 +1041,6 @@ private fun OpenAiAsrConfig(
 
 @Composable
 private fun SonioxAsrConfig(
-    uiMode: BibiUiMode,
     apiKey: String,
     onApiKeyChange: (String) -> Unit,
     streaming: Boolean,
@@ -1099,7 +1063,6 @@ private fun SonioxAsrConfig(
     val endpointLevelRange = endpointLevelMin.toFloat()..endpointLevelMax.toFloat()
     val endpointLevelSteps = endpointLevelMax - endpointLevelMin - 1
     AsrTextField(
-        uiMode = uiMode,
         value = apiKey,
         onValueChange = onApiKeyChange,
         label = stringResource(R.string.label_soniox_api_key),
@@ -1126,7 +1089,6 @@ private fun SonioxAsrConfig(
         value = endpointSensitivityLevel.toFloat(),
         valueRange = endpointLevelRange,
         steps = endpointLevelSteps,
-        uiMode = uiMode,
         showKeyPoints = false,
         startLabel = context.getString(R.string.soniox_endpoint_mode_low_latency),
         endLabel = context.getString(R.string.soniox_endpoint_mode_high_accuracy),
@@ -1152,7 +1114,6 @@ private fun SonioxAsrConfig(
     AsrValuePreference(
         titleRes = R.string.label_soniox_language,
         value = sonioxLanguageSummary(context, languages),
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onClick = onChooseLanguages

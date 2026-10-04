@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,13 +24,11 @@ import com.brycewg.asrkb.ui.settings.asr.AsrSettingsUiState
 import com.brycewg.asrkb.ui.settings.asr.AsrSettingsViewModel
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButton
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButtonRow
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun CurrentLocalAsrVendorConfig(
-    uiMode: BibiUiMode,
     selectedVendor: AsrVendor,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
@@ -44,7 +41,6 @@ internal fun CurrentLocalAsrVendorConfig(
 ) {
     when (selectedVendor) {
         AsrVendor.SenseVoice -> SenseVoiceConfig(
-            uiMode = uiMode,
             uiState = uiState,
             localModelState = localModelState,
             viewModel = viewModel,
@@ -54,7 +50,6 @@ internal fun CurrentLocalAsrVendorConfig(
         )
 
         AsrVendor.FunAsrNano -> FunAsrNanoConfig(
-            uiMode = uiMode,
             uiState = uiState,
             localModelState = localModelState,
             viewModel = viewModel,
@@ -65,7 +60,6 @@ internal fun CurrentLocalAsrVendorConfig(
         )
 
         AsrVendor.Qwen3Asr -> Qwen3AsrConfig(
-            uiMode = uiMode,
             uiState = uiState,
             localModelState = localModelState,
             viewModel = viewModel,
@@ -76,7 +70,6 @@ internal fun CurrentLocalAsrVendorConfig(
         )
 
         AsrVendor.Parakeet -> ParakeetConfig(
-            uiMode = uiMode,
             uiState = uiState,
             localModelState = localModelState,
             viewModel = viewModel,
@@ -87,7 +80,6 @@ internal fun CurrentLocalAsrVendorConfig(
         )
 
         AsrVendor.FireRedAsr -> FireRedAsrConfig(
-            uiMode = uiMode,
             uiState = uiState,
             localModelState = localModelState,
             viewModel = viewModel,
@@ -98,7 +90,6 @@ internal fun CurrentLocalAsrVendorConfig(
         )
 
         AsrVendor.XAsr -> XAsrConfig(
-            uiMode = uiMode,
             uiState = uiState,
             localModelState = localModelState,
             viewModel = viewModel,
@@ -113,7 +104,6 @@ internal fun CurrentLocalAsrVendorConfig(
 
 @Composable
 private fun SenseVoiceConfig(
-    uiMode: BibiUiMode,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
     viewModel: AsrSettingsViewModel,
@@ -124,7 +114,6 @@ private fun SenseVoiceConfig(
     var itemIndex = primaryIndexOffset
     val itemCount = primaryGroupCount ?: localAsrPrimaryItemCount(AsrVendor.SenseVoice)
     LocalModelVariantPreference(
-        uiMode = uiMode,
         spec = SenseVoiceModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -151,7 +140,6 @@ private fun SenseVoiceConfig(
         value = uiState.svNumThreads.toFloat(),
         valueRange = 1f..8f,
         steps = 6,
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onValueChange = { viewModel.updateSvNumThreads(it.toInt()) }
@@ -196,7 +184,6 @@ private fun SenseVoiceConfig(
         }
     )
     LocalModelOperations(
-        uiMode = uiMode,
         spec = SenseVoiceModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -206,7 +193,6 @@ private fun SenseVoiceConfig(
 
 @Composable
 private fun FunAsrNanoConfig(
-    uiMode: BibiUiMode,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
     viewModel: AsrSettingsViewModel,
@@ -219,7 +205,6 @@ private fun FunAsrNanoConfig(
     var itemIndex = primaryIndexOffset
     val itemCount = primaryGroupCount ?: localAsrPrimaryItemCount(AsrVendor.FunAsrNano)
     LocalModelVariantPreference(
-        uiMode = uiMode,
         spec = FunAsrNanoModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -250,7 +235,6 @@ private fun FunAsrNanoConfig(
         value = uiState.fnNumThreads.toFloat(),
         valueRange = 1f..8f,
         steps = 6,
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onValueChange = { viewModel.updateFnNumThreads(it.toInt()) }
@@ -301,7 +285,6 @@ private fun FunAsrNanoConfig(
         }
     )
     AsrTextField(
-        uiMode = uiMode,
         value = uiState.fnUserPrompt,
         onValueChange = viewModel::updateFnUserPrompt,
         label = stringResource(R.string.label_fn_user_prompt),
@@ -310,9 +293,8 @@ private fun FunAsrNanoConfig(
         index = itemIndex,
         count = itemCount
     )
-    AsrBodyText(uiMode = uiMode, textRes = R.string.fn_user_prompt_hint)
+    AsrBodyText(textRes = R.string.fn_user_prompt_hint)
     LocalModelOperations(
-        uiMode = uiMode,
         spec = FunAsrNanoModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -322,7 +304,6 @@ private fun FunAsrNanoConfig(
 
 @Composable
 private fun Qwen3AsrConfig(
-    uiMode: BibiUiMode,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
     viewModel: AsrSettingsViewModel,
@@ -334,7 +315,6 @@ private fun Qwen3AsrConfig(
     var itemIndex = primaryIndexOffset
     val itemCount = primaryGroupCount ?: localAsrPrimaryItemCount(AsrVendor.Qwen3Asr)
     LocalModelVariantPreference(
-        uiMode = uiMode,
         spec = Qwen3AsrModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -351,7 +331,6 @@ private fun Qwen3AsrConfig(
         value = uiState.qwNumThreads.toFloat(),
         valueRange = 1f..8f,
         steps = 6,
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onValueChange = { viewModel.updateQwNumThreads(it.toInt()) }
@@ -394,7 +373,6 @@ private fun Qwen3AsrConfig(
         }
     )
     LocalModelOperations(
-        uiMode = uiMode,
         spec = Qwen3AsrModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -404,7 +382,6 @@ private fun Qwen3AsrConfig(
 
 @Composable
 private fun ParakeetConfig(
-    uiMode: BibiUiMode,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
     viewModel: AsrSettingsViewModel,
@@ -416,7 +393,6 @@ private fun ParakeetConfig(
     var itemIndex = primaryIndexOffset
     val itemCount = primaryGroupCount ?: localAsrPrimaryItemCount(AsrVendor.Parakeet)
     LocalModelVariantPreference(
-        uiMode = uiMode,
         spec = ParakeetModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -433,7 +409,6 @@ private fun ParakeetConfig(
         value = uiState.pkNumThreads.toFloat(),
         valueRange = 1f..8f,
         steps = 6,
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onValueChange = { viewModel.updatePkNumThreads(it.toInt()) }
@@ -466,7 +441,6 @@ private fun ParakeetConfig(
         }
     )
     LocalModelOperations(
-        uiMode = uiMode,
         spec = ParakeetModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -476,7 +450,6 @@ private fun ParakeetConfig(
 
 @Composable
 private fun FireRedAsrConfig(
-    uiMode: BibiUiMode,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
     viewModel: AsrSettingsViewModel,
@@ -488,7 +461,6 @@ private fun FireRedAsrConfig(
     var itemIndex = primaryIndexOffset
     val itemCount = primaryGroupCount ?: localAsrPrimaryItemCount(AsrVendor.FireRedAsr)
     LocalModelVariantPreference(
-        uiMode = uiMode,
         spec = FireRedAsrModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -505,7 +477,6 @@ private fun FireRedAsrConfig(
         value = uiState.frNumThreads.toFloat(),
         valueRange = 1f..8f,
         steps = 6,
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onValueChange = { viewModel.updateFrNumThreads(it.toInt()) }
@@ -550,18 +521,16 @@ private fun FireRedAsrConfig(
         }
     )
     LocalModelOperations(
-        uiMode = uiMode,
         spec = FireRedAsrModelSpec,
         uiState = uiState,
         localModelState = localModelState,
         onOpenGuide = onOpenGuide
     )
-    PunctuationModelManager(uiMode, uiState, localModelState, onOpenPunctuationGuide)
+    PunctuationModelManager(uiState, localModelState, onOpenPunctuationGuide)
 }
 
 @Composable
 private fun XAsrConfig(
-    uiMode: BibiUiMode,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
     viewModel: AsrSettingsViewModel,
@@ -572,7 +541,6 @@ private fun XAsrConfig(
     var itemIndex = primaryIndexOffset
     val itemCount = primaryGroupCount ?: localAsrPrimaryItemCount(AsrVendor.XAsr)
     LocalModelVariantPreference(
-        uiMode = uiMode,
         spec = XAsrModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -589,7 +557,6 @@ private fun XAsrConfig(
         value = uiState.xAsrNumThreads.toFloat(),
         valueRange = 1f..8f,
         steps = 6,
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onValueChange = { viewModel.updateXAsrNumThreads(it.toInt()) }
@@ -624,7 +591,6 @@ private fun XAsrConfig(
         }
     )
     LocalModelOperations(
-        uiMode = uiMode,
         spec = XAsrModelSpec,
         uiState = uiState,
         localModelState = localModelState,
@@ -634,7 +600,6 @@ private fun XAsrConfig(
 
 @Composable
 private fun LocalModelVariantPreference(
-    uiMode: BibiUiMode,
     spec: AsrLocalModelSpec,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
@@ -656,7 +621,6 @@ private fun LocalModelVariantPreference(
 
 @Composable
 private fun LocalModelOperations(
-    uiMode: BibiUiMode,
     spec: AsrLocalModelSpec,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
@@ -668,13 +632,11 @@ private fun LocalModelOperations(
     val status = localModelStatus(context, spec, ready, localModelState.statusByKey[spec.key])
     if (status.isNotBlank()) {
         AsrBodyText(
-            uiMode = uiMode,
             text = status,
-            color = localModelStatusColor(uiMode, spec, localModelState)
+            color = localModelStatusColor(spec, localModelState)
         )
     }
     LocalModelActionRow(
-        uiMode = uiMode,
         spec = spec,
         selectedVariant = selectedVariant,
         ready = ready,
@@ -689,7 +651,6 @@ private fun LocalModelOperations(
 
 @Composable
 private fun PunctuationModelManager(
-    uiMode: BibiUiMode,
     uiState: AsrSettingsUiState,
     localModelState: AsrLocalModelRouteState,
     onOpenGuide: () -> Unit
@@ -702,17 +663,15 @@ private fun PunctuationModelManager(
         ready = ready,
         explicitStatus = localModelState.statusByKey[PunctuationModelSpec.key]
     )
-    AsrLocalDivider(uiMode)
-    AsrBodyText(uiMode = uiMode, textRes = R.string.label_punct_model_shared)
+    AsrLocalDivider()
+    AsrBodyText(textRes = R.string.label_punct_model_shared)
     if (status.isNotBlank()) {
         AsrBodyText(
-            uiMode = uiMode,
             text = status,
-            color = localModelStatusColor(uiMode, PunctuationModelSpec, localModelState)
+            color = localModelStatusColor(PunctuationModelSpec, localModelState)
         )
     }
     LocalModelActionRow(
-        uiMode = uiMode,
         spec = PunctuationModelSpec,
         selectedVariant = PunctuationModelSpec.currentVariant(uiState),
         ready = ready,
@@ -726,11 +685,8 @@ private fun PunctuationModelManager(
 }
 
 @Composable
-private fun AsrLocalDivider(uiMode: BibiUiMode) {
-    val color = when (uiMode) {
-        BibiUiMode.Material -> MaterialTheme.colorScheme.outlineVariant
-        BibiUiMode.Miuix -> MiuixTheme.colorScheme.dividerLine
-    }
+private fun AsrLocalDivider() {
+    val color = MiuixTheme.colorScheme.dividerLine
     Spacer(
         modifier = Modifier
             .fillMaxWidth()
@@ -742,29 +698,25 @@ private fun AsrLocalDivider(uiMode: BibiUiMode) {
 
 @Composable
 private fun LocalModelActionRow(
-    uiMode: BibiUiMode,
     spec: AsrLocalModelSpec,
     selectedVariant: String,
     ready: Boolean,
     localModelState: AsrLocalModelRouteState
 ) {
-    SettingsActionButtonRow(uiMode = uiMode) {
+    SettingsActionButtonRow() {
         if (ready) {
             SettingsActionButton(
-                uiMode = uiMode,
                 text = stringResource(spec.clearButtonRes),
                 onClick = { localModelState.onClear(spec) },
                 modifier = Modifier.weight(1f)
             )
         } else {
             SettingsActionButton(
-                uiMode = uiMode,
                 text = stringResource(spec.downloadButtonRes),
                 onClick = { localModelState.onDownload(spec, selectedVariant) },
                 modifier = Modifier.weight(1f)
             )
             SettingsActionButton(
-                uiMode = uiMode,
                 text = stringResource(spec.importButtonRes),
                 onClick = { localModelState.onImport(spec, selectedVariant) },
                 modifier = Modifier.weight(1f)
@@ -801,14 +753,10 @@ private fun localModelStatus(
 
 @Composable
 private fun localModelStatusColor(
-    uiMode: BibiUiMode,
     spec: AsrLocalModelSpec,
     localModelState: AsrLocalModelRouteState
 ) = if (spec.key in localModelState.errorStatusKeys) {
-    when (uiMode) {
-        BibiUiMode.Material -> MaterialTheme.colorScheme.error
-        BibiUiMode.Miuix -> MiuixTheme.colorScheme.error
-    }
+    MiuixTheme.colorScheme.error
 } else {
     null
 }

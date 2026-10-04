@@ -21,12 +21,10 @@ import com.brycewg.asrkb.ui.AsrVendorUi
 import com.brycewg.asrkb.ui.settings.asr.AsrSettingsUiState
 import com.brycewg.asrkb.ui.settings.asr.AsrSettingsViewModel
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 
 @Composable
 internal fun AsrSettingsRouteContent(
-    uiMode: BibiUiMode,
     context: Context,
     prefs: Prefs,
     viewModel: AsrSettingsViewModel,
@@ -40,19 +38,17 @@ internal fun AsrSettingsRouteContent(
 ) {
     with(routeActions) {
         SettingsLazyColumn(
-            uiMode = uiMode,
             modifier = Modifier.fillMaxSize(),
             miuixScrollModifier = scrollModifier,
             contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SectionSpacing)
         ) {
             item("dispatch") {
-                AsrDispatchSection(uiMode = uiMode, prefs = prefs)
+                AsrDispatchSection(prefs = prefs)
             }
 
             item("silence") {
                 AsrSilenceSection(
-                    uiMode = uiMode,
                     autoStopMode = uiState.recordingAutoStopMode,
                     silenceWindowMs = uiState.silenceWindowMs,
                     silenceSensitivity = uiState.silenceSensitivity,
@@ -77,7 +73,7 @@ internal fun AsrSettingsRouteContent(
             }
 
             item("vendor") {
-                AsrSection(uiMode = uiMode, titleRes = R.string.label_asr_vendor) {
+                AsrSection(titleRes = R.string.label_asr_vendor) {
                     val vendorPrimaryItemCount = currentAsrVendorPrimaryItemCount(
                         selectedVendor = uiState.selectedVendor,
                         uiState = uiState,
@@ -87,7 +83,6 @@ internal fun AsrSettingsRouteContent(
                     AsrValuePreference(
                         titleRes = R.string.label_asr_vendor,
                         value = AsrVendorUi.name(context, uiState.selectedVendor),
-                        uiMode = uiMode,
                         highlightId = "asr_vendor",
                         index = 0,
                         count = vendorGroupCount,
@@ -103,7 +98,6 @@ internal fun AsrSettingsRouteContent(
                     if (uiState.selectedVendor == AsrVendor.Volc) {
                         AsrVolcRouteSection(
                             context = context,
-                            uiMode = uiMode,
                             uiState = uiState,
                             appKey = onlineState.volcAppKey,
                             accessKey = onlineState.volcAccessKey,
@@ -126,7 +120,6 @@ internal fun AsrSettingsRouteContent(
                     }
                     if (uiState.selectedVendor == AsrVendor.DashScope) {
                         DashScopeConfig(
-                            uiMode = uiMode,
                             apiKey = onlineState.dashApiKey,
                             onApiKeyChange = onlineState.onDashApiKeyChange,
                             modelLabel = dashModelLabel(context, onlineState.dashModel),
@@ -161,7 +154,6 @@ internal fun AsrSettingsRouteContent(
                         )
                     }
                     CurrentAsrVendorConfig(
-                        uiMode = uiMode,
                         selectedVendor = uiState.selectedVendor,
                         sfFreeAsrEnabled = onlineState.sfFreeAsrEnabled,
                         onSfFreeAsrEnabledChange = onlineState.onSfFreeAsrEnabledChange,
@@ -304,7 +296,6 @@ internal fun AsrSettingsRouteContent(
                         primaryGroupCount = vendorGroupCount
                     )
                     CurrentLocalAsrVendorConfig(
-                        uiMode = uiMode,
                         selectedVendor = uiState.selectedVendor,
                         uiState = uiState,
                         localModelState = localModelState,
@@ -324,7 +315,6 @@ internal fun AsrSettingsRouteContent(
 
             item("backup") {
                 AsrBackupRouteSection(
-                    uiMode = uiMode,
                     prefs = prefs,
                     enabled = backupState.enabled,
                     vendor = backupState.vendor,

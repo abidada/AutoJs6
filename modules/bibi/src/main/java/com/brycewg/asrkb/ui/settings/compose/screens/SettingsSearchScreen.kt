@@ -7,7 +7,6 @@
 
 package com.brycewg.asrkb.ui.settings.compose.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,11 +22,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,13 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSearchField
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.search.SettingsSearchEntry
@@ -56,7 +48,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun SettingsSearchScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     onOpenEntry: (SettingsSearchEntry) -> Unit
 ) {
@@ -72,7 +63,7 @@ fun SettingsSearchScreen(
         SettingsSearchMatcher.filter(rows, query)
     }
 
-    SettingsSearchScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+    SettingsSearchScaffold(onBack = onBack) { innerPadding, scrollModifier ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -92,15 +83,13 @@ fun SettingsSearchScreen(
                     value = query,
                     onValueChange = { query = it },
                     label = stringResource(R.string.hint_settings_search),
-                    uiMode = uiMode,
                     autoFocus = true
                 )
                 if (results.isEmpty()) {
-                    EmptySearchState(uiMode = uiMode)
+                    EmptySearchState()
                 } else {
                     SearchResultList(
                         entries = results,
-                        uiMode = uiMode,
                         scrollModifier = scrollModifier,
                         onOpenEntry = onOpenEntry
                     )
@@ -112,12 +101,10 @@ fun SettingsSearchScreen(
 
 @Composable
 private fun SettingsSearchScaffold(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_settings_search,
         onBack = onBack,
         content = content
@@ -127,12 +114,10 @@ private fun SettingsSearchScaffold(
 @Composable
 private fun SearchResultList(
     entries: List<SettingsSearchEntry>,
-    uiMode: BibiUiMode,
     scrollModifier: Modifier,
     onOpenEntry: (SettingsSearchEntry) -> Unit
 ) {
     SettingsLazyColumn(
-        uiMode = uiMode,
         modifier = Modifier.fillMaxSize(),
         miuixScrollModifier = scrollModifier,
         contentPadding = PaddingValues(vertical = SettingsLayoutMetrics.SearchListVerticalPadding),
@@ -162,7 +147,6 @@ private fun SearchResultList(
         ) { entry ->
             SearchResultItem(
                 entry = entry,
-                uiMode = uiMode,
                 onClick = { onOpenEntry(entry) }
             )
         }
@@ -172,7 +156,6 @@ private fun SearchResultList(
 @Composable
 private fun SearchResultItem(
     entry: SettingsSearchEntry,
-    uiMode: BibiUiMode,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -184,26 +167,13 @@ private fun SearchResultItem(
     val subtitle = remember(entry, context) {
         SettingsSearchMatcher.subtitle(entry, context::getString)
     }
-    when (uiMode) {
-        BibiUiMode.Material -> Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = clickWithHaptic),
-            shape = RoundedCornerShape(SettingsLayoutMetrics.MaterialSectionShape),
-            color = MaterialTheme.colorScheme.surfaceColorAtElevation(SettingsLayoutMetrics.SearchResultElevation),
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ) {
-            SearchResultText(entry.title, subtitle, uiMode)
-        }
-
-        // 使用 Card(onClick) 让按压遮罩画在内部 clip 之后，避免直角灰遮罩溢出圆角。
-        BibiUiMode.Miuix -> MiuixCard(
-            modifier = Modifier.fillMaxWidth(),
-            showIndication = true,
-            onClick = clickWithHaptic
-        ) {
-            SearchResultText(entry.title, subtitle, uiMode)
-        }
+    // 使用 Card(onClick) 让按压遮罩画在内部 clip 之后，避免直角灰遮罩溢出圆角。
+    MiuixCard(
+        modifier = Modifier.fillMaxWidth(),
+        showIndication = true,
+        onClick = clickWithHaptic
+    ) {
+        SearchResultText(entry.title, subtitle)
     }
 }
 
@@ -211,52 +181,30 @@ private fun SearchResultItem(
 private fun SearchResultText(
     title: String,
     subtitle: String,
-    uiMode: BibiUiMode
 ) {
     Column(
         modifier = Modifier.padding(SettingsLayoutMetrics.SearchResultContentPadding),
         verticalArrangement = Arrangement.spacedBy(SettingsLayoutMetrics.SearchResultTextSpacing)
     ) {
-        when (uiMode) {
-            BibiUiMode.Material -> {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            BibiUiMode.Miuix -> {
-                MiuixText(
-                    text = title,
-                    style = MiuixTheme.textStyles.body1,
-                    color = MiuixTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                MiuixText(
-                    text = subtitle,
-                    style = MiuixTheme.textStyles.footnote1,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
+        MiuixText(
+            text = title,
+            style = MiuixTheme.textStyles.body1,
+            color = MiuixTheme.colorScheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+        MiuixText(
+            text = subtitle,
+            style = MiuixTheme.textStyles.footnote1,
+            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
 @Composable
-private fun EmptySearchState(uiMode: BibiUiMode) {
+private fun EmptySearchState() {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -264,18 +212,10 @@ private fun EmptySearchState(uiMode: BibiUiMode) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        when (uiMode) {
-            BibiUiMode.Material -> Text(
-                text = stringResource(R.string.text_settings_search_empty),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            BibiUiMode.Miuix -> MiuixText(
-                text = stringResource(R.string.text_settings_search_empty),
-                style = MiuixTheme.textStyles.body1,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary
-            )
-        }
+        MiuixText(
+            text = stringResource(R.string.text_settings_search_empty),
+            style = MiuixTheme.textStyles.body1,
+            color = MiuixTheme.colorScheme.onSurfaceVariantSummary
+        )
     }
 }

@@ -44,7 +44,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
 import com.brycewg.asrkb.ui.settings.compose.components.settingsChoiceSheetState
 import com.brycewg.asrkb.ui.settings.compose.components.settingsFeatureExplainerDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsActionController
 import com.brycewg.asrkb.ui.settings.other.OtherSettingsViewModel
 import kotlinx.coroutines.Dispatchers
@@ -58,7 +57,6 @@ private const val OTHER_TAG = "OtherSettingsScreen"
 
 @Composable
 fun OtherSettingsScreen(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     actions: SettingsActionController
 ) {
@@ -245,24 +243,20 @@ fun OtherSettingsScreen(
         )
     }
 
-    OtherScaffold(uiMode = uiMode, onBack = onBack) { innerPadding, scrollModifier ->
+    OtherScaffold(onBack = onBack) { innerPadding, scrollModifier ->
         SettingsChoiceSheet(
             state = choiceSheet,
-            uiMode = uiMode,
             onDismiss = { choiceSheet = null }
         )
         SettingsMessageDialog(
             state = messageDialog,
-            uiMode = uiMode,
             onDismiss = { messageDialog = null }
         )
         SettingsFeatureExplainerDialog(
             state = featureExplainerDialog,
-            uiMode = uiMode,
             onDismiss = { featureExplainerDialog = null }
         )
         OtherSettingsRouteContent(
-            uiMode = uiMode,
             innerPadding = innerPadding,
             scrollModifier = scrollModifier,
             uiState = uiState,

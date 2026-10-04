@@ -25,11 +25,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsMotion
 import kotlin.math.abs
@@ -55,7 +49,6 @@ private const val LAST_PAGE_INDEX = PAGE_COUNT - 1
 
 @Composable
 internal fun OnboardingGuideScreen(
-    uiMode: BibiUiMode,
     refreshKey: Int,
     permissionGroups: List<OnboardingPermissionGroup>,
     asrChoice: OnboardingAsrChoice,
@@ -72,7 +65,6 @@ internal fun OnboardingGuideScreen(
     val pagerState = rememberPagerState(pageCount = { PAGE_COUNT })
     val scope = rememberCoroutineScope()
     OnboardingScaffold(
-        uiMode = uiMode,
         currentPage = pagerState.currentPage,
         onBack = onBack,
         onSkip = onSkip,
@@ -106,7 +98,6 @@ internal fun OnboardingGuideScreen(
                 0 -> key(refreshKey) {
                     OnboardingPermissionsPage(
                         groups = permissionGroups,
-                        uiMode = uiMode,
                         modifier = scrollModifier,
                         contentPadding = contentPadding
                     )
@@ -114,7 +105,6 @@ internal fun OnboardingGuideScreen(
 
                 1 -> OnboardingAsrChoicePage(
                     selected = asrChoice,
-                    uiMode = uiMode,
                     modifier = scrollModifier,
                     contentPadding = contentPadding,
                     onSelected = onAsrChoiceChange
@@ -122,14 +112,12 @@ internal fun OnboardingGuideScreen(
 
                 2 -> OnboardingPrivacyPage(
                     checked = dataCollectionEnabled,
-                    uiMode = uiMode,
                     modifier = scrollModifier,
                     contentPadding = contentPadding,
                     onCheckedChange = onDataCollectionChange
                 )
 
                 3 -> OnboardingLinksPage(
-                    uiMode = uiMode,
                     modifier = scrollModifier,
                     contentPadding = contentPadding,
                     onOpenProject = onOpenProject,
@@ -143,7 +131,6 @@ internal fun OnboardingGuideScreen(
 
 @Composable
 private fun OnboardingScaffold(
-    uiMode: BibiUiMode,
     currentPage: Int,
     onBack: () -> Unit,
     onSkip: () -> Unit,
@@ -152,7 +139,6 @@ private fun OnboardingScaffold(
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.onboarding_title,
         onBack = onBack,
         content = { innerPadding, scrollModifier ->
@@ -169,7 +155,6 @@ private fun OnboardingScaffold(
                     content(innerPadding, scrollModifier)
                 }
                 OnboardingBottomBar(
-                    uiMode = uiMode,
                     currentPage = currentPage,
                     onSkip = onSkip,
                     onPrevious = onPrevious,
@@ -185,7 +170,6 @@ private fun OnboardingScaffold(
 
 @Composable
 private fun OnboardingBottomBar(
-    uiMode: BibiUiMode,
     currentPage: Int,
     onSkip: () -> Unit,
     onPrevious: () -> Unit,
@@ -198,15 +182,13 @@ private fun OnboardingBottomBar(
             .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
         OnboardingProgressIndicator(
-            uiMode = uiMode,
             progress = (currentPage + 1) / PAGE_COUNT.toFloat(),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp)
         )
         PageIndicator(
-            text = stringResource(R.string.onboarding_page_indicator, currentPage + 1, PAGE_COUNT),
-            uiMode = uiMode
+            text = stringResource(R.string.onboarding_page_indicator, currentPage + 1, PAGE_COUNT)
         )
         Row(
             modifier = Modifier
@@ -215,14 +197,12 @@ private fun OnboardingBottomBar(
         ) {
             OnboardingTextAction(
                 text = stringResource(R.string.onboarding_btn_skip),
-                uiMode = uiMode,
                 visible = currentPage < LAST_PAGE_INDEX,
                 onClick = onSkip,
                 modifier = Modifier.weight(1f)
             )
             OnboardingTextAction(
                 text = stringResource(R.string.onboarding_btn_prev),
-                uiMode = uiMode,
                 enabled = currentPage > 0,
                 onClick = onPrevious,
                 modifier = Modifier.weight(1f)
@@ -235,7 +215,6 @@ private fun OnboardingBottomBar(
                         R.string.onboarding_btn_next
                     }
                 ),
-                uiMode = uiMode,
                 onClick = onNext,
                 modifier = Modifier.weight(1f)
             )
@@ -245,44 +224,27 @@ private fun OnboardingBottomBar(
 
 @Composable
 private fun OnboardingProgressIndicator(
-    uiMode: BibiUiMode,
     progress: Float,
     modifier: Modifier = Modifier
 ) {
-    when (uiMode) {
-        BibiUiMode.Material -> LinearProgressIndicator(
-            progress = { progress },
-            modifier = modifier
-        )
-
-        BibiUiMode.Miuix -> MiuixLinearProgressIndicator(
-            progress = progress,
-            modifier = modifier
-        )
-    }
+    MiuixLinearProgressIndicator(
+        progress = progress,
+        modifier = modifier
+    )
 }
 
 @Composable
-private fun PageIndicator(text: String, uiMode: BibiUiMode) {
-    when (uiMode) {
-        BibiUiMode.Material -> Text(
-            text = text,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.labelMedium
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            style = MiuixTheme.textStyles.footnote1
-        )
-    }
+private fun PageIndicator(text: String) {
+    MiuixText(
+        text = text,
+        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+        style = MiuixTheme.textStyles.footnote1
+    )
 }
 
 @Composable
 private fun OnboardingTextAction(
     text: String,
-    uiMode: BibiUiMode,
     visible: Boolean = true,
     enabled: Boolean = true,
     onClick: () -> Unit,
@@ -292,46 +254,26 @@ private fun OnboardingTextAction(
         Row(modifier = modifier) {}
         return
     }
-    when (uiMode) {
-        BibiUiMode.Material -> TextButton(
-            onClick = onClick,
-            enabled = enabled,
-            modifier = modifier
-        ) {
-            Text(text)
-        }
-
-        BibiUiMode.Miuix -> MiuixTextButton(
-            text = text,
-            onClick = onClick,
-            enabled = enabled,
-            modifier = modifier
-        )
-    }
+    MiuixTextButton(
+        text = text,
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+    )
 }
 
 @Composable
 private fun OnboardingPrimaryAction(
     text: String,
-    uiMode: BibiUiMode,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    when (uiMode) {
-        BibiUiMode.Material -> Button(
-            onClick = onClick,
-            modifier = modifier
-        ) {
-            Text(text)
-        }
-
-        BibiUiMode.Miuix -> MiuixTextButton(
-            text = text,
-            onClick = onClick,
-            modifier = modifier,
-            colors = MiuixButtonDefaults.textButtonColorsPrimary()
-        )
-    }
+    MiuixTextButton(
+        text = text,
+        onClick = onClick,
+        modifier = modifier,
+        colors = MiuixButtonDefaults.textButtonColorsPrimary()
+    )
 }
 
 private suspend fun PagerState.animateToOnboardingPage(targetPage: Int) {

@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,7 +31,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -41,11 +39,9 @@ import com.brycewg.asrkb.clipboard.ClipboardSyncReceiveMode
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButton
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButtonRow
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
-import com.brycewg.asrkb.ui.settings.compose.components.SettingsMaterialItemSurface
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsTextField
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
 import com.brycewg.asrkb.ui.settings.other.OtherSettingsViewModel
@@ -54,12 +50,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun OtherScaffold(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_other_settings,
         onBack = onBack,
         content = content
@@ -68,12 +62,10 @@ internal fun OtherScaffold(
 
 @Composable
 internal fun OtherSection(
-    uiMode: BibiUiMode,
     titleRes: Int,
     content: @Composable ColumnScope.() -> Unit
 ) {
     SettingsSectionContainer(
-        uiMode = uiMode,
         titleRes = titleRes,
         content = content
     )
@@ -105,7 +97,6 @@ internal fun OtherTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    uiMode: BibiUiMode,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     placeholder: String? = null,
@@ -125,7 +116,6 @@ internal fun OtherTextField(
     )
 ) {
     SettingsTextField(
-        uiMode = uiMode,
         value = value,
         onValueChange = onValueChange,
         label = label,
@@ -149,13 +139,11 @@ internal fun OtherTextField(
 @Composable
 internal fun OtherClickableValue(
     text: String,
-    uiMode: BibiUiMode,
     enabled: Boolean,
     onClick: () -> Unit
 ) {
     OtherButton(
         text = text,
-        uiMode = uiMode,
         enabled = enabled,
         onClick = onClick
     )
@@ -185,16 +173,14 @@ internal fun OtherValuePreference(
 
 @Composable
 internal fun OtherButtonRow(
-    uiMode: BibiUiMode,
     content: @Composable RowScope.() -> Unit
 ) {
-    SettingsActionButtonRow(uiMode = uiMode, content = content)
+    SettingsActionButtonRow(content = content)
 }
 
 @Composable
 internal fun OtherButton(
     text: String,
-    uiMode: BibiUiMode,
     modifier: Modifier = Modifier.fillMaxWidth(),
     enabled: Boolean = true,
     onClick: () -> Unit,
@@ -212,7 +198,6 @@ internal fun OtherButton(
         modifier
     }
     SettingsActionButton(
-        uiMode = uiMode,
         text = text,
         onClick = onClick,
         modifier = buttonModifier,
@@ -224,30 +209,18 @@ internal fun OtherButton(
 @Composable
 internal fun OtherBodyText(
     text: String,
-    uiMode: BibiUiMode,
     strong: Boolean = false
 ) {
-    when (uiMode) {
-        BibiUiMode.Material -> Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = if (strong) FontWeight.SemiBold else null
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            style = MiuixTheme.textStyles.footnote1
-        )
-    }
+    MiuixText(
+        text = text,
+        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+        style = MiuixTheme.textStyles.footnote1
+    )
 }
 
 @Composable
 internal fun SpeechPresetSection(
-    uiMode: BibiUiMode,
     state: OtherSettingsViewModel.SpeechPresetsState,
     focusNameAfterAdd: Boolean,
     onFocusNameHandled: () -> Unit,
@@ -265,7 +238,7 @@ internal fun SpeechPresetSection(
             onFocusNameHandled()
         }
     }
-    OtherSection(uiMode = uiMode, titleRes = R.string.label_speech_preset_section) {
+    OtherSection(titleRes = R.string.label_speech_preset_section) {
         var itemIndex = 0
         val itemCount = 3
         OtherValuePreference(
@@ -283,7 +256,6 @@ internal fun SpeechPresetSection(
             value = state.currentPreset?.name.orEmpty(),
             onValueChange = onUpdateName,
             label = stringResource(R.string.hint_speech_preset_name),
-            uiMode = uiMode,
             enabled = state.isEnabled,
             modifier = Modifier.focusRequester(nameFocusRequester),
             singleLine = true,
@@ -294,7 +266,6 @@ internal fun SpeechPresetSection(
             value = state.currentPreset?.content.orEmpty(),
             onValueChange = onUpdateContent,
             label = stringResource(R.string.hint_speech_preset_content),
-            uiMode = uiMode,
             enabled = state.isEnabled,
             singleLine = false,
             minLines = 3,
@@ -302,10 +273,9 @@ internal fun SpeechPresetSection(
             index = itemIndex,
             count = itemCount
         )
-        OtherButtonRow(uiMode = uiMode) {
+        OtherButtonRow() {
             OtherButton(
                 text = stringResource(R.string.btn_speech_preset_add),
-                uiMode = uiMode,
                 modifier = Modifier.weight(1f),
                 onClick = onAddPreset,
                 leadingIcon = Icons.Rounded.Add,
@@ -313,7 +283,6 @@ internal fun SpeechPresetSection(
             )
             OtherButton(
                 text = stringResource(R.string.btn_speech_preset_delete),
-                uiMode = uiMode,
                 modifier = Modifier.weight(1f),
                 enabled = state.isEnabled,
                 onClick = onDeletePreset,
@@ -321,13 +290,12 @@ internal fun SpeechPresetSection(
                 padded = false
             )
         }
-        OtherBodyText(stringResource(R.string.speech_preset_intro), uiMode)
+        OtherBodyText(stringResource(R.string.speech_preset_intro))
     }
 }
 
 @Composable
 internal fun SyncClipboardSection(
-    uiMode: BibiUiMode,
     state: OtherSettingsViewModel.SyncClipboardState,
     onEnabledChange: (Boolean) -> Unit,
     onServerChange: (String) -> Unit,
@@ -352,7 +320,7 @@ internal fun SyncClipboardSection(
     var attachmentMaxSizeText by remember(state.attachmentMaxSizeMb) {
         mutableStateOf(state.attachmentMaxSizeMb.toString())
     }
-    OtherSection(uiMode = uiMode, titleRes = R.string.section_sync_clipboard) {
+    OtherSection(titleRes = R.string.section_sync_clipboard) {
         val showKeepBackgroundSwitch = state.enabled &&
             state.receiveMode == ClipboardSyncReceiveMode.REALTIME
         val showAttachmentFields = state.enabled && attachmentsEnabled
@@ -385,7 +353,6 @@ internal fun SyncClipboardSection(
                 value = state.serverBase,
                 onValueChange = onServerChange,
                 label = stringResource(R.string.label_sc_server_base),
-                uiMode = uiMode,
                 keyboardType = KeyboardType.Uri,
                 index = itemIndex++,
                 count = itemCount
@@ -394,7 +361,6 @@ internal fun SyncClipboardSection(
                 value = state.username,
                 onValueChange = onUsernameChange,
                 label = stringResource(R.string.label_sc_username),
-                uiMode = uiMode,
                 index = itemIndex++,
                 count = itemCount
             )
@@ -402,7 +368,6 @@ internal fun SyncClipboardSection(
                 value = state.password,
                 onValueChange = onPasswordChange,
                 label = stringResource(R.string.label_sc_password),
-                uiMode = uiMode,
                 keyboardType = KeyboardType.Password,
                 password = true,
                 index = itemIndex++,
@@ -415,7 +380,6 @@ internal fun SyncClipboardSection(
                     intervalText.toIntOrNull()?.let { onIntervalChange(it.coerceIn(1, 600)) }
                 },
                 label = stringResource(R.string.label_sc_pull_interval),
-                uiMode = uiMode,
                 keyboardType = KeyboardType.Number,
                 singleLine = true,
                 index = itemIndex++,
@@ -483,7 +447,6 @@ internal fun SyncClipboardSection(
                             }
                         },
                         label = stringResource(R.string.label_sc_attachment_max_size),
-                        uiMode = uiMode,
                         keyboardType = KeyboardType.Number,
                         singleLine = true,
                         materialContainer = false,
@@ -499,13 +462,11 @@ internal fun SyncClipboardSection(
                                 syncClipboardWatchTreeLabel(state.watchTreeUri)
                             )
                         },
-                        uiMode
                     )
-                    OtherButtonRow(uiMode = uiMode) {
+                    OtherButtonRow() {
                         if (state.watchTreeUri.isBlank()) {
                             OtherButton(
                                 text = stringResource(R.string.btn_sc_choose_watch_tree),
-                                uiMode = uiMode,
                                 modifier = Modifier.weight(1f),
                                 onClick = onChooseWatchTree,
                                 padded = false
@@ -513,7 +474,6 @@ internal fun SyncClipboardSection(
                         } else {
                             OtherButton(
                                 text = stringResource(R.string.btn_sc_clear_watch_tree),
-                                uiMode = uiMode,
                                 modifier = Modifier.weight(1f),
                                 onClick = onClearWatchTree,
                                 padded = false
@@ -521,39 +481,25 @@ internal fun SyncClipboardSection(
                         }
                     }
                 }
-                when (uiMode) {
-                    BibiUiMode.Material -> SettingsMaterialItemSurface(
-                        index = itemIndex++,
-                        count = itemCount
-                    ) { attachmentFields() }
-                    BibiUiMode.Miuix -> Column { attachmentFields() }
-                }
+                Column { attachmentFields() }
             }
             val actionButtons: @Composable () -> Unit = {
-                OtherButtonRow(uiMode = uiMode) {
+                OtherButtonRow() {
                     OtherButton(
                         text = stringResource(R.string.btn_sc_test_pull),
-                        uiMode = uiMode,
                         modifier = Modifier.weight(1f),
                         onClick = onTestPull,
                         padded = false
                     )
                     OtherButton(
                         text = stringResource(R.string.btn_sc_project_home),
-                        uiMode = uiMode,
                         modifier = Modifier.weight(1f),
                         onClick = onOpenProject,
                         padded = false
                     )
                 }
             }
-            when (uiMode) {
-                BibiUiMode.Material -> SettingsMaterialItemSurface(
-                    index = itemIndex,
-                    count = itemCount
-                ) { actionButtons() }
-                BibiUiMode.Miuix -> actionButtons()
-            }
+            actionButtons()
         }
     }
 }

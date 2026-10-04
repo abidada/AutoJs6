@@ -16,31 +16,22 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text as MaterialText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.asr.LlmPostProcessor
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsAlertDialog
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogAction
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogButtonRow
-import com.brycewg.asrkb.ui.settings.compose.components.MaterialSettingsDialogExitEffect
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDialogAction
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDialogActionRow
 import com.brycewg.asrkb.ui.settings.compose.components.TimingBarInterval
 import com.brycewg.asrkb.ui.settings.compose.components.TimingIntervalBar
 import com.brycewg.asrkb.ui.settings.compose.components.TimingLegendRow
-import com.brycewg.asrkb.ui.settings.compose.components.animateSettingsDialogExitAlpha
 import com.brycewg.asrkb.ui.settings.compose.components.rememberSettingsDialogExitController
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
@@ -68,7 +59,6 @@ private data class LlmTimingSegment(
 @Composable
 internal fun AiLlmTestResultDialog(
     state: AiLlmTestResultDialogState?,
-    uiMode: BibiUiMode,
     onDismiss: () -> Unit
 ) {
     val visibleState = state ?: return
@@ -90,61 +80,25 @@ internal fun AiLlmTestResultDialog(
         primary = true
     )
 
-    when (uiMode) {
-        BibiUiMode.Material -> {
-            val alpha = animateSettingsDialogExitAlpha(
-                show = exit.show,
-                label = "LlmTestResultDialogAlpha"
-            )
-            MaterialSettingsDialogExitEffect(show = exit.show, onFinished = ::finishDismiss)
-            MaterialSettingsAlertDialog(
-                onDismissRequest = ::dismiss,
-                modifier = Modifier.graphicsLayer(alpha = alpha),
-                title = title,
-                text = {
-                    AiLlmTestResultContent(
-                        state = visibleState,
-                        uiMode = uiMode,
-                        modifier = Modifier.padding(bottom = SettingsLayoutMetrics.SheetBottomPadding)
-                    )
-                },
-                buttons = {
-                    MaterialSettingsDialogButtonRow(
-                        actions = listOf(
-                            MaterialSettingsDialogAction(
-                                text = confirmAction.text,
-                                onClick = confirmAction.onClick,
-                                primary = true
-                            )
-                        )
-                    )
-                }
-            )
-        }
-
-        BibiUiMode.Miuix -> OverlayDialog(
-            show = exit.show,
-            title = title,
-            onDismissRequest = ::dismiss,
-            onDismissFinished = ::finishDismiss
-        ) {
-            AiLlmTestResultContent(
-                state = visibleState,
-                uiMode = uiMode,
-                modifier = Modifier.padding(bottom = SettingsLayoutMetrics.DialogContentBottomPadding)
-            )
-            SettingsDialogActionRow(
-                uiMode = BibiUiMode.Miuix,
-                actions = listOf(confirmAction)
-            )
-        }
+    OverlayDialog(
+        show = exit.show,
+        title = title,
+        onDismissRequest = ::dismiss,
+        onDismissFinished = ::finishDismiss
+    ) {
+        AiLlmTestResultContent(
+            state = visibleState,
+            modifier = Modifier.padding(bottom = SettingsLayoutMetrics.DialogContentBottomPadding)
+        )
+        SettingsDialogActionRow(
+            actions = listOf(confirmAction)
+        )
     }
 }
 
 @Composable
 private fun AiLlmTestResultContent(
     state: AiLlmTestResultDialogState,
-    uiMode: BibiUiMode,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -165,7 +119,7 @@ private fun AiLlmTestResultContent(
                 totalElapsedMs = segments.sumOf { it.durationMs.coerceAtLeast(0L) },
                 intervals = llmTimingIntervals(segments),
                 contentDescription = barDescription,
-                trackColor = llmTimingTrackColor(uiMode)
+                trackColor = llmTimingTrackColor()
             )
             Spacer(modifier = Modifier.height(SettingsLayoutMetrics.FeatureExplainerSectionSpacing))
             segments.forEach { segment ->
@@ -176,7 +130,6 @@ private fun AiLlmTestResultContent(
                         segment.durationMs.coerceAtLeast(0L).toInt()
                     ),
                     color = segment.color,
-                    uiMode = uiMode,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = SettingsLayoutMetrics.ProDialogTinySpacing)
@@ -187,24 +140,20 @@ private fun AiLlmTestResultContent(
                 LlmTimingMetricRow(
                     label = stringResource(R.string.llm_test_timing_connect),
                     durationMs = state.connectionMs,
-                    uiMode = uiMode
                 )
             }
             LlmTimingMetricRow(
                 label = stringResource(R.string.llm_test_timing_response_headers),
                 durationMs = state.responseHeadersMs,
-                uiMode = uiMode
             )
             LlmTimingMetricRow(
                 label = stringResource(R.string.llm_test_timing_response_body),
                 durationMs = state.responseBodyMs,
-                uiMode = uiMode
             )
         }
         Spacer(modifier = Modifier.height(SettingsLayoutMetrics.FeatureExplainerLabelSpacing))
         LlmTimingBodyText(
             text = stringResource(R.string.llm_test_timing_total, state.totalMs.toInt()),
-            uiMode = uiMode,
             secondary = true,
             strong = true
         )
@@ -215,14 +164,12 @@ private fun AiLlmTestResultContent(
             } else {
                 stringResource(R.string.llm_test_timing_new, state.connectionMs.toInt())
             },
-            uiMode = uiMode,
             secondary = true
         )
         if (state.fallbackUsed) {
             Spacer(modifier = Modifier.height(SettingsLayoutMetrics.FeatureExplainerLabelSpacing))
             LlmTimingBodyText(
                 text = stringResource(R.string.llm_test_timing_fallback_used),
-                uiMode = uiMode,
                 secondary = true
             )
         }
@@ -231,7 +178,6 @@ private fun AiLlmTestResultContent(
             Spacer(modifier = Modifier.height(SettingsLayoutMetrics.FeatureExplainerSectionSpacing))
             LlmTimingBodyText(
                 text = stringResource(R.string.llm_test_success_preview, preview),
-                uiMode = uiMode,
                 secondary = true
             )
         }
@@ -244,7 +190,6 @@ private fun AiLlmTestResultContent(
                     R.string.llm_test_streaming_unsupported
                 }
             ),
-            uiMode = uiMode,
             secondary = true
         )
     }
@@ -292,7 +237,6 @@ private fun llmTimingIntervals(segments: List<LlmTimingSegment>): List<TimingBar
 private fun LlmTimingMetricRow(
     label: String,
     durationMs: Long,
-    uiMode: BibiUiMode
 ) {
     Row(
         modifier = Modifier
@@ -302,7 +246,6 @@ private fun LlmTimingMetricRow(
     ) {
         LlmTimingBodyText(
             text = label,
-            uiMode = uiMode,
             modifier = Modifier.weight(1f)
         )
         LlmTimingBodyText(
@@ -310,7 +253,6 @@ private fun LlmTimingMetricRow(
                 R.string.llm_test_timing_ms,
                 durationMs.coerceAtLeast(0L).toInt()
             ),
-            uiMode = uiMode,
             secondary = true,
             monospace = true
         )
@@ -320,7 +262,6 @@ private fun LlmTimingMetricRow(
 @Composable
 private fun LlmTimingBodyText(
     text: String,
-    uiMode: BibiUiMode,
     modifier: Modifier = Modifier,
     secondary: Boolean = false,
     strong: Boolean = false,
@@ -328,33 +269,18 @@ private fun LlmTimingBodyText(
 ) {
     val weight = if (strong) FontWeight.Medium else FontWeight.Normal
     val fontFamily = if (monospace) FontFamily.Monospace else FontFamily.Default
-    when (uiMode) {
-        BibiUiMode.Material -> MaterialText(
-            text = text,
-            modifier = modifier,
-            color = if (secondary) {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            } else {
-                MaterialTheme.colorScheme.onSurface
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = weight,
-            fontFamily = fontFamily
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            modifier = modifier,
-            color = if (secondary) {
-                MiuixTheme.colorScheme.onSurfaceVariantSummary
-            } else {
-                MiuixTheme.colorScheme.onSurface
-            },
-            style = MiuixTheme.textStyles.body2,
-            fontWeight = weight,
-            fontFamily = fontFamily
-        )
-    }
+    MiuixText(
+        text = text,
+        modifier = modifier,
+        color = if (secondary) {
+            MiuixTheme.colorScheme.onSurfaceVariantSummary
+        } else {
+            MiuixTheme.colorScheme.onSurface
+        },
+        style = MiuixTheme.textStyles.body2,
+        fontWeight = weight,
+        fontFamily = fontFamily
+    )
 }
 
 private data class LlmTimingColors(
@@ -371,7 +297,4 @@ private fun llmTimingColors(): LlmTimingColors = LlmTimingColors(
 )
 
 @Composable
-private fun llmTimingTrackColor(uiMode: BibiUiMode): Color = when (uiMode) {
-    BibiUiMode.Material -> MaterialTheme.colorScheme.surfaceVariant
-    BibiUiMode.Miuix -> MiuixTheme.colorScheme.surfaceVariant
-}
+private fun llmTimingTrackColor(): Color = MiuixTheme.colorScheme.surfaceVariant

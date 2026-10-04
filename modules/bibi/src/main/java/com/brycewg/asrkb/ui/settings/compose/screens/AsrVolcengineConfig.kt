@@ -13,12 +13,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.asr.VolcAsrModelCatalog
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 
 @Composable
 internal fun VolcengineConfig(
-    uiMode: BibiUiMode,
     appKey: String,
     onAppKeyChange: (String) -> Unit,
     accessKey: String,
@@ -56,7 +54,6 @@ internal fun VolcengineConfig(
         onCheckedChange = onUseNewAuthChange
     )
     AsrTextField(
-        uiMode = uiMode,
         value = if (useNewAuth) apiKey else appKey,
         onValueChange = if (useNewAuth) onApiKeyChange else onAppKeyChange,
         label = stringResource(if (useNewAuth) R.string.label_volc_api_key else R.string.label_app_key),
@@ -66,7 +63,6 @@ internal fun VolcengineConfig(
     )
     if (!useNewAuth) {
         AsrTextField(
-            uiMode = uiMode,
             value = accessKey,
             onValueChange = onAccessKeyChange,
             label = stringResource(R.string.label_access_key),
@@ -78,7 +74,6 @@ internal fun VolcengineConfig(
     AsrValuePreference(
         titleRes = R.string.label_volc_asr_model,
         value = modelLabel,
-        uiMode = uiMode,
         highlightId = "volc_asr_model",
         index = itemIndex++,
         count = itemCount,

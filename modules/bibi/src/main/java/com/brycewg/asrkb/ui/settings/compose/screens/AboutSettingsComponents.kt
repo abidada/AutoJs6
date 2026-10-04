@@ -18,9 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,19 +30,16 @@ import androidx.compose.ui.unit.dp
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun AboutScaffold(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.about_title,
         onBack = onBack,
         content = content
@@ -54,7 +48,6 @@ internal fun AboutScaffold(
 
 @Composable
 internal fun AboutSection(
-    uiMode: BibiUiMode,
     titleRes: Int? = null,
     contentPadding: PaddingValues = PaddingValues(
         top = SettingsLayoutMetrics.AboutSectionContentTopPadding,
@@ -63,7 +56,6 @@ internal fun AboutSection(
     content: @Composable ColumnScope.() -> Unit
 ) {
     SettingsSectionContainer(
-        uiMode = uiMode,
         titleRes = titleRes
     ) {
         Column(
@@ -79,7 +71,6 @@ internal fun AboutAppIntro(
     version: String,
     packageName: String,
     description: String,
-    uiMode: BibiUiMode
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -89,9 +80,9 @@ internal fun AboutAppIntro(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                AboutText(appName, uiMode, strong = true)
-                AboutText(version, uiMode)
-                AboutText(packageName, uiMode)
+                AboutText(appName, strong = true)
+                AboutText(version)
+                AboutText(packageName)
             }
             Spacer(modifier = Modifier.width(8.dp))
             // Adaptive icon foreground 内含安全区留白；放大绘制并裁到占位，让 logo 更饱满。
@@ -110,52 +101,34 @@ internal fun AboutAppIntro(
                 )
             }
         }
-        AboutText(description, uiMode)
+        AboutText(description)
     }
 }
 
 @Composable
 internal fun AboutText(
     text: String,
-    uiMode: BibiUiMode,
     strong: Boolean = false
 ) {
-    when (uiMode) {
-        BibiUiMode.Material -> Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 2.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = if (strong) FontWeight.SemiBold else FontWeight.Normal,
-            style = MaterialTheme.typography.bodyMedium
-        )
-
-        BibiUiMode.Miuix -> MiuixText(
-            text = text,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 2.dp),
-            color = if (strong) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            fontWeight = if (strong) FontWeight.SemiBold else FontWeight.Normal,
-            style = MiuixTheme.textStyles.body2
-        )
-    }
+    MiuixText(
+        text = text,
+        modifier = Modifier.padding(horizontal = 20.dp, vertical = 2.dp),
+        color = if (strong) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariantSummary,
+        fontWeight = if (strong) FontWeight.SemiBold else FontWeight.Normal,
+        style = MiuixTheme.textStyles.body2
+    )
 }
 
 @Composable
-internal fun AboutDivider(uiMode: BibiUiMode) {
-    if (uiMode == BibiUiMode.Material) {
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp)
-        )
-    }
+internal fun AboutDivider() {
+    // Material 引擎专属分隔线已随单引擎化移除；Miuix 下保持无分隔线。
 }
 
 @Composable
 internal fun AboutAcknowledgement(
     titleRes: Int,
     descRes: Int,
-    uiMode: BibiUiMode
 ) {
-    AboutText(stringResource(titleRes), uiMode, strong = true)
-    AboutText(stringResource(descRes), uiMode)
+    AboutText(stringResource(titleRes), strong = true)
+    AboutText(stringResource(descRes))
 }

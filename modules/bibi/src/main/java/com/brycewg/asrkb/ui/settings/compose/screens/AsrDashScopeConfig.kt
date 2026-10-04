@@ -15,12 +15,10 @@ import androidx.compose.ui.res.stringResource
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.store.DashScopePrefsCompat
 import com.brycewg.asrkb.store.Prefs
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.model.DropdownOption
 
 @Composable
 internal fun DashScopeConfig(
-    uiMode: BibiUiMode,
     apiKey: String,
     onApiKeyChange: (String) -> Unit,
     modelLabel: String,
@@ -54,7 +52,6 @@ internal fun DashScopeConfig(
     )
     var itemIndex = primaryIndexOffset
     AsrTextField(
-        uiMode = uiMode,
         value = apiKey,
         onValueChange = onApiKeyChange,
         label = stringResource(R.string.label_dash_api_key),
@@ -65,7 +62,6 @@ internal fun DashScopeConfig(
     AsrValuePreference(
         titleRes = R.string.label_dash_model,
         value = modelLabel,
-        uiMode = uiMode,
         index = itemIndex++,
         count = itemCount,
         onClick = onChooseModel
@@ -75,7 +71,6 @@ internal fun DashScopeConfig(
             AsrValuePreference(
                 titleRes = R.string.label_dash_language,
                 value = dashLanguageSummary(context, selectedLanguage),
-                uiMode = uiMode,
                 index = itemIndex++,
                 count = itemCount,
                 onClick = onChooseLanguages
@@ -126,7 +121,6 @@ internal fun DashScopeConfig(
     )
     if (promptVisible) {
         AsrTextField(
-            uiMode = uiMode,
             value = prompt,
             onValueChange = onPromptChange,
             label = stringResource(R.string.label_dash_prompt),

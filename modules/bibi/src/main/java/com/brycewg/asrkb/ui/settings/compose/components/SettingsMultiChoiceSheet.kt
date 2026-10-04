@@ -10,29 +10,15 @@ package com.brycewg.asrkb.ui.settings.compose.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text as MaterialText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
-import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
-import com.brycewg.asrkb.ui.settings.compose.core.settingsSegmentedItemShape
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.preference.CheckboxLocation
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
@@ -55,66 +41,13 @@ internal data class SettingsMultiChoiceSheetState(
 @Composable
 internal fun SettingsMultiChoiceSheet(
     state: SettingsMultiChoiceSheetState?,
-    uiMode: BibiUiMode,
     onDismiss: () -> Unit
 ) {
     val visibleState = state?.takeIf { it.items.isNotEmpty() } ?: return
-    when (uiMode) {
-        BibiUiMode.Material -> MaterialMultiChoiceSheet(
-            state = visibleState,
-            onDismiss = onDismiss
-        )
-
-        BibiUiMode.Miuix -> MiuixMultiChoiceSheet(
-            state = visibleState,
-            onDismiss = onDismiss
-        )
-    }
-}
-
-@Composable
-private fun MaterialMultiChoiceSheet(
-    state: SettingsMultiChoiceSheetState,
-    onDismiss: () -> Unit
-) {
-    var selectedOrder by remember(state) { mutableStateOf(state.normalizedSelectedOrder()) }
-    val hapticTap = LocalSettingsHapticTap.current
-    MaterialSettingsSheetScaffold(
-        title = state.title,
-        onDismiss = onDismiss,
-        bottomPadding = 0.dp
-    ) { dismissSheet ->
-        MultiChoiceList(
-            items = state.items,
-            selectedOrder = selectedOrder,
-            uiMode = BibiUiMode.Material,
-            showSelectionOrder = state.showSelectionOrder,
-            onToggle = { index, checked ->
-                updateSelectedOrder(
-                    state = state,
-                    selectedOrder = selectedOrder,
-                    index = index,
-                    checked = checked
-                )?.let { nextOrder ->
-                    hapticTap()
-                    selectedOrder = nextOrder
-                }
-            }
-        )
-        SettingsSheetActionRow(
-            uiMode = BibiUiMode.Material,
-            cancelText = state.cancelText,
-            confirmText = state.confirmText,
-            confirmEnabled = state.isConfirmEnabled(selectedOrder),
-            onDismiss = { dismissSheet {} },
-            onConfirm = {
-                if (state.onConfirm(selectedOrder)) {
-                    dismissSheet {}
-                }
-            },
-            contentPadding = PaddingValues(vertical = SettingsLayoutMetrics.SheetBottomPadding)
-        )
-    }
+    MiuixMultiChoiceSheet(
+        state = visibleState,
+        onDismiss = onDismiss
+    )
 }
 
 @Composable
@@ -135,7 +68,6 @@ private fun MiuixMultiChoiceSheet(
             MultiChoiceList(
                 items = state.items,
                 selectedOrder = selectedOrder,
-                uiMode = BibiUiMode.Miuix,
                 showSelectionOrder = state.showSelectionOrder,
                 onToggle = { index, checked ->
                     updateSelectedOrder(
@@ -150,7 +82,6 @@ private fun MiuixMultiChoiceSheet(
                 }
             )
             SettingsSheetActionRow(
-                uiMode = BibiUiMode.Miuix,
                 cancelText = state.cancelText,
                 confirmText = state.confirmText,
                 confirmEnabled = state.isConfirmEnabled(selectedOrder),
@@ -169,12 +100,10 @@ private fun MiuixMultiChoiceSheet(
 private fun MultiChoiceList(
     items: List<String>,
     selectedOrder: List<Int>,
-    uiMode: BibiUiMode,
     showSelectionOrder: Boolean,
     onToggle: (Int, Boolean) -> Unit
 ) {
     SettingsSheetLazyColumn(
-        uiMode = uiMode,
         contentPadding = PaddingValues(bottom = 8.dp)
     ) {
         itemsIndexed(
@@ -188,40 +117,12 @@ private fun MultiChoiceList(
             } else {
                 item
             }
-            when (uiMode) {
-                BibiUiMode.Material -> Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = SettingsLayoutMetrics.MaterialSectionItemSpacing)
-                        .toggleable(
-                            value = checked,
-                            role = Role.Checkbox,
-                            onValueChange = { onToggle(index, it) }
-                        ),
-                    shape = settingsSegmentedItemShape(index, items.size),
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                ) {
-                    ListItem(
-                        modifier = Modifier.heightIn(min = SettingsLayoutMetrics.SettingsPreferenceMinHeight),
-                        headlineContent = { MaterialText(title) },
-                        trailingContent = {
-                            Checkbox(
-                                checked = checked,
-                                onCheckedChange = null
-                            )
-                        },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                    )
-                }
-
-                BibiUiMode.Miuix -> CheckboxPreference(
-                    title = title,
-                    checked = checked,
-                    onCheckedChange = { isChecked -> onToggle(index, isChecked) },
-                    checkboxLocation = CheckboxLocation.End
-                )
-            }
+            CheckboxPreference(
+                title = title,
+                checked = checked,
+                onCheckedChange = { isChecked -> onToggle(index, isChecked) },
+                checkboxLocation = CheckboxLocation.End
+            )
         }
     }
 }

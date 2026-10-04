@@ -18,12 +18,10 @@ import com.brycewg.asrkb.asr.LlmVendor
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.ai.AiPostSettingsViewModel
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsLazyColumn
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 
 @Composable
 internal fun AiSettingsRouteContent(
-    uiMode: BibiUiMode,
     innerPadding: PaddingValues,
     scrollModifier: Modifier,
     prefs: Prefs,
@@ -37,7 +35,6 @@ internal fun AiSettingsRouteContent(
     with(routeState) {
         with(routeActions) {
             SettingsLazyColumn(
-                uiMode = uiMode,
                 modifier = Modifier.fillMaxSize(),
                 miuixScrollModifier = scrollModifier,
                 contentPadding = SettingsLayoutMetrics.pageContentPadding(innerPadding),
@@ -45,7 +42,6 @@ internal fun AiSettingsRouteContent(
             ) {
                 item("post_process_scope") {
                     AiPostProcessSection(
-                        uiMode = uiMode,
                         postProcessEnabled = postProcessEnabled,
                         typewriterEnabled = typewriterEnabled,
                         skipUnderChars = skipUnderChars,
@@ -90,7 +86,6 @@ internal fun AiSettingsRouteContent(
 
                 item("ai_edit") {
                     AiEditSection(
-                        uiMode = uiMode,
                         aiEditPreferLastAsr = aiEditPreferLastAsr,
                         customSystemPromptEnabled = aiEditCustomSystemPromptEnabled,
                         aiEditSystemPrompt = aiEditSystemPrompt,
@@ -125,7 +120,6 @@ internal fun AiSettingsRouteContent(
 
                 item("post_process_model") {
                     AiPostProcessModelSection(
-                        uiMode = uiMode,
                         prefs = prefs,
                         selectedVendor = selectedVendor,
                         selectedVendorName = stringResource(selectedVendor.displayNameResId),
@@ -320,7 +314,6 @@ internal fun AiSettingsRouteContent(
 
                 item("prompt_presets") {
                     AiPromptPresetRouteSection(
-                        uiMode = uiMode,
                         preset = activePromptPreset,
                         focusTitleAfterAdd = focusPromptTitleAfterAdd,
                         onFocusedTitle = { onFocusPromptTitleAfterAddChange(false) },

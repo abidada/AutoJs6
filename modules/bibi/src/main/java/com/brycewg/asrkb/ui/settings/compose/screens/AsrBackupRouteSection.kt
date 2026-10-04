@@ -12,11 +12,9 @@ import com.brycewg.asrkb.R
 import com.brycewg.asrkb.asr.AsrVendor
 import com.brycewg.asrkb.asr.BackupAsrLocalResidency
 import com.brycewg.asrkb.store.Prefs
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 
 @Composable
 internal fun AsrBackupRouteSection(
-    uiMode: BibiUiMode,
     prefs: Prefs,
     enabled: Boolean,
     vendor: AsrVendor,
@@ -30,7 +28,6 @@ internal fun AsrBackupRouteSection(
     showLocalResidencyPicker: () -> Unit
 ) {
     AsrBackupSection(
-        uiMode = uiMode,
         enabled = enabled,
         vendorName = vendorName,
         sensitivity = sensitivity,

@@ -18,11 +18,9 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsMultiChoiceSheet
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMultiChoiceSheetState
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsProgressDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsProgressDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 
 @Composable
 internal fun AiSettingsDialogHost(
-    uiMode: BibiUiMode,
     choiceSheet: SettingsChoiceSheetState?,
     multiChoiceSheet: SettingsMultiChoiceSheetState?,
     messageDialog: SettingsMessageDialogState?,
@@ -38,32 +36,26 @@ internal fun AiSettingsDialogHost(
 ) {
     SettingsChoiceSheet(
         state = choiceSheet,
-        uiMode = uiMode,
         onDismiss = onDismissChoiceSheet
     )
     SettingsMultiChoiceSheet(
         state = multiChoiceSheet,
-        uiMode = uiMode,
         onDismiss = onDismissMultiChoiceSheet
     )
     SettingsMessageDialog(
         state = messageDialog,
-        uiMode = uiMode,
         onDismiss = onDismissMessageDialog
     )
     SettingsProgressDialog(
         state = progressDialog,
-        uiMode = uiMode,
         onDismiss = onDismissProgressDialog
     )
     SettingsFeatureExplainerDialog(
         state = featureExplainerDialog,
-        uiMode = uiMode,
         onDismiss = onDismissFeatureExplainerDialog
     )
     AiLlmTestResultDialog(
         state = llmTestResultDialog,
-        uiMode = uiMode,
         onDismiss = onDismissLlmTestResultDialog
     )
 }

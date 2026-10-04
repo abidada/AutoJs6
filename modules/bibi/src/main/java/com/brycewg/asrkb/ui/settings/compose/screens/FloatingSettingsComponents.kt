@@ -20,9 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.RestartAlt
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +38,6 @@ import com.brycewg.asrkb.ui.settings.compose.components.SettingsSectionContainer
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsSliderPreference
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsTextField
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsValuePreference
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.SettingsLayoutMetrics
 import com.brycewg.asrkb.ui.settings.compose.model.SettingsEntry
 import kotlin.math.roundToInt
@@ -50,12 +46,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun FloatingScaffold(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     content: @Composable (PaddingValues, Modifier) -> Unit
 ) {
     SettingsDetailScaffold(
-        uiMode = uiMode,
         titleRes = R.string.title_floating_settings,
         onBack = onBack,
         content = content
@@ -64,52 +58,32 @@ internal fun FloatingScaffold(
 
 @Composable
 internal fun FloatingSection(
-    uiMode: BibiUiMode,
     titleRes: Int,
     content: @Composable () -> Unit
 ) {
-    SettingsSectionContainer(uiMode = uiMode, titleRes = titleRes) {
+    SettingsSectionContainer(titleRes = titleRes) {
         content()
     }
 }
 
 @Composable
 internal fun FloatingPreviewCard(
-    uiMode: BibiUiMode,
     enabled: Boolean,
     alphaPercent: Float,
     sizeDp: Int
 ) {
     val alpha = if (enabled) (alphaPercent / 100f).coerceIn(0.2f, 1f) else 0.38f
-    when (uiMode) {
-        BibiUiMode.Material -> Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(SettingsLayoutMetrics.MaterialSectionShape),
-            color = MaterialTheme.colorScheme.surfaceColorAtElevation(SettingsLayoutMetrics.MaterialSectionElevation),
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ) {
-            FloatingPreviewContent(
-                uiMode = uiMode,
-                enabled = enabled,
-                alpha = alpha,
-                sizeDp = sizeDp
-            )
-        }
-
-        BibiUiMode.Miuix -> MiuixCard(modifier = Modifier.fillMaxWidth()) {
-            FloatingPreviewContent(
-                uiMode = uiMode,
-                enabled = enabled,
-                alpha = alpha,
-                sizeDp = sizeDp
-            )
-        }
+    MiuixCard(modifier = Modifier.fillMaxWidth()) {
+        FloatingPreviewContent(
+            enabled = enabled,
+            alpha = alpha,
+            sizeDp = sizeDp
+        )
     }
 }
 
 @Composable
 private fun FloatingPreviewContent(
-    uiMode: BibiUiMode,
     enabled: Boolean,
     alpha: Float,
     sizeDp: Int
@@ -120,17 +94,13 @@ private fun FloatingPreviewContent(
             .height(128.dp)
             .padding(20.dp)
             .background(
-                color = when (uiMode) {
-                    BibiUiMode.Material -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f)
-                    BibiUiMode.Miuix -> MiuixTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f)
-                },
+                color = MiuixTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
                 shape = RoundedCornerShape(22.dp)
             )
             .padding(horizontal = 20.dp),
         contentAlignment = Alignment.Center
     ) {
         FloatingPreviewBall(
-            uiMode = uiMode,
             enabled = enabled,
             alpha = alpha,
             sizeDp = sizeDp
@@ -140,22 +110,13 @@ private fun FloatingPreviewContent(
 
 @Composable
 private fun FloatingPreviewBall(
-    uiMode: BibiUiMode,
     enabled: Boolean,
     alpha: Float,
     sizeDp: Int,
     modifier: Modifier = Modifier
 ) {
     val ballSize = sizeDp.coerceIn(28, 96).dp
-    val tint = when (uiMode) {
-        BibiUiMode.Material -> {
-            if (enabled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline
-        }
-
-        BibiUiMode.Miuix -> {
-            if (enabled) MiuixTheme.colorScheme.secondary else MiuixTheme.colorScheme.outline
-        }
-    }
+    val tint = if (enabled) MiuixTheme.colorScheme.secondary else MiuixTheme.colorScheme.outline
     Image(
         painter = painterResource(R.drawable.microphone_floatingball),
         contentDescription = null,
@@ -196,7 +157,6 @@ internal fun FloatingSliderPreference(
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
     step: Int,
-    uiMode: BibiUiMode,
     showKeyPoints: Boolean = (((valueRange.endInclusive - valueRange.start) / step).toInt() - 1) in 1..10,
     index: Int = 0,
     count: Int = 1,
@@ -205,7 +165,6 @@ internal fun FloatingSliderPreference(
 ) {
     val steps = (((valueRange.endInclusive - valueRange.start) / step).toInt() - 1).coerceAtLeast(0)
     SettingsSliderPreference(
-        uiMode = uiMode,
         title = stringResource(titleRes),
         valueLabel = valueLabel,
         value = value,
@@ -223,7 +182,6 @@ internal fun FloatingSliderPreference(
 internal fun FloatingValuePreference(
     titleRes: Int,
     value: String,
-    uiMode: BibiUiMode,
     index: Int = 0,
     count: Int = 1,
     onClick: () -> Unit
@@ -231,7 +189,6 @@ internal fun FloatingValuePreference(
     SettingsValuePreference(
         titleRes = titleRes,
         value = value,
-        uiMode = uiMode,
         index = index,
         count = count,
         onClick = onClick
@@ -240,11 +197,9 @@ internal fun FloatingValuePreference(
 
 @Composable
 internal fun FloatingResetButton(
-    uiMode: BibiUiMode,
     onClick: () -> Unit
 ) {
     SettingsActionButton(
-        uiMode = uiMode,
         text = stringResource(R.string.label_reset_floating_position),
         onClick = onClick,
         modifier = Modifier
@@ -264,12 +219,10 @@ internal fun FloatingPackagesField(
     onValueChange: (String) -> Unit,
     label: String,
     helper: String,
-    uiMode: BibiUiMode,
     index: Int = 0,
     count: Int = 1
 ) {
     SettingsTextField(
-        uiMode = uiMode,
         value = value,
         onValueChange = onValueChange,
         label = label,

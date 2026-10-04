@@ -34,7 +34,6 @@ import com.brycewg.asrkb.ui.history.compose.history.HistoryFilterState
 import com.brycewg.asrkb.ui.history.compose.history.HistoryVendorOption
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialog
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsMessageDialogState
-import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,7 +44,6 @@ private const val HISTORY_PAGE_SIZE = 30
 
 @Composable
 internal fun SettingsHistoryRoute(
-    uiMode: BibiUiMode,
     onBack: () -> Unit,
     onOpenApiLog: () -> Unit
 ) {
@@ -98,12 +96,10 @@ internal fun SettingsHistoryRoute(
 
     SettingsMessageDialog(
         state = messageDialog,
-        uiMode = uiMode,
         onDismiss = { messageDialog = null }
     )
 
     AsrHistoryScreen(
-        uiMode = uiMode,
         records = records,
         query = query,
         filterState = filterState,
@@ -157,7 +153,6 @@ internal fun SettingsHistoryRoute(
 
 @Composable
 internal fun SettingsApiLogRoute(
-    uiMode: BibiUiMode,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -183,13 +178,11 @@ internal fun SettingsApiLogRoute(
 
     SettingsMessageDialog(
         state = messageDialog,
-        uiMode = uiMode,
         onDismiss = { messageDialog = null }
     )
 
     ApiLogScreen(
         records = records,
-        uiMode = uiMode,
         onBack = onBack,
         onClearConfirmed = {
             scope.launch {
