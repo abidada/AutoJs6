@@ -84,6 +84,14 @@ object SettingsSearchIndex {
                 keywords = listOf("dispatch", "分发", "规则")
             )
         )
+        add(
+            DeclarativeEntry(
+                R.string.title_floating_panel_settings,
+                R.string.settings_title,
+                BibiSettingsRoute.FloatingPanel,
+                keywords = listOf("panel", "悬浮球", "面板", "菜单")
+            )
+        )
         add(DeclarativeEntry(R.string.title_input_settings, R.string.settings_title, BibiSettingsRoute.Input))
         add(DeclarativeEntry(R.string.title_floating_settings, R.string.settings_title, BibiSettingsRoute.Floating))
         add(DeclarativeEntry(R.string.title_asr_settings, R.string.settings_title, BibiSettingsRoute.Asr))

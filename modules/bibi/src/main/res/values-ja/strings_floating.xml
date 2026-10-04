@@ -190,6 +190,16 @@
     <string name="title_voice_dispatch_rules">音声ディスパッチルール</string>
     <string name="voice_dispatch_feedback_executing">%1$s 実行します...</string>
     <string name="voice_dispatch_feedback_no_task">%1$s 一致するタスクがありません...</string>
+    <string name="voice_dispatch_export_desc">ルールをエクスポート</string>
+    <string name="voice_dispatch_import_desc">ルールをインポート</string>
+    <string name="voice_dispatch_export_empty">エクスポートできるルールがありません</string>
+    <string name="voice_dispatch_export_success">%1$d 件のルールをエクスポートしました → %2$s</string>
+    <string name="voice_dispatch_export_failed">エクスポートに失敗しました</string>
+    <string name="voice_dispatch_import_confirm_title">ルールをインポート</string>
+    <string name="voice_dispatch_import_confirm_message">新規 %1$d 件・更新 %2$d 件を取り込みます。既存のルールは保持されます。インポートしますか？</string>
+    <string name="voice_dispatch_import_success">インポート完了：新規 %1$d 件・更新 %2$d 件</string>
+    <string name="voice_dispatch_import_empty">ファイルにルールがありません</string>
+    <string name="voice_dispatch_import_failed">インポートに失敗しました：ファイル形式が正しくありません</string>
     <string name="label_voice_ready_collapse">音声ピル収縮までの時間</string>
     <string name="voice_time_seconds_value">%1$d 秒</string>
     <string name="section_wake_word">音声ウェイクワード</string>
@@ -219,4 +229,18 @@
     <string name="label_voice_dispatch_cooldown_seconds">クールダウン：%1$s 秒</string>
     <string name="label_voice_dispatch_cooldown_unlimited">クールダウン：無制限</string>
     <string name="hint_voice_dispatch_cooldown">同一ルールの連続発火を防ぐ最小間隔；0 = 無制限</string>
+
+    <!-- フローティングボール パネル設定 -->
+    <string name="title_floating_panel_settings">フローティングボール パネル設定</string>
+    <string name="desc_floating_panel_settings">フローティングボールを長押ししたときに開くパネルの項目と順序を設定します。「保存」をタップすると反映されます。未保存の変更はページを離れると破棄されます。</string>
+    <string name="label_floating_panel_enabled">有効な項目</string>
+    <string name="label_floating_panel_available">追加可能な項目</string>
+    <string name="summary_floating_panel_all_added">すべての項目が追加済みです</string>
+    <string name="desc_floating_panel_drag">長押しでドラッグして並べ替え</string>
+    <string name="desc_floating_panel_add">パネルに追加</string>
+
+    <string name="btn_floating_panel_save">保存</string>
+    <string name="btn_floating_panel_discard">破棄</string>
+    <string name="dialog_floating_panel_unsaved_title">未保存の変更</string>
+    <string name="dialog_floating_panel_unsaved_message">パネルメニューの変更を保存しますか？</string>
 </resources>

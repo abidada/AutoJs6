@@ -189,6 +189,16 @@
     <string name="title_voice_dispatch_rules">語音規則分發</string>
     <string name="voice_dispatch_feedback_executing">%1$s 正在執行...</string>
     <string name="voice_dispatch_feedback_no_task">%1$s 沒有找到任務...</string>
+    <string name="voice_dispatch_export_desc">匯出規則</string>
+    <string name="voice_dispatch_import_desc">匯入規則</string>
+    <string name="voice_dispatch_export_empty">沒有可匯出的規則</string>
+    <string name="voice_dispatch_export_success">已匯出 %1$d 條規則 → %2$s</string>
+    <string name="voice_dispatch_export_failed">匯出失敗</string>
+    <string name="voice_dispatch_import_confirm_title">匯入規則</string>
+    <string name="voice_dispatch_import_confirm_message">將新增 %1$d 條、更新 %2$d 條規則，現有規則保留。確定匯入？</string>
+    <string name="voice_dispatch_import_success">匯入完成：新增 %1$d 條、更新 %2$d 條</string>
+    <string name="voice_dispatch_import_empty">檔案中沒有規則</string>
+    <string name="voice_dispatch_import_failed">匯入失敗：檔案格式不正確</string>
     <string name="label_voice_ready_collapse">發起語音停留收縮</string>
     <string name="voice_time_seconds_value">%1$d 秒</string>
     <string name="section_wake_word">語音喚醒</string>
@@ -218,4 +228,18 @@
     <string name="label_voice_dispatch_cooldown_seconds">冷卻時間：%1$s 秒</string>
     <string name="label_voice_dispatch_cooldown_unlimited">冷卻時間：不限制</string>
     <string name="hint_voice_dispatch_cooldown">同一規則兩次觸發的最小間隔，防止誤觸連發；0 = 不限制</string>
+
+    <!-- 懸浮球面板設定 -->
+    <string name="title_floating_panel_settings">懸浮球面板設定</string>
+    <string name="desc_floating_panel_settings">設定長按懸浮球展開面板的選單項目及其順序，點擊「儲存」生效；離開頁面時未儲存的變更將被丟棄。</string>
+    <string name="label_floating_panel_enabled">已啟用項目</string>
+    <string name="label_floating_panel_available">可新增項目</string>
+    <string name="summary_floating_panel_all_added">已包含全部面板項目</string>
+    <string name="desc_floating_panel_drag">長按拖曳排序</string>
+    <string name="desc_floating_panel_add">新增至面板</string>
+
+    <string name="btn_floating_panel_save">儲存</string>
+    <string name="btn_floating_panel_discard">不儲存</string>
+    <string name="dialog_floating_panel_unsaved_title">未儲存的變更</string>
+    <string name="dialog_floating_panel_unsaved_message">是否儲存對面板選單的變更？</string>
 </resources>

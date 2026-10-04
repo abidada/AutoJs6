@@ -217,6 +217,16 @@
     <string name="voice_dispatch_triggered_info">%1$s · 触发%2$d次</string>
     <string name="voice_dispatch_expand">展开 ▾</string>
     <string name="voice_dispatch_collapse">收起 ▴</string>
+    <string name="voice_dispatch_export_desc">导出规则</string>
+    <string name="voice_dispatch_import_desc">导入规则</string>
+    <string name="voice_dispatch_export_empty">没有可导出的规则</string>
+    <string name="voice_dispatch_export_success">已导出 %1$d 条规则 → %2$s</string>
+    <string name="voice_dispatch_export_failed">导出失败</string>
+    <string name="voice_dispatch_import_confirm_title">导入规则</string>
+    <string name="voice_dispatch_import_confirm_message">将新增 %1$d 条、更新 %2$d 条规则，现有规则保留。确定导入？</string>
+    <string name="voice_dispatch_import_success">导入完成：新增 %1$d 条、更新 %2$d 条</string>
+    <string name="voice_dispatch_import_empty">文件中没有规则</string>
+    <string name="voice_dispatch_import_failed">导入失败：文件格式不正确</string>
     <string name="label_voice_dispatch_rule_name">规则名</string>
     <string name="label_voice_dispatch_priority">优先级：%1$d（0-100，越大越优先）</string>
     <string name="label_voice_dispatch_match_type">触发方式</string>
@@ -309,4 +319,18 @@
     <string name="label_voice_dispatch_cooldown_seconds">冷却时间：%1$s 秒</string>
     <string name="label_voice_dispatch_cooldown_unlimited">冷却时间：不限制</string>
     <string name="hint_voice_dispatch_cooldown">同一规则两次触发的最小间隔，防止误触连发；0 = 不限制</string>
+
+    <!-- 悬浮球面板设置 -->
+    <string name="title_floating_panel_settings">悬浮球面板设置</string>
+    <string name="desc_floating_panel_settings">配置长按悬浮球展开面板的菜单项及其顺序，点击“保存”生效；离开页面时未保存的修改将被丢弃。</string>
+    <string name="label_floating_panel_enabled">已启用项</string>
+    <string name="label_floating_panel_available">可添加项</string>
+    <string name="summary_floating_panel_all_added">已包含全部面板项</string>
+    <string name="desc_floating_panel_drag">长按拖动排序</string>
+    <string name="desc_floating_panel_add">添加到面板</string>
+
+    <string name="btn_floating_panel_save">保存</string>
+    <string name="btn_floating_panel_discard">不保存</string>
+    <string name="dialog_floating_panel_unsaved_title">未保存的修改</string>
+    <string name="dialog_floating_panel_unsaved_message">是否保存对面板菜单的修改？</string>
 </resources>

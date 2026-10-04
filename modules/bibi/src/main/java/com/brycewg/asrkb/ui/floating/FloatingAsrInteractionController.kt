@@ -29,6 +29,7 @@ import com.brycewg.asrkb.ui.floatingball.FloatingBallStateMachine
 import com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler
 import com.brycewg.asrkb.ui.floatingball.FloatingBallViewManager
 import com.brycewg.asrkb.ui.floatingball.FloatingMenuHelper
+import com.brycewg.asrkb.ui.floatingball.FloatingPanelItemId
 import com.brycewg.asrkb.ui.floatingball.ResultDisplayMode
 import com.brycewg.asrkb.ui.floatingball.resolveFloatingBallHoldPressAction
 import com.brycewg.asrkb.ui.floatingball.resolveFloatingBallRecordingTapAction
@@ -1741,41 +1742,30 @@ internal class FloatingAsrInteractionController(
         1.0f
     }
 
-    private fun buildRadialMenuItems(): List<FloatingMenuHelper.MenuItem> = buildList {
-        add(
-            FloatingMenuHelper.MenuItem(
+    // 面板菜单项 = 数据源（悬浮球面板设置页维护的有序 id 列表）逐项构建；每次长按现读现建，改完即生效
+    private fun buildRadialMenuItems(): List<FloatingMenuHelper.MenuItem> =
+        FloatingPanelItemId.loadOrder(prefs).mapNotNull { buildMenuItem(it) }
+
+    /** 按 id 构建单个菜单项；条件项不满足（剪贴板同步关闭）时返回 null。 */
+    private fun buildMenuItem(id: FloatingPanelItemId): FloatingMenuHelper.MenuItem? {
+        if (id == FloatingPanelItemId.ClipboardUpload || id == FloatingPanelItemId.ClipboardPull) {
+            val syncEnabled = try {
+                prefs.syncClipboardEnabled
+            } catch (_: Throwable) {
+                false
+            }
+            if (!syncEnabled) return null
+        }
+        val label = context.getString(id.labelRes)
+        val iconRes = when (id) {
+            FloatingPanelItemId.DispatchContinue ->
                 if (readDispatchContinueMode() == Prefs.DispatchContinueMode.NONE) {
                     R.drawable.circles_four
                 } else {
                     R.drawable.circles_four_fill
-                },
-                context.getString(R.string.label_dispatch_continue),
-                context.getString(R.string.label_dispatch_continue)
-            ) { showDispatchContinuePanelFromMenu() }
-        )
-        add(
-            FloatingMenuHelper.MenuItem(
-                R.drawable.article,
-                context.getString(R.string.label_radial_switch_prompt),
-                context.getString(R.string.label_radial_switch_prompt)
-            ) { onPickPromptPresetFromMenu() }
-        )
-        add(
-            FloatingMenuHelper.MenuItem(
-                R.drawable.waveform,
-                context.getString(R.string.label_radial_switch_asr),
-                context.getString(R.string.label_radial_switch_asr)
-            ) { onPickAsrVendor() }
-        )
-        add(
-            FloatingMenuHelper.MenuItem(
-                R.drawable.arrows_out_cardinal,
-                context.getString(R.string.label_radial_move),
-                context.getString(R.string.label_radial_move)
-            ) { enableMoveModeFromMenu() }
-        )
-        add(
-            FloatingMenuHelper.MenuItem(
+                }
+
+            FloatingPanelItemId.SilenceAutoStop ->
                 if (try {
                         prefs.autoStopOnSilenceEnabled
                     } catch (_: Throwable) {
@@ -1785,13 +1775,9 @@ internal class FloatingAsrInteractionController(
                     R.drawable.hand_palm_fill
                 } else {
                     R.drawable.hand_palm
-                },
-                context.getString(R.string.label_radial_toggle_silence_autostop),
-                context.getString(R.string.label_radial_toggle_silence_autostop)
-            ) { toggleAutoStopSilenceFromMenu() }
-        )
-        add(
-            FloatingMenuHelper.MenuItem(
+                }
+
+            FloatingPanelItemId.PostProc ->
                 if (try {
                         prefs.postProcessEnabled
                     } catch (_: Throwable) {
@@ -1801,48 +1787,24 @@ internal class FloatingAsrInteractionController(
                     R.drawable.magic_wand_fill
                 } else {
                     R.drawable.magic_wand
-                },
-                context.getString(R.string.label_radial_postproc),
-                context.getString(R.string.label_radial_postproc)
-            ) { togglePostprocFromMenu() }
-        )
-        add(
-            FloatingMenuHelper.MenuItem(
-                R.drawable.textbox,
-                context.getString(R.string.label_radial_open_history),
-                context.getString(R.string.label_radial_open_history)
-            ) { showHistoryPanelFromMenu() }
-        )
+                }
 
-        if (try {
-                prefs.syncClipboardEnabled
-            } catch (_: Throwable) {
-                false
-            }
-        ) {
-            add(
-                FloatingMenuHelper.MenuItem(
-                    R.drawable.cloud_arrow_up,
-                    context.getString(R.string.label_radial_clipboard_upload),
-                    context.getString(R.string.label_radial_clipboard_upload)
-                ) { uploadClipboardOnceFromMenu() }
-            )
-            add(
-                FloatingMenuHelper.MenuItem(
-                    R.drawable.cloud_arrow_down,
-                    context.getString(R.string.label_radial_clipboard_pull),
-                    context.getString(R.string.label_radial_clipboard_pull)
-                ) { pullClipboardOnceFromMenu() }
-            )
+            else -> id.iconRes
         }
-
-        add(
-            FloatingMenuHelper.MenuItem(
-                R.drawable.gear,
-                context.getString(R.string.label_radial_open_settings),
-                context.getString(R.string.label_radial_open_settings)
-            ) { openSettingsFromMenu() }
-        )
+        return FloatingMenuHelper.MenuItem(iconRes, label, label) {
+            when (id) {
+                FloatingPanelItemId.DispatchContinue -> showDispatchContinuePanelFromMenu()
+                FloatingPanelItemId.SwitchPrompt -> onPickPromptPresetFromMenu()
+                FloatingPanelItemId.SwitchAsr -> onPickAsrVendor()
+                FloatingPanelItemId.MoveBall -> enableMoveModeFromMenu()
+                FloatingPanelItemId.SilenceAutoStop -> toggleAutoStopSilenceFromMenu()
+                FloatingPanelItemId.PostProc -> togglePostprocFromMenu()
+                FloatingPanelItemId.History -> showHistoryPanelFromMenu()
+                FloatingPanelItemId.ClipboardUpload -> uploadClipboardOnceFromMenu()
+                FloatingPanelItemId.ClipboardPull -> pullClipboardOnceFromMenu()
+                FloatingPanelItemId.Settings -> openSettingsFromMenu()
+            }
+        }
     }
 
     // ==================== 辅助方法 ====================

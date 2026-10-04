@@ -189,6 +189,16 @@
     <string name="title_voice_dispatch_rules">قواعد توزيع الصوت</string>
     <string name="voice_dispatch_feedback_executing">%1$s جارٍ التنفيذ...</string>
     <string name="voice_dispatch_feedback_no_task">%1$s لا توجد مهمة مطابقة...</string>
+    <string name="voice_dispatch_export_desc">تصدير القواعد</string>
+    <string name="voice_dispatch_import_desc">استيراد القواعد</string>
+    <string name="voice_dispatch_export_empty">لا توجد قواعد للتصدير</string>
+    <string name="voice_dispatch_export_success">تم تصدير %1$d من القواعد إلى %2$s</string>
+    <string name="voice_dispatch_export_failed">فشل التصدير</string>
+    <string name="voice_dispatch_import_confirm_title">استيراد القواعد</string>
+    <string name="voice_dispatch_import_confirm_message">سيتم إضافة %1$d وتحديث %2$d من القواعد، مع الاحتفاظ بالقواعد الحالية. هل تريد الاستيراد؟</string>
+    <string name="voice_dispatch_import_success">اكتمل الاستيراد: %1$d إضافة و%2$d تحديث</string>
+    <string name="voice_dispatch_import_empty">لا توجد قواعد في الملف</string>
+    <string name="voice_dispatch_import_failed">فشل الاستيراد: تنسيق الملف غير صالح</string>
     <string name="label_voice_ready_collapse">زمن انكماش كبسولة الصوت</string>
     <string name="voice_time_seconds_value">%1$d ث</string>
     <string name="section_wake_word">الاستيقاظ الصوتي</string>
@@ -218,4 +228,18 @@
     <string name="label_voice_dispatch_cooldown_seconds">وقت التبريد: %1$s ث</string>
     <string name="label_voice_dispatch_cooldown_unlimited">وقت التبريد: بلا حد</string>
     <string name="hint_voice_dispatch_cooldown">الحد الأدنى للفاصل بين تفعيلين متتاليين لنفس القاعدة؛ 0 = بلا حد</string>
+
+    <!-- إعدادات لوحة الزر العائم -->
+    <string name="title_floating_panel_settings">إعدادات لوحة الزر العائم</string>
+    <string name="desc_floating_panel_settings">تكوين عناصر لوحة الزر العائم التي تظهر بالضغط المطوّل وترتيبها. اضغط "حفظ" للتطبيق؛ سيتم تجاهل التغييرات غير المحفوظة عند مغادرة الصفحة.</string>
+    <string name="label_floating_panel_enabled">العناصر الممكّنة</string>
+    <string name="label_floating_panel_available">عناصر متاحة</string>
+    <string name="summary_floating_panel_all_added">تمت إضافة جميع عناصر اللوحة</string>
+    <string name="desc_floating_panel_drag">اضغط مطولاً واسحب لإعادة الترتيب</string>
+    <string name="desc_floating_panel_add">إضافة إلى اللوحة</string>
+
+    <string name="btn_floating_panel_save">حفظ</string>
+    <string name="btn_floating_panel_discard">تجاهل</string>
+    <string name="dialog_floating_panel_unsaved_title">تغييرات غير محفوظة</string>
+    <string name="dialog_floating_panel_unsaved_message">هل تريد حفظ التغييرات على قائمة اللوحة؟</string>
 </resources>

@@ -8,9 +8,15 @@
  */
 package com.brycewg.asrkb.ui.settings.compose.screens
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,8 +26,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.host.VoiceCommandDispatcher
 import com.brycewg.asrkb.host.voice.VoiceDispatchRule
+import com.brycewg.asrkb.host.voice.VoiceDispatchRuleTransfer
 import com.brycewg.asrkb.store.Prefs
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsActionButton
 import com.brycewg.asrkb.ui.settings.compose.components.SettingsDetailScaffold
@@ -68,6 +78,8 @@ import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Switch as MiuixSwitch
 
 @Composable
@@ -130,6 +142,16 @@ internal fun VoiceDispatchScreen(
     var duplicatePolicy by remember { mutableStateOf(prefs.voiceDispatchDuplicatePolicy) }
     // 待删除规则：点删除先弹确认框，确认后才真正落盘
     var pendingDeleteRule by remember { mutableStateOf<VoiceDispatchRule?>(null) }
+    // 导入/导出传输中门禁：防连点导致并发读写规则文件
+    var transferBusy by remember { mutableStateOf(false) }
+    // 待导入预览（内存预合并结果）：确认弹框通过后才落盘
+    var pendingImport by remember { mutableStateOf<VoiceDispatchRuleTransfer.MergeResult?>(null) }
+
+    val hapticTap = LocalSettingsHapticTap.current
+
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 
     // 测试按钮直连执行面：结果回显到测试文本区（不写规则统计）
     androidx.compose.runtime.DisposableEffect(Unit) {
@@ -161,13 +183,115 @@ internal fun VoiceDispatchScreen(
         }
     }
 
+    // 导出：SAF CreateDocument → 信封 JSON 原样写出（规则空表在点击处拦截，不拉起选择器）
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri: Uri? ->
+        if (uri != null) {
+            scope.launch {
+                transferBusy = true
+                val (count, ok) = withContext(Dispatchers.IO) {
+                    val current = dispatcher.getStore().load()
+                    if (current.isEmpty()) {
+                        return@withContext 0 to false
+                    }
+                    val written = runCatching {
+                        val json = VoiceDispatchRuleTransfer.exportRulesJson(current)
+                        context.contentResolver.openOutputStream(uri)?.use { os ->
+                            os.write(json.toByteArray(Charsets.UTF_8))
+                            os.flush()
+                        } ?: error("Output stream is null")
+                    }.isSuccess
+                    current.size to written
+                }
+                transferBusy = false
+                showToast(
+                    when {
+                        count == 0 -> context.getString(R.string.voice_dispatch_export_empty)
+                        ok -> context.getString(
+                            R.string.voice_dispatch_export_success,
+                            count,
+                            uri.lastPathSegment ?: "voice_dispatch_rules.json"
+                        )
+
+                        else -> context.getString(R.string.voice_dispatch_export_failed)
+                    }
+                )
+            }
+        }
+    }
+
+    // 导入：SAF OpenDocument → 内存解析+预合并 → 确认弹框 → 落盘（见 pendingImport 弹框）
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            scope.launch {
+                transferBusy = true
+                val imported = withContext(Dispatchers.IO) {
+                    runCatching {
+                        val text = context.contentResolver.openInputStream(uri)
+                            ?.bufferedReader(Charsets.UTF_8)
+                            ?.use { it.readText() }
+                            .orEmpty()
+                        VoiceDispatchRuleTransfer.parseRulesJson(text)
+                    }.getOrNull()
+                }
+                when {
+                    imported == null ->
+                        showToast(context.getString(R.string.voice_dispatch_import_failed))
+
+                    imported.isEmpty() ->
+                        showToast(context.getString(R.string.voice_dispatch_import_empty))
+
+                    else -> {
+                        val current = withContext(Dispatchers.IO) { dispatcher.getStore().load() }
+                        pendingImport = VoiceDispatchRuleTransfer.mergeRules(current, imported)
+                    }
+                }
+                transferBusy = false
+            }
+        }
+    }
+
     SettingsDetailScaffold(
         uiMode = uiMode,
         titleRes = R.string.title_voice_dispatch,
         onBack = onBack,
-        actions = {
-            TextButton(onClick = { onEditRule(null) }) {
+        // 顶栏两侧簇较宽（新建文字按钮 + 双图标），压缩标题边距防 Miuix 居中标题截断
+        titlePadding = 16.dp,
+        leadingActions = {
+            TextButton(
+                onClick = { onEditRule(null) },
+                contentPadding = PaddingValues(horizontal = 4.dp)
+            ) {
                 Text(stringResource(R.string.btn_voice_dispatch_new_rule))
+            }
+        },
+        actions = {
+            TransferTopAction(
+                uiMode = uiMode,
+                icon = Icons.Rounded.Download,
+                contentDescriptionRes = R.string.voice_dispatch_import_desc
+            ) {
+                hapticTap()
+                if (!transferBusy) {
+                    importLauncher.launch(arrayOf("application/json", "text/plain"))
+                }
+            }
+            TransferTopAction(
+                uiMode = uiMode,
+                icon = Icons.Rounded.Upload,
+                contentDescriptionRes = R.string.voice_dispatch_export_desc
+            ) {
+                hapticTap()
+                if (!transferBusy) {
+                    if (rules.isEmpty()) {
+                        showToast(context.getString(R.string.voice_dispatch_export_empty))
+                    } else {
+                        exportLauncher.launch(buildRulesExportFileName())
+                    }
+                }
             }
         }
     ) { innerPadding, scrollModifier ->
@@ -342,6 +466,42 @@ internal fun VoiceDispatchScreen(
         uiMode = uiMode,
         onDismiss = { pendingDeleteRule = null }
     )
+    // 导入确认框：展示预合并的新增/更新计数，确认后落盘（智能合并，现有规则保留）
+    val importPreview = pendingImport
+    SettingsMessageDialog(
+        state = if (importPreview == null) {
+            null
+        } else {
+            SettingsMessageDialogState(
+                title = stringResource(R.string.voice_dispatch_import_confirm_title),
+                message = stringResource(
+                    R.string.voice_dispatch_import_confirm_message,
+                    importPreview.addedCount,
+                    importPreview.updatedCount
+                ),
+                confirmText = stringResource(android.R.string.ok),
+                dismissText = stringResource(android.R.string.cancel),
+                onConfirm = {
+                    scope.launch {
+                        withContext(Dispatchers.IO) {
+                            dispatcher.getStore().save(importPreview.merged)
+                            dispatcher.invalidateCache()
+                        }
+                        reloadRules()
+                        showToast(
+                            context.getString(
+                                R.string.voice_dispatch_import_success,
+                                importPreview.addedCount,
+                                importPreview.updatedCount
+                            )
+                        )
+                    }
+                }
+            )
+        },
+        uiMode = uiMode,
+        onDismiss = { pendingImport = null }
+    )
 }
 
 /** 分发类型展示名：执行脚本类型附加执行方式标识（LOOP/TIMED）。 */
@@ -357,6 +517,41 @@ private fun dispatchTypeLabel(rule: com.brycewg.asrkb.host.voice.VoiceDispatchRu
 
         else -> rule.dispatchType.name
     }
+
+/** 顶栏导入/导出图标按钮（Material/Miuix 双模式；36dp 紧凑规格，给居中标题让宽；busy 门禁由调用方 onClick 内处理）。 */
+@Composable
+private fun TransferTopAction(
+    uiMode: BibiUiMode,
+    icon: ImageVector,
+    @StringRes contentDescriptionRes: Int,
+    onClick: () -> Unit
+) {
+    when (uiMode) {
+        BibiUiMode.Material -> IconButton(onClick = onClick, modifier = Modifier.size(36.dp)) {
+            Icon(
+                imageVector = icon,
+                contentDescription = stringResource(contentDescriptionRes),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        BibiUiMode.Miuix -> MiuixIconButton(
+            onClick = onClick,
+            minWidth = 36.dp,
+            minHeight = 36.dp
+        ) {
+            MiuixIcon(
+                imageVector = icon,
+                contentDescription = stringResource(contentDescriptionRes),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+private fun buildRulesExportFileName(): String = "voice_dispatch_rules_" +
+    SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date()) +
+    ".json"
 
 /**
  * 规则卡片：两排式布局。

@@ -59,7 +59,7 @@ internal fun AsrSettingsRouteContent(
                     recordingMaxDurationMs = uiState.recordingMaxDurationMs,
                     onAutoStopModeChange = applyRecordingAutoStopMode,
                     onWindowChange = { value ->
-                        viewModel.updateSilenceWindow(value.coerceIn(Prefs.SILENCE_WINDOW_MIN_MS, Prefs.TIME_RANGE_MAX_MS))
+                        viewModel.updateSilenceWindow(value.coerceIn(Prefs.SILENCE_WINDOW_MIN_MS, Prefs.SILENCE_WINDOW_MAX_MS))
                     },
                     onWindowFinished = {},
                     onSensitivityChange = { value ->

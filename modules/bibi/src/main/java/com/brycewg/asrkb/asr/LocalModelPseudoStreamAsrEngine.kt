@@ -143,7 +143,7 @@ abstract class LocalModelPseudoStreamAsrEngine(
                 } catch (t: Throwable) {
                     Log.w(TAG, "Failed to read silence window for pseudo stream", t)
                     1200
-                }.coerceIn(Prefs.SILENCE_WINDOW_MIN_MS, Prefs.TIME_RANGE_MAX_MS)
+                }.coerceIn(Prefs.SILENCE_WINDOW_MIN_MS, Prefs.SILENCE_WINDOW_MAX_MS)
                 val segmentWindowMs = PREVIEW_SEGMENT_MS
 
                 stopVadDetector = if (autoStopEnabled) {

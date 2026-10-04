@@ -50,6 +50,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
  * @param initialValueText 预填文本（单位与输入单位一致）
  * @param unitLabel 输入框单位 label
  * @param supportingText 取值范围说明
+ * @param min 快捷 +/- 按钮的下限（与输入单位一致）
+ * @param max 快捷 +/- 按钮的上限（与输入单位一致）
  * @param onConfirm 校验并提交，返回错误文案或 null
  */
 internal class SliderEditDialogSpec(
@@ -57,6 +59,8 @@ internal class SliderEditDialogSpec(
     val initialValueText: String,
     val unitLabel: String,
     val supportingText: String?,
+    val min: Int,
+    val max: Int,
     val onConfirm: (String) -> String?
 )
 
@@ -203,6 +207,8 @@ internal fun SettingsSliderPreference(
             initialValueText = spec.initialValueText,
             unitLabel = spec.unitLabel,
             supportingText = spec.supportingText,
+            min = spec.min,
+            max = spec.max,
             onConfirm = spec.onConfirm,
             onDismiss = { showEditDialog = false }
         )
@@ -279,18 +285,21 @@ internal fun SettingsControlLabel(
             ),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        // 标题占剩余宽度并自行换行，数值先按内容占位，保证右侧数值始终完整单行
         when (uiMode) {
             BibiUiMode.Material -> {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f, fill = false)
                 )
                 Spacer(Modifier.size(SettingsLayoutMetrics.ControlLabelSpacing))
                 Text(
                     text = value,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
                     modifier = valueModifier
                 )
             }
@@ -300,13 +309,15 @@ internal fun SettingsControlLabel(
                     text = title,
                     color = MiuixTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Medium,
-                    style = MiuixTheme.textStyles.headline1
+                    style = MiuixTheme.textStyles.headline1,
+                    modifier = Modifier.weight(1f, fill = false)
                 )
                 Spacer(Modifier.size(SettingsLayoutMetrics.ControlLabelSpacing))
                 MiuixText(
                     text = value,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     style = MiuixTheme.textStyles.body2,
+                    maxLines = 1,
                     modifier = valueModifier
                 )
             }

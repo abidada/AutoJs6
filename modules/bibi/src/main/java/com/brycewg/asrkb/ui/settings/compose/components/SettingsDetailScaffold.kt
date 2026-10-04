@@ -9,6 +9,7 @@ package com.brycewg.asrkb.ui.settings.compose.components
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
@@ -28,9 +29,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import com.brycewg.asrkb.R
 import com.brycewg.asrkb.ui.settings.compose.core.BibiUiMode
 import com.brycewg.asrkb.ui.settings.compose.core.LocalSettingsHapticTap
@@ -40,6 +43,7 @@ import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import top.yukonga.miuix.kmp.basic.TopAppBarDefaults as MiuixTopAppBarDefaults
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +51,10 @@ internal fun SettingsDetailScaffold(
     uiMode: BibiUiMode,
     @StringRes titleRes: Int,
     onBack: () -> Unit,
+    /** Miuix 模式标题水平内边距覆盖（默认用库常量 26dp；顶栏两侧内容密集的页面可传小值防标题截断）。Material 模式忽略。 */
+    titlePadding: Dp? = null,
+    /** 返回键右侧的前导操作区（如「新建」按钮）；标题居中行为不受影响 */
+    leadingActions: @Composable () -> Unit = {},
     actions: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     content: @Composable (PaddingValues, Modifier) -> Unit
@@ -71,11 +79,14 @@ internal fun SettingsDetailScaffold(
                     TopAppBar(
                         title = { Text(stringResource(titleRes)) },
                         navigationIcon = {
-                            IconButton(onClick = backWithHaptic) {
-                                Icon(
-                                    Icons.AutoMirrored.Rounded.ArrowBack,
-                                    contentDescription = backLabel
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = backWithHaptic) {
+                                    Icon(
+                                        Icons.AutoMirrored.Rounded.ArrowBack,
+                                        contentDescription = backLabel
+                                    )
+                                }
+                                leadingActions()
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -101,12 +112,16 @@ internal fun SettingsDetailScaffold(
                     SmallTopAppBar(
                         title = stringResource(titleRes),
                         scrollBehavior = scrollBehavior,
+                        titlePadding = titlePadding ?: MiuixTopAppBarDefaults.TitlePadding,
                         navigationIcon = {
-                            MiuixIconButton(onClick = backWithHaptic) {
-                                MiuixIcon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                    contentDescription = backLabel
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                MiuixIconButton(onClick = backWithHaptic) {
+                                    MiuixIcon(
+                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                        contentDescription = backLabel
+                                    )
+                                }
+                                leadingActions()
                             }
                         },
                         actions = { actions() }

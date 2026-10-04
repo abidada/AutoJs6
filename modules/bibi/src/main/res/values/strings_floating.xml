@@ -217,6 +217,16 @@
     <string name="voice_dispatch_triggered_info">%1$s · %2$d triggers</string>
     <string name="voice_dispatch_expand">Expand ▾</string>
     <string name="voice_dispatch_collapse">Collapse ▴</string>
+    <string name="voice_dispatch_export_desc">Export rules</string>
+    <string name="voice_dispatch_import_desc">Import rules</string>
+    <string name="voice_dispatch_export_empty">No rules to export</string>
+    <string name="voice_dispatch_export_success">Exported %1$d rules to %2$s</string>
+    <string name="voice_dispatch_export_failed">Export failed</string>
+    <string name="voice_dispatch_import_confirm_title">Import rules</string>
+    <string name="voice_dispatch_import_confirm_message">Add %1$d new and update %2$d rules; existing rules are kept. Import now?</string>
+    <string name="voice_dispatch_import_success">Import done: %1$d added, %2$d updated</string>
+    <string name="voice_dispatch_import_empty">No rules in the file</string>
+    <string name="voice_dispatch_import_failed">Import failed: invalid file format</string>
     <string name="label_voice_dispatch_rule_name">Rule name</string>
     <string name="label_voice_dispatch_priority">Priority: %1$d (0-100, higher first)</string>
     <string name="label_voice_dispatch_match_type">Match type</string>
@@ -309,4 +319,18 @@
     <string name="label_voice_dispatch_cooldown_seconds">Cooldown: %1$s s</string>
     <string name="label_voice_dispatch_cooldown_unlimited">Cooldown: unlimited</string>
     <string name="hint_voice_dispatch_cooldown">Minimum interval between two triggers of the same rule to prevent rapid re-firing; 0 = unlimited</string>
+
+    <!-- Floating ball panel settings -->
+    <string name="title_floating_panel_settings">Floating ball panel</string>
+    <string name="desc_floating_panel_settings">Configure the items shown in the floating ball long-press panel and their order. Tap Save to apply; unsaved changes are lost when leaving this page.</string>
+    <string name="label_floating_panel_enabled">Enabled items</string>
+    <string name="label_floating_panel_available">Available items</string>
+    <string name="summary_floating_panel_all_added">All panel items are enabled</string>
+    <string name="desc_floating_panel_drag">Hold and drag to reorder</string>
+    <string name="desc_floating_panel_add">Add to panel</string>
+
+    <string name="btn_floating_panel_save">Save</string>
+    <string name="btn_floating_panel_discard">Discard</string>
+    <string name="dialog_floating_panel_unsaved_title">Unsaved changes</string>
+    <string name="dialog_floating_panel_unsaved_message">Save changes to the floating ball panel menu?</string>
 </resources>

@@ -69,7 +69,7 @@ internal fun AsrSilenceSection(
             val secUnit = stringResource(R.string.time_unit_second)
             // 判停阈值以“秒”为对外单位，内部仍按毫秒存储与钳位
             val minSec = Prefs.SILENCE_WINDOW_MIN_MS / 1000
-            val maxSec = Prefs.TIME_RANGE_MAX_MS / 1000
+            val maxSec = Prefs.SILENCE_WINDOW_MAX_MS / 1000
             val windowRangeHint = stringResource(
                 R.string.settings_input_range_hint,
                 minSec,
@@ -85,10 +85,10 @@ internal fun AsrSilenceSection(
             )
             AsrSliderPreference(
                 titleRes = R.string.label_silence_window_ms,
-                valueLabel = { (it.roundToNearestHundred() / 1000).toString() },
+                valueLabel = { (it.roundToNearestSecond() / 1000).toString() },
                 value = silenceWindowMs.toFloat(),
-                valueRange = Prefs.SILENCE_WINDOW_MIN_MS.toFloat()..Prefs.TIME_RANGE_MAX_MS.toFloat(),
-                steps = 46,
+                valueRange = Prefs.SILENCE_WINDOW_MIN_MS.toFloat()..Prefs.SILENCE_WINDOW_MAX_MS.toFloat(),
+                steps = (maxSec - minSec - 1).coerceAtLeast(0),
                 uiMode = uiMode,
                 highlightId = "silence_window_ms",
                 index = 1,
@@ -98,6 +98,8 @@ internal fun AsrSilenceSection(
                     initialValueText = (silenceWindowMs / 1000).toString(),
                     unitLabel = secUnit,
                     supportingText = windowRangeHint,
+                    min = minSec,
+                    max = maxSec,
                     // 以秒为单位录入，提交时换算为毫秒
                     onConfirm = { text ->
                         val sec = text.toIntOrNull()
@@ -111,7 +113,7 @@ internal fun AsrSilenceSection(
                         }
                     }
                 ),
-                onValueChange = { value -> onWindowChange(value.roundToNearestHundred()) },
+                onValueChange = { value -> onWindowChange(value.roundToNearestSecond()) },
                 onValueChangeFinished = { onWindowFinished() }
             )
             AsrSliderPreference(
@@ -155,6 +157,8 @@ internal fun AsrSilenceSection(
                     initialValueText = (recordingMaxDurationMs / 1000).toString(),
                     unitLabel = secUnit,
                     supportingText = durationRangeHint,
+                    min = minSec,
+                    max = maxSec,
                     onConfirm = { text ->
                         val sec = text.toLongOrNull()
                         when {
@@ -174,8 +178,8 @@ internal fun AsrSilenceSection(
     }
 }
 
-private fun Float.roundToNearestHundred(): Int =
-    ((this / 100f).roundToInt() * 100).coerceIn(Prefs.SILENCE_WINDOW_MIN_MS, Prefs.TIME_RANGE_MAX_MS)
+private fun Float.roundToNearestSecond(): Int =
+    ((this / 1000f).roundToInt() * 1000).coerceIn(Prefs.SILENCE_WINDOW_MIN_MS, Prefs.SILENCE_WINDOW_MAX_MS)
 
 /**
  * 将毫秒时长格式化为可读的“X小时Y分Z秒”。

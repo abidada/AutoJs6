@@ -227,6 +227,11 @@ private fun SettingsRouteContent(
             onBack = { onPopRoute() }
         )
 
+        BibiSettingsRoute.FloatingPanel -> FloatingPanelSettingsScreen(
+            uiMode = uiState.uiMode,
+            onBack = { onPopRoute() }
+        )
+
         BibiSettingsRoute.Search -> SettingsSearchScreen(
             uiMode = uiState.uiMode,
             onBack = { onPopRoute() },

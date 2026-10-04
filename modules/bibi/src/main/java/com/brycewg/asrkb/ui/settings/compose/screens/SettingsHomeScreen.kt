@@ -33,6 +33,7 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Keyboard
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.MoreHoriz
+import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.TouchApp
@@ -286,6 +287,12 @@ private fun inputSections(
                 titleRes = R.string.section_ui_settings,
                 icon = Icons.Rounded.Dashboard,
                 onClick = { onPushRoute(BibiSettingsRoute.UiSettings) }
+            ),
+            SettingsEntry.Action(
+                id = "floating_panel_settings",
+                titleRes = R.string.title_floating_panel_settings,
+                icon = Icons.Rounded.Menu,
+                onClick = { onPushRoute(BibiSettingsRoute.FloatingPanel) }
             ),
             SettingsEntry.Action(
                 id = "floating_settings",

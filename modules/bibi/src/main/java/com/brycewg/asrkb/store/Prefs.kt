@@ -434,8 +434,8 @@ class Prefs(context: Context) {
         get() = sp.getInt(
             KEY_AUTO_STOP_SILENCE_WINDOW_MS,
             DEFAULT_SILENCE_WINDOW_MS
-        ).coerceIn(SILENCE_WINDOW_MIN_MS, TIME_RANGE_MAX_MS)
-        set(value) = sp.edit { putInt(KEY_AUTO_STOP_SILENCE_WINDOW_MS, value.coerceIn(SILENCE_WINDOW_MIN_MS, TIME_RANGE_MAX_MS)) }
+        ).coerceIn(SILENCE_WINDOW_MIN_MS, SILENCE_WINDOW_MAX_MS)
+        set(value) = sp.edit { putInt(KEY_AUTO_STOP_SILENCE_WINDOW_MS, value.coerceIn(SILENCE_WINDOW_MIN_MS, SILENCE_WINDOW_MAX_MS)) }
 
     // 静音自动判停：灵敏度（1-10，数值越大越容易判定无人说话）
     var autoStopSilenceSensitivity: Int
@@ -627,6 +627,11 @@ class Prefs(context: Context) {
     var floatingBallDirectDragEnabled: Boolean
         get() = sp.getBoolean(KEY_FLOATING_DIRECT_DRAG_ENABLED, true)
         set(value) = sp.edit { putBoolean(KEY_FLOATING_DIRECT_DRAG_ENABLED, value) }
+
+    // 悬浮球展开面板菜单项顺序（id 列表 JSON；空 = 使用默认全集顺序，解析见 FloatingPanelItemId）
+    var floatingPanelItemsJson: String
+        get() = sp.getString(KEY_FLOATING_PANEL_ITEMS, "") ?: ""
+        set(value) = sp.edit { putString(KEY_FLOATING_PANEL_ITEMS, value) }
 
     // 悬浮球语音识别模式开关
     var floatingAsrEnabled: Boolean
@@ -2553,16 +2558,15 @@ class Prefs(context: Context) {
         // 静音自动判停默认值
         const val DEFAULT_SILENCE_WINDOW_MS = 1200
         const val DEFAULT_SILENCE_SENSITIVITY = 4 // 1-10
-        const val DEFAULT_RECORDING_MAX_DURATION_MS = 120_000
+        const val DEFAULT_RECORDING_MAX_DURATION_MS = 30_000
 
-        // 录音/判停时间统一上限：24 小时（毫秒）
-        const val TIME_RANGE_MAX_MS = 24 * 60 * 60 * 1000 // 86_400_000
-        // 判停时间阈值下限：允许 0（停说自动停止模式可设为 0）
+        // 判停时间阈值范围：0 ~ 15 秒（0 = 说完立即判停）
         const val SILENCE_WINDOW_MIN_MS = 0
-        // 超时停止下限：3 秒（0 会立即停止，无意义）
+        const val SILENCE_WINDOW_MAX_MS = 15_000
+        // 超时停止范围：3 ~ 30 秒（0 会立即停止，无意义）
         const val RECORDING_MAX_DURATION_MIN_MS = 3_000
-        const val RECORDING_MAX_DURATION_MAX_MS = TIME_RANGE_MAX_MS
-        const val RECORDING_MAX_DURATION_STEP_MS = 30_000
+        const val RECORDING_MAX_DURATION_MAX_MS = 30_000
+        const val RECORDING_MAX_DURATION_STEP_MS = 1_000
 
         // 标点按钮默认值
         const val DEFAULT_PUNCT_1 = "，"

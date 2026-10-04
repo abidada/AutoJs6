@@ -55,6 +55,11 @@ sealed interface BibiSettingsRoute {
         override val id: String = "voice_dispatch"
     }
 
+    /** 悬浮球面板设置页（面板菜单项内容与顺序的数据源管理端）。 */
+    data object FloatingPanel : BibiSettingsRoute {
+        override val id: String = "floating_panel"
+    }
+
     data object Backup : BibiSettingsRoute {
         override val id: String = "backup"
     }
@@ -96,6 +101,7 @@ sealed interface BibiSettingsRoute {
             PromptSelection.id -> PromptSelection
             PromptSelectionPreview.id -> PromptSelectionPreview
             VoiceDispatch.id -> VoiceDispatch
+            FloatingPanel.id -> FloatingPanel
             Backup.id -> Backup
             Other.id -> Other
             About.id -> About

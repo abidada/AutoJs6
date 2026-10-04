@@ -140,7 +140,8 @@ class SettingsHostViewModel(
         BibiSettingsRoute.Input,
         BibiSettingsRoute.UiSettings,
         BibiSettingsRoute.RecordingTest,
-        BibiSettingsRoute.Floating -> 0
+        BibiSettingsRoute.Floating,
+        BibiSettingsRoute.FloatingPanel -> 0
 
         BibiSettingsRoute.Asr,
         BibiSettingsRoute.Tts,
