@@ -291,6 +291,59 @@
 
     </org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory>
 
+    <!-- Embedded MCP tool server (ported from eness-1/AutoX :mcp module).
+         Preference keys are literal (not @string refs) on purpose: they are read
+         directly by org.autojs.autojs.mcp.McpPrefKeys. -->
+    <org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory
+        app:layout="@layout/preference_category_custom"
+        app:title="@string/text_mcp">
+
+        <androidx.preference.SwitchPreferenceCompat
+            app:layout="@layout/preference_custom"
+            app:key="key_mcp_enabled"
+            app:defaultValue="false"
+            app:title="@string/text_mcp_enable"
+            app:summary="@string/summary_mcp_enable" />
+
+        <androidx.preference.EditTextPreference
+            app:layout="@layout/preference_custom"
+            app:key="key_mcp_host"
+            app:defaultValue="127.0.0.1"
+            app:title="@string/text_mcp_host"
+            app:summary="@string/summary_mcp_host"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.EditTextPreference
+            app:layout="@layout/preference_custom"
+            app:key="key_mcp_port"
+            app:defaultValue="27190"
+            app:title="@string/text_mcp_port"
+            app:summary="@string/summary_mcp_port"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.EditTextPreference
+            app:layout="@layout/preference_custom"
+            app:key="key_mcp_token"
+            app:title="@string/text_mcp_token"
+            app:summary="@string/summary_mcp_token"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.SwitchPreferenceCompat
+            app:layout="@layout/preference_custom"
+            app:key="key_mcp_allow_base64"
+            app:defaultValue="false"
+            app:title="@string/text_mcp_allow_base64"
+            app:summary="@string/summary_mcp_allow_base64" />
+
+        <androidx.preference.SwitchPreferenceCompat
+            app:layout="@layout/preference_custom"
+            app:key="key_mcp_allow_network"
+            app:defaultValue="true"
+            app:title="@string/text_mcp_allow_network"
+            app:summary="@string/summary_mcp_allow_network" />
+
+    </org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory>
+
     <org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory
         app:layout="@layout/preference_category_custom"
         app:title="@string/text_about">

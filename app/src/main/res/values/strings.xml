@@ -762,6 +762,24 @@
     <string name="text_about_functions_licenses">Licenses</string>
     <string name="text_about_functions_release_history">@string/text_release_history</string>
     <string name="text_about_functions_update">Update</string>
+    <!-- MCP (embedded tool server) -->
+    <string name="text_mcp">MCP service</string>
+    <string name="text_mcp_enable">Enable MCP service</string>
+    <string name="summary_mcp_enable">Expose automation tools to local clients through an embedded HTTP server</string>
+    <string name="text_mcp_host">Listen address</string>
+    <string name="summary_mcp_host">Default 127.0.0.1 (local only); use 0.0.0.0 to allow LAN access</string>
+    <string name="text_mcp_port">Listen port</string>
+    <string name="summary_mcp_port">Default 27190</string>
+    <string name="text_mcp_token">Access token</string>
+    <string name="summary_mcp_token">Verified via the X-Token header; empty means no verification</string>
+    <string name="text_mcp_allow_base64">Allow base64 responses</string>
+    <string name="summary_mcp_allow_base64">Used for screenshot and OCR results returned as base64</string>
+    <string name="text_mcp_allow_network">Allow LAN access</string>
+    <string name="summary_mcp_allow_network">Allows LAN clients and binding to a non-loopback address</string>
+    <string name="mcp_notification_channel_name">MCP server</string>
+    <string name="mcp_notification_channel_desc">Embedded MCP tool server</string>
+    <string name="mcp_notification_title">MCP server running</string>
+    <string name="mcp_notification_text">Automation tools are available on the configured host</string>
     <string name="text_access_has_been_granted">Access has been granted</string>
     <string name="text_act_by_click">Click (click)</string>
     <string name="text_act_by_long_click">Long click (longClick)</string>

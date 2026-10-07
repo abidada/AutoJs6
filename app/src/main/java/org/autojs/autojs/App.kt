@@ -29,6 +29,8 @@ import org.autojs.autojs.event.GlobalKeyObserver
 import org.autojs.autojs.external.receiver.DynamicBroadcastReceivers
 import org.autojs.autojs.ipc.InAppEventBus
 import org.autojs.autojs.leakcanary.LeakCanarySetup
+import org.autojs.autojs.mcp.McpPrefs
+import org.autojs.autojs.mcp.McpServerService
 import org.autojs.autojs.storage.file.TmpScriptFilesCleanupScheduler
 import org.autojs.autojs.storage.history.HistoryCleanupScheduler
 import org.autojs.autojs.theme.ThemeColorManager
@@ -98,6 +100,11 @@ class App : MultiDexApplication() {
                 // 语音分发执行面（v2）：脚本列表/执行经宿主桥接，走与文件列表运行按钮同链路
                 com.brycewg.asrkb.host.ScriptHost.bridge = org.autojs.autojs.host.AutoJsScriptHostBridge
                 BibiLibrary.init(this, BibiHostPermissionRouterImpl)
+
+                // Embedded MCP tool server: restore after process restart if enabled.
+                if (McpPrefs.load(this).enabled) {
+                    McpServerService.start(this)
+                }
             }
         }
     }

@@ -95,6 +95,10 @@ dependencies /* Unclassified */ {
     implementation(libs.retrofit.adapter.rxjava2)
     implementation(libs.retrofit2.kotlin.coroutines.adapter)
 
+    // Embedded HTTP MCP tool server (ported from eness-1/AutoX :mcp module)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.cio)
+
     // Glide
     implementation(libs.glide)
     ksp(libs.glide.ksp)
@@ -671,6 +675,11 @@ android {
                 storePassword = signs.properties["storePassword"] as String
             }
         }
+    }
+
+    testOptions {
+        // MCP module unit tests call android.util.Log; return defaults instead of throwing.
+        unitTests.isReturnDefaultValues = true
     }
 
     buildTypes {

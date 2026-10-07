@@ -476,6 +476,24 @@
     <string name="text_a11y_service_may_be_needed">可能需要启用无障碍服务</string>
     <string name="text_aborting" tools:ignore="TypographyEllipsis">正在中止...</string>
     <string name="text_about">关于</string>
+    <!-- MCP（内嵌工具服务） -->
+    <string name="text_mcp">MCP 服务</string>
+    <string name="text_mcp_enable">启用 MCP 服务</string>
+    <string name="summary_mcp_enable">启用后可通过本地端口调用自动化工具</string>
+    <string name="text_mcp_host">监听地址</string>
+    <string name="summary_mcp_host">默认 127.0.0.1（仅本机）；局域网访问可改为 0.0.0.0</string>
+    <string name="text_mcp_port">监听端口</string>
+    <string name="summary_mcp_port">默认 27190</string>
+    <string name="text_mcp_token">访问令牌</string>
+    <string name="summary_mcp_token">经 X-Token 请求头校验；为空则不校验</string>
+    <string name="text_mcp_allow_base64">允许返回 Base64</string>
+    <string name="summary_mcp_allow_base64">用于截图与 OCR 结果以 Base64 返回</string>
+    <string name="text_mcp_allow_network">允许局域网访问</string>
+    <string name="summary_mcp_allow_network">允许局域网客户端访问并绑定非回环地址</string>
+    <string name="mcp_notification_channel_name">MCP 服务</string>
+    <string name="mcp_notification_channel_desc">内嵌 MCP 工具服务</string>
+    <string name="mcp_notification_title">MCP 服务运行中</string>
+    <string name="mcp_notification_text">可在配置的地址上调用自动化工具</string>
     <string name="text_about_all_files_access">关于所有文件访问权限</string>
     <string name="text_about_app_and_developer">关于应用与开发者</string>
     <string name="text_about_app_tips">使用技巧</string>

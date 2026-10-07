@@ -95,6 +95,12 @@ abstract class AbstractAutoJs protected constructor(val application: Application
         .setShellSupplier { Shell(applicationContext, true) }
         .build()
 
+    /**
+     * Builds a [ScriptRuntime] independent of any running script, dedicated to the
+     * embedded MCP tool server (see `org.autojs.autojs.mcp.McpRuntimeProvider`).
+     */
+    fun createMcpRuntime(): ScriptRuntime = createRuntime()
+
     fun createAccessibilityBridge() = AccessibilityBridgeImpl(this)
 
     private fun addAccessibilityServiceDelegates() {
