@@ -1728,8 +1728,7 @@
     <string name="warn_exit_without_saving_settings">The settings has not been saved, are you sure to exit?</string>
 
     <!-- BIBI (说点啥) voice input library entry, added by the bibi port on Sep 30, 2026. -->
-    <string name="text_bibi_settings">BIBI settings</string>
-    <string name="summary_bibi_settings">SaySomething voice input · floating ball · speech recognition</string>
+    <string name="text_bibi_settings">BIBI settings</string>    <string name="summary_bibi_settings">SaySomething voice input · floating ball · speech recognition</string>
     <string name="text_bibi_permissions">BIBI permissions</string>
     <string name="text_bibi_microphone_permission">BIBI microphone permission</string>
     <string name="summary_bibi_microphone_permission">Required for BIBI voice recognition</string>
@@ -1739,6 +1738,10 @@
     <string name="summary_bibi_bluetooth_mic_permission">Preferred Bluetooth headset microphone (optional)</string>
     <string name="text_bibi_boot_autostart">BIBI autostart on boot</string>
     <string name="summary_bibi_boot_autostart">Start the BIBI floating ball service on boot (optional)</string>
+
+    <!-- Operit (AI Agent) library entry, added by the Operit port (P7.1 / D-4). -->
+    <string name="text_operit_entry">Operit (AI Agent)</string>
+    <string name="summary_operit_entry">Autonomous AI agent · tools · workflows · MCP</string>
     <string name="text_bibi_voice_dispatch">Voice settings</string>
     <string name="summary_bibi_voice_dispatch">Configure dispatch rules from recognized voice text to tasks</string>
     <string name="error_open_voice_dispatch_settings">Failed to open voice settings</string>

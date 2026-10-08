@@ -7,9 +7,9 @@ import android.util.Log
 import com.google.gson.Gson
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.cio.CIO
-import io.ktor.server.engine.ApplicationEngine
+import io.ktor.server.cio.CIOApplicationEngine
+import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
@@ -35,7 +35,7 @@ class McpServer(
     private val registry: ToolRegistry
 ) {
     private val gson = Gson()
-    private var engine: ApplicationEngine? = null
+    private var engine: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val jsonRpcHandler = McpJsonRpcHandler(
         registry,

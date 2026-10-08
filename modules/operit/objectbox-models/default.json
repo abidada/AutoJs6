@@ -1,0 +1,314 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:2584519293619163933",
+      "lastPropertyId": "5:1161769568339583219",
+      "name": "DocumentChunk",
+      "properties": [
+        {
+          "id": "1:4126602327188083344",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:472960615425200198",
+          "name": "content",
+          "type": 9
+        },
+        {
+          "id": "3:4994646863833088314",
+          "name": "chunkIndex",
+          "type": 5
+        },
+        {
+          "id": "4:4156756489865030640",
+          "name": "embedding",
+          "type": 23
+        },
+        {
+          "id": "5:1161769568339583219",
+          "name": "memoryId",
+          "indexId": "1:2683227095155426889",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "Memory"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:2186120901865261005",
+      "lastPropertyId": "16:6013146211918650196",
+      "name": "Memory",
+      "properties": [
+        {
+          "id": "1:6098978727800816998",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:831743553266285461",
+          "name": "uuid",
+          "type": 9
+        },
+        {
+          "id": "3:5188650904844362709",
+          "name": "title",
+          "type": 9
+        },
+        {
+          "id": "4:8720086729075452389",
+          "name": "content",
+          "type": 9
+        },
+        {
+          "id": "5:3310543479276386606",
+          "name": "contentType",
+          "type": 9
+        },
+        {
+          "id": "6:9049770039683190660",
+          "name": "source",
+          "type": 9
+        },
+        {
+          "id": "7:8012490214509941774",
+          "name": "credibility",
+          "type": 7
+        },
+        {
+          "id": "8:2696740888034083880",
+          "name": "importance",
+          "type": 7
+        },
+        {
+          "id": "9:7872838437067384037",
+          "name": "documentPath",
+          "type": 9
+        },
+        {
+          "id": "10:155241992975713982",
+          "name": "isDocumentNode",
+          "type": 1
+        },
+        {
+          "id": "11:4441679684442446629",
+          "name": "chunkIndexFilePath",
+          "type": 9
+        },
+        {
+          "id": "12:83177819183606540",
+          "name": "folderPath",
+          "indexId": "2:15965405860093479",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "13:8058329808963934970",
+          "name": "embedding",
+          "type": 23
+        },
+        {
+          "id": "14:4575827347416076757",
+          "name": "createdAt",
+          "type": 10
+        },
+        {
+          "id": "15:8080698676628014162",
+          "name": "updatedAt",
+          "type": 10
+        },
+        {
+          "id": "16:6013146211918650196",
+          "name": "lastAccessedAt",
+          "type": 10
+        }
+      ],
+      "relations": [
+        {
+          "id": "1:4680425801877357076",
+          "name": "tags",
+          "targetId": "6:6261610672868140713"
+        },
+        {
+          "id": "2:8133226715439873211",
+          "name": "properties",
+          "targetId": "5:5558639616265219040"
+        },
+        {
+          "id": "3:4760723053621981242",
+          "name": "links",
+          "targetId": "4:6709913222324572584"
+        }
+      ]
+    },
+    {
+      "id": "3:6263935349279549050",
+      "lastPropertyId": "9:3860567957665551806",
+      "name": "MemoryAutoSaveCandidate",
+      "properties": [
+        {
+          "id": "1:1468031781018481108",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3874108955260677708",
+          "name": "chatId",
+          "indexId": "3:8100026791872682425",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:4985858992103057013",
+          "name": "triggerMessageTimestamp",
+          "type": 6
+        },
+        {
+          "id": "4:1626069879645305181",
+          "name": "createdAt",
+          "type": 10
+        },
+        {
+          "id": "5:7616603425724031175",
+          "name": "updatedAt",
+          "type": 10
+        },
+        {
+          "id": "6:3034338211096021849",
+          "name": "status",
+          "type": 9
+        },
+        {
+          "id": "7:8737775459387617846",
+          "name": "attemptCount",
+          "type": 5
+        },
+        {
+          "id": "8:1294782375117794347",
+          "name": "lastError",
+          "type": 9
+        },
+        {
+          "id": "9:3860567957665551806",
+          "name": "sourceType",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:6709913222324572584",
+      "lastPropertyId": "6:6182699058912293646",
+      "name": "MemoryLink",
+      "properties": [
+        {
+          "id": "1:8611400839420248209",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:938867664362403064",
+          "name": "type",
+          "type": 9
+        },
+        {
+          "id": "3:167542856640640842",
+          "name": "weight",
+          "type": 7
+        },
+        {
+          "id": "4:3581684584202495349",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "5:246942234239052675",
+          "name": "sourceId",
+          "indexId": "4:6601665802493083846",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "Memory"
+        },
+        {
+          "id": "6:6182699058912293646",
+          "name": "targetId",
+          "indexId": "5:7889054131347139939",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "Memory"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:5558639616265219040",
+      "lastPropertyId": "3:5209052052432312768",
+      "name": "MemoryProperty",
+      "properties": [
+        {
+          "id": "1:2390630339356956150",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2016464539127354178",
+          "name": "key",
+          "type": 9
+        },
+        {
+          "id": "3:5209052052432312768",
+          "name": "value",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:6261610672868140713",
+      "lastPropertyId": "3:7204600999024371029",
+      "name": "MemoryTag",
+      "properties": [
+        {
+          "id": "1:5677718003766918010",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1513654048569178184",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:7204600999024371029",
+          "name": "parentId",
+          "indexId": "6:3074210333527557254",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "MemoryTag"
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "6:6261610672868140713",
+  "lastIndexId": "6:3074210333527557254",
+  "lastRelationId": "3:4760723053621981242",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

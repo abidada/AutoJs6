@@ -213,7 +213,12 @@
         android:localeConfig="@xml/locales_config"
         android:usesCleartextTraffic="true"
         tools:ignore="DataExtractionRules"
-        tools:targetApi="tiramisu">
+        tools:targetApi="tiramisu"
+        tools:replace="android:allowBackup,android:icon,android:theme">
+        <!-- tools:replace (P3, 2026-10-08): the operit module's RenderX (com.github.tech-pw:
+             RenderX:1.0.0, LaTeX renderer) ships application-level allowBackup=true /
+             icon / theme=Theme.LatexView in its manifest; the host values win. Same fix
+             upstream Operit applies on its own app manifest. SYNC.md §4. -->
 
         <meta-data
             android:name="android.max_aspect"

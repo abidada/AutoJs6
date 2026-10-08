@@ -1,0 +1,1416 @@
+==============================================================================
+HPROF 分析报告: before.hprof
+==============================================================================
+文件: 170398670 bytes | hprof 版本: JAVA PROFILE 1.0.3 | idSize: 4
+classes=33452 instances=1399296 objArrays=115881 primArrays=426457 GCroots=368816
+GC root 分布: {'THREAD_OBJECT': 104, 'JNI_LOCAL': 8, 'JAVA_FRAME': 2440, 'NATIVE_STACK': 6, 'JNI_GLOBAL': 738, 'JNI_MONITOR': 286253, 'INTERNED_STRING': 56201, 'STICKY_CLASS': 23066}
+未知 heap 子标签: 无 | 跳过 segment: 0
+可达对象: 819790 / ~1975086
+总浅层大小约: 111.3 MB
+
+==============================================================================
+一、按包名的实例数量 Top 60
+==============================================================================
+     453140 inst       8.00 MB  java.lang
+     367211 inst       7.65 MB  shark.internal
+     163265 inst       4.19 MB  java.util
+      78017 inst       1.69 MB  shark
+      33979 inst       1.23 MB  android.graphics
+      28248 inst       0.54 MB  libcore.util
+      27800 inst       0.95 MB  sun.misc
+      21319 inst       1.13 MB  android.animation
+      15264 inst       0.32 MB  android.util
+      13679 inst       0.36 MB  java.lang.ref
+      12675 inst       0.58 MB  android.view
+      12437 inst       0.15 MB  kotlin.collections
+       9449 inst       0.24 MB  android.icu.impl.locale
+       8712 inst       0.15 MB  androidx.emoji2.text
+       8196 inst       0.20 MB  android.icu.impl
+       8038 inst       0.60 MB  android.graphics.drawable
+       7765 inst       0.19 MB  java.util.concurrent
+       7762 inst       0.12 MB  kotlin
+       6749 inst       1.29 MB  androidx.appcompat.widget
+       5893 inst       0.92 MB  android.widget
+       5437 inst       0.09 MB  com.hihonor.graphics
+       4793 inst       0.06 MB  java.util.concurrent.atomic
+       4727 inst       0.10 MB  android.icu.util
+       3854 inst       0.05 MB  androidx.emoji2.viewsintegration
+       3545 inst       0.09 MB  org.autojs.autojs.ui.main.drawer
+       2869 inst       0.04 MB  shark.internal.hppc
+       2863 inst       0.12 MB  android.content.res
+       2840 inst       0.04 MB  com.hihonor.android.view
+       2792 inst       0.38 MB  android.hnmagiclayout
+       2671 inst       0.07 MB  sun.util.locale
+       2666 inst       0.33 MB  android.text
+       2461 inst       0.09 MB  org.autojs.autojs.util
+       2423 inst       0.05 MB  WV
+       2303 inst       0.05 MB  hihonor.android.widget
+       2120 inst       0.04 MB  android.graphics.text
+       2036 inst       0.04 MB  android.icu.text
+       1976 inst       0.03 MB  kotlin.reflect.jvm.internal.impl.name
+       1974 inst       0.04 MB  com.google.android.material.shape
+       1965 inst       0.06 MB  androidx.fragment.app
+       1922 inst       0.07 MB  android.app
+       1855 inst       0.07 MB  android.os
+       1659 inst       0.04 MB  java.security
+       1592 inst       0.02 MB  kotlin.reflect.jvm.internal
+       1415 inst       0.04 MB  android.media
+       1296 inst       0.17 MB  me.zhanghai.android.materialprogressbar
+       1249 inst       0.03 MB  java.io
+       1208 inst       0.04 MB  dalvik.system
+       1099 inst       0.02 MB  sun.security.util
+       1070 inst       0.05 MB  androidx.recyclerview.widget
+        832 inst       0.02 MB  java.util.concurrent.locks
+        775 inst       0.01 MB  com.hihonor.android.hwcontrol
+        774 inst       0.04 MB  com.hihonor.android.widget
+        768 inst       0.02 MB  android.view.accessibility
+        756 inst       0.01 MB  com.android.org.bouncycastle.asn1
+        728 inst       0.02 MB  com.google.android.material.animation
+        675 inst       0.02 MB  androidx.lifecycle
+        651 inst       0.02 MB  androidx.core.view
+        602 inst       0.01 MB  android.view.animation
+        549 inst       0.03 MB  android.transition
+        533 inst       0.09 MB  com.google.android.material.tabs
+
+==============================================================================
+二、按类的实例数量 Top 80
+==============================================================================
+     308179 inst       5.88 MB  java.lang.String
+     168470 inst       3.86 MB  shark.internal.ReferencePathNode$ChildNode
+     116227 inst       1.77 MB  java.lang.Long
+      51558 inst       1.18 MB  shark.internal.FieldInstanceReferenceReader$read$2$1
+      50002 inst       1.14 MB  java.util.HashMap$Node
+      47416 inst       1.09 MB  shark.internal.ClassReferenceReader$read$1$1
+      45868 inst       0.70 MB  shark.internal.ObjectArrayReferenceReader$read$2$1
+      40479 inst       1.24 MB  java.util.LinkedHashMap$Entry
+      28592 inst       0.55 MB  java.util.ArrayList
+      27798 inst       0.95 MB  sun.misc.Cleaner
+      27636 inst       0.53 MB  libcore.util.NativeAllocationRegistry$CleanerThunk
+      24493 inst       0.75 MB  shark.HprofRecord$HeapDumpRecord$ObjectRecord$InstanceDumpRecord
+      23066 inst       0.35 MB  shark.GcRoot$StickyClass
+      20505 inst       0.23 MB  java.lang.Integer
+      19664 inst       0.53 MB  java.util.ArrayList$Itr
+      16993 inst       0.39 MB  android.graphics.Rect
+      16470 inst       0.19 MB  shark.internal.ReferencePathNode$RootNode$NormalRootNode
+      12460 inst       0.14 MB  shark.internal.InternalSharedHashMapReferenceReader$read$createKeyRef$1$1
+      12307 inst       0.15 MB  kotlin.collections.ArrayAsCollection
+       9301 inst       0.14 MB  shark.ValueHolder$ReferenceHolder
+       9293 inst       0.14 MB  shark.HeapValue
+       9237 inst       0.14 MB  shark.internal.InternalSharedHashMapReferenceReader$read$2$valueRef$1
+       8416 inst       0.19 MB  java.lang.ref.WeakReference
+       7492 inst       0.20 MB  android.icu.impl.locale.LSR
+       7134 inst       0.11 MB  kotlin.Pair
+       6639 inst       0.13 MB  android.util.SparseArray
+       6389 inst       0.12 MB  shark.internal.ObjectArrayReferenceReader$read$2
+       6366 inst       0.16 MB  android.animation.Keyframe$FloatKeyframe
+       5704 inst       0.13 MB  java.util.concurrent.ConcurrentHashMap$Node
+       5641 inst       0.22 MB  java.util.HashMap
+       4877 inst       0.23 MB  java.util.HashMap$TreeNode
+       4702 inst       0.07 MB  androidx.emoji2.text.MetadataRepo$Node
+       4502 inst       0.03 MB  java.lang.Object
+       4301 inst       0.53 MB  android.graphics.Paint
+       3991 inst       0.08 MB  androidx.emoji2.text.TypefaceEmojiRasterizer
+       3641 inst       0.11 MB  shark.HprofRecord$HeapDumpRecord$ObjectRecord$ObjectArrayDumpRecord
+       3586 inst       0.04 MB  java.util.concurrent.atomic.AtomicReference
+       3496 inst       0.12 MB  java.lang.ref.FinalizerReference
+       3384 inst       0.05 MB  java.util.Arrays$ArrayList
+       3380 inst       0.08 MB  android.graphics.RectF
+       3340 inst       0.09 MB  android.icu.impl.ICUResourceBundleReader$ResourceCache$Level
+       3285 inst       0.08 MB  shark.GcRoot$JavaFrame
+       3207 inst       0.21 MB  android.animation.PropertyValuesHolder$FloatPropertyValuesHolder
+       3184 inst       0.08 MB  android.util.ArrayMap
+       3183 inst       0.10 MB  android.animation.FloatKeyframeSet
+       3004 inst       0.10 MB  android.graphics.RenderNode
+       3000 inst       0.03 MB  android.view.ViewAnimationHostBridge
+       2863 inst       0.07 MB  shark.internal.ByteSubArray
+       2861 inst       0.04 MB  shark.internal.hppc.IntObjectPair
+       2790 inst       0.38 MB  android.hnmagiclayout.HnMagicLayoutViewInfo
+       2790 inst       0.05 MB  android.view.View$G2RoundCornerProp
+       2790 inst       0.04 MB  com.hihonor.android.view.HnViewAttachMember
+       2659 inst       0.05 MB  android.icu.util.CaseInsensitiveString
+       2602 inst       0.05 MB  com.hihonor.graphics.AnimatorPerceptionHelper
+       2602 inst       0.03 MB  com.hihonor.graphics.AnimatorPerceptionHelper$1
+       2269 inst       0.12 MB  android.animation.AnimatorSet$Node
+       2122 inst       0.05 MB  android.icu.impl.ICUResourceBundleReader$Table16
+       2030 inst       0.04 MB  android.util.LongSparseLongArray
+       2002 inst       0.03 MB  android.graphics.Matrix
+       1787 inst       0.21 MB  android.view.View$ListenerInfo
+       1754 inst       0.29 MB  android.animation.ObjectAnimator
+       1548 inst       0.03 MB  android.graphics.text.MeasuredData
+       1484 inst       0.02 MB  shark.internal.InternalSharedArrayListReferenceReader$read$1$1
+       1479 inst       0.23 MB  android.text.TextPaint
+       1383 inst       0.03 MB  android.icu.impl.ICUResourceBundleReader$Table1632
+       1337 inst       0.03 MB  android.icu.util.ULocale
+       1294 inst       0.05 MB  shark.internal.IndexedObject$IndexedClass
+       1293 inst       0.04 MB  shark.internal.IndexedObject$IndexedInstance
+       1293 inst       0.03 MB  shark.HeapObject$HeapInstance
+       1293 inst       0.03 MB  shark.HeapObject$HeapClass
+       1287 inst       0.04 MB  java.util.WeakHashMap$Entry
+       1257 inst       0.04 MB  sun.util.locale.LocaleObjectCache$CacheEntry
+       1255 inst       0.04 MB  java.lang.ref.SoftReference
+       1139 inst       0.06 MB  android.widget.LinearLayout$LayoutParams
+       1118 inst       0.02 MB  sun.util.locale.BaseLocale$Key
+       1117 inst       0.01 MB  android.view.ViewGroup$4
+       1117 inst       0.02 MB  hihonor.android.widget.HwWidgetAppAttrsHelperImpl
+       1081 inst       0.06 MB  android.graphics.drawable.ColorDrawable
+       1048 inst       0.02 MB  android.icu.impl.locale.KeyTypeData$Type
+       1031 inst       0.03 MB  androidx.appcompat.widget.AppCompatBackgroundHelper
+
+==============================================================================
+三、项目自有类 (含所有模块 / bibi 库) 全量清单
+==============================================================================
+共 632 个类, 合计 8589 实例
+        3 inst       0.0 KB  com.afollestad.materialdialogs.DialogAction
+        3 inst       0.0 KB  com.afollestad.materialdialogs.GravityEnum
+        2 inst       0.7 KB  com.afollestad.materialdialogs.MaterialDialog   <== MaterialDialog
+        3 inst       0.0 KB  com.afollestad.materialdialogs.MaterialDialog$ListType   <== MaterialDialog
+        3 inst       0.0 KB  com.afollestad.materialdialogs.StackingBehavior
+        2 inst       0.0 KB  com.afollestad.materialdialogs.Theme
+        6 inst       7.3 KB  com.afollestad.materialdialogs.internal.MDButton
+        2 inst       1.9 KB  com.afollestad.materialdialogs.internal.MDRootLayout
+        1 inst       0.0 KB  com.brycewg.asrkb.LocaleHelper
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.AndroidRecordingAudioFocusGateway
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.AndroidRecordingAudioFocusGateway$Companion
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.AsrDirectMicrophoneEngineFactory
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.AsrParallelEngineFactory
+       18 inst       0.4 KB  com.brycewg.asrkb.asr.AsrVendor
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.AsrVendor$Companion
+        2 inst       0.0 KB  com.brycewg.asrkb.asr.AsrVendorAvailabilityLink
+        8 inst       0.1 KB  com.brycewg.asrkb.asr.AsrVendorCapability
+       18 inst       0.8 KB  com.brycewg.asrkb.asr.AsrVendorDescriptor
+        9 inst       0.1 KB  com.brycewg.asrkb.asr.AsrVendorDisplayTag
+        2 inst       0.0 KB  com.brycewg.asrkb.asr.AsrVendorLifecycleLink
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.AsrVendorRegistry
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.ContinuousCaptureCoordinator
+        2 inst       0.0 KB  com.brycewg.asrkb.asr.ContinuousCaptureOwner
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.LlmPostProcessor
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.LlmPostProcessor$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.LlmPostProcessor$$ExternalSyntheticLambda1
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.LlmPostProcessor$Companion
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.OfflineSpeechDenoiserManager
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.RealAsrDirectMicrophoneEngineConstructorTable
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.RealAsrParallelEngineConstructorTable
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.RecordingAudioFocusController
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.RecordingAudioFocusController$Companion
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.RecordingKeepScreenOnController
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.RecordingKeepScreenOnController$Companion
+        5 inst       0.1 KB  com.brycewg.asrkb.asr.VolcAsrModel
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.VolcAsrModelCatalog
+        3 inst       0.0 KB  com.brycewg.asrkb.asr.VolcAsrProtocolKind
+        1 inst       0.0 KB  com.brycewg.asrkb.asr.VolcLegacyFlags
+        1 inst       0.0 KB  com.brycewg.asrkb.host.AsrRecordingState
+        1 inst       0.0 KB  com.brycewg.asrkb.host.AsrResultBroadcaster
+        1 inst       0.0 KB  com.brycewg.asrkb.host.BibiLibrary
+        1 inst       0.0 KB  com.brycewg.asrkb.host.BibiLibrary$builtinResultListener$1
+        1 inst       0.0 KB  com.brycewg.asrkb.host.PermissionRouter
+        1 inst       0.0 KB  com.brycewg.asrkb.store.ApiLogStore
+        3 inst       0.0 KB  com.brycewg.asrkb.store.AsrHistoryStore$AiPostStatus
+        1 inst       0.0 KB  com.brycewg.asrkb.store.AsrHistoryStore$AiPostStatus$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  com.brycewg.asrkb.store.AsrHistoryStore$AiPostStatus$Companion
+        4 inst       0.8 KB  com.brycewg.asrkb.store.Prefs
+        1 inst       0.0 KB  com.brycewg.asrkb.store.Prefs$$ExternalSyntheticLambda8
+        1 inst       0.0 KB  com.brycewg.asrkb.store.Prefs$Companion
+        3 inst       0.1 KB  com.brycewg.asrkb.store.Prefs$RecordingAutoStopMode
+        1 inst       0.0 KB  com.brycewg.asrkb.store.Prefs$RecordingAutoStopMode$Companion
+      184 inst       3.6 KB  com.brycewg.asrkb.store.Prefs$stringPref$1
+        1 inst       0.0 KB  com.brycewg.asrkb.store.PrefsAsrVendorFields
+        1 inst       0.0 KB  com.brycewg.asrkb.store.PrefsInitTasks
+        1 inst       0.0 KB  com.brycewg.asrkb.store.PrefsInitTasks$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  com.brycewg.asrkb.store.PrefsOptionLists
+       93 inst       3.1 KB  com.brycewg.asrkb.store.VendorField
+        1 inst       0.0 KB  com.brycewg.asrkb.store.VendorField$Companion
+        8 inst       0.1 KB  com.brycewg.asrkb.store.VendorFieldRole
+        3 inst       0.0 KB  com.brycewg.asrkb.store.VendorFieldType
+        1 inst       0.0 KB  com.brycewg.asrkb.store.debug.DebugLogManager
+        1 inst       0.0 KB  com.brycewg.asrkb.store.debug.DebugLogManager$$ExternalSyntheticLambda0
+        2 inst       0.0 KB  com.brycewg.asrkb.store.debug.DebugLogManager$Stream
+        1 inst       0.0 KB  com.brycewg.asrkb.store.debug.DebugLogManager$ensureWriterStarted$1
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.BibiViewThemes
+        1 inst       0.1 KB  com.brycewg.asrkb.ui.floating.FloatingAsrInteractionController
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrInteractionController$Companion
+        1 inst       0.1 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda0   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda1   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda10   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda11   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda12   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda2   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda3   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda4   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda5   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda6   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda7   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda8   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$$ExternalSyntheticLambda9   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$Companion   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$hintReceiver$1   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingAsrService$registerDisplayListener$listener$1   <== FloatingAsrService
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.FloatingMenuController
+        1 inst       0.1 KB  com.brycewg.asrkb.ui.floating.FloatingVisibilityCoordinator
+        1 inst       0.1 KB  com.brycewg.asrkb.ui.floating.ListeningPanelHelper
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.ListeningPanelHelper$Companion
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.ListeningPanelHelper$resultListener$1
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.OverlayPermissionGate
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.PrivilegedAccessManager
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.PrivilegedAccessManager$$ExternalSyntheticLambda2
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.PrivilegedAccessManager$$ExternalSyntheticLambda3
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.PrivilegedKeepAliveScheduler
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.PrivilegedKeepAliveStarter
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.PrivilegedKeepAliveStarter$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floating.UserNotifier
+        1 inst       0.2 KB  com.brycewg.asrkb.ui.floatingball.AsrSessionManager
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.AsrSessionManager$$ExternalSyntheticLambda3
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.AsrSessionManager$Companion
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallComposeViewFactory
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallGestureSlops
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallHoldAccessibilityPromptTracker
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallHoldRecordingTracker
+        3 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallInteractionMode
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallState$Idle
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallStateMachine
+        1 inst       0.1 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler$$ExternalSyntheticLambda1
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler$$ExternalSyntheticLambda2
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallTouchHandler$Companion
+        1 inst       0.1 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallViewManager
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallViewManager$$ExternalSyntheticLambda7
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallViewManager$Companion
+        2 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallViewManager$DockAnchor
+        4 inst       0.1 KB  com.brycewg.asrkb.ui.floatingball.FloatingBallViewManager$DockSide
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingMenuHelper
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.FloatingMenuHelper$Companion
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.RecordingAuraMath
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.RecordingAuraMath$PeakState
+        1 inst       0.7 KB  com.brycewg.asrkb.ui.floatingball.RecordingAuraView
+        1 inst       0.0 KB  com.brycewg.asrkb.ui.floatingball.RecordingAuraView$Companion
+        1 inst       0.7 KB  com.brycewg.asrkb.ui.widgets.ProcessingSpinnerView
+        1 inst       0.0 KB  com.brycewg.asrkb.wake.KwsWakeEngine
+        1 inst       0.0 KB  com.brycewg.asrkb.wake.KwsWakeEngine$Companion
+        1 inst       0.1 KB  com.brycewg.asrkb.wake.WakeWordService   <== WakeWordService
+        1 inst       0.0 KB  com.brycewg.asrkb.wake.WakeWordService$$ExternalSyntheticLambda0   <== WakeWordService
+        1 inst       0.0 KB  com.brycewg.asrkb.wake.WakeWordService$Companion   <== WakeWordService
+        1 inst       0.0 KB  com.brycewg.asrkb.wake.WakeWordStore
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.FeatureConfig
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.KeywordSpotter
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.KeywordSpotter$Companion
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.KeywordSpotterConfig
+       66 inst       1.3 KB  com.k2fsa.sherpa.onnx.KeywordSpotterResult
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.OfflineSpeechDenoiser
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.OfflineSpeechDenoiser$Companion
+        1 inst       0.1 KB  com.k2fsa.sherpa.onnx.OnlineModelConfig
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.OnlineNeMoCtcModelConfig
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.OnlineParaformerModelConfig
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.OnlineStream
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.OnlineStream$Companion
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.OnlineToneCtcModelConfig
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.OnlineTransducerModelConfig
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.OnlineZipformer2CtcModelConfig
+        1 inst       0.0 KB  com.k2fsa.sherpa.onnx.QnnConfig
+        1 inst       0.0 KB  jackpal.androidterm.GenericTermSession$1
+        1 inst       0.0 KB  jackpal.androidterm.ShellTermSession$1
+        1 inst       0.1 KB  jackpal.androidterm.ShellTermSession$2
+        2 inst       0.0 KB  jackpal.androidterm.emulatorview.ByteQueue
+        2 inst       0.0 KB  jackpal.androidterm.emulatorview.ColorScheme
+       82 inst       1.6 KB  jackpal.androidterm.emulatorview.StyleRow
+        1 inst       0.0 KB  jackpal.androidterm.emulatorview.TermSession$1
+        1 inst       0.1 KB  jackpal.androidterm.emulatorview.TermSession$2
+        1 inst       0.1 KB  jackpal.androidterm.emulatorview.TermSession$3
+        1 inst       0.0 KB  jackpal.androidterm.emulatorview.TermSession$3$1
+        1 inst       0.2 KB  jackpal.androidterm.emulatorview.TerminalEmulator
+        2 inst       0.0 KB  jackpal.androidterm.emulatorview.TranscriptScreen
+        2 inst       0.1 KB  jackpal.androidterm.emulatorview.UnicodeTranscript
+        1 inst       0.1 KB  jackpal.androidterm.util.TermSettings
+        1 inst       0.0 KB  org.autojs.autojs.AbstractAutoJs$$ExternalSyntheticLambda2
+        1 inst       0.0 KB  org.autojs.autojs.AbstractAutoJs$$ExternalSyntheticLambda3
+        1 inst       0.0 KB  org.autojs.autojs.AbstractAutoJs$$ExternalSyntheticLambda4
+        1 inst       0.0 KB  org.autojs.autojs.AbstractAutoJs$Companion
+        1 inst       0.0 KB  org.autojs.autojs.AbstractAutoJs$registerActivityLifecycleCallbacks$1
+        1 inst       0.0 KB  org.autojs.autojs.AbstractAutoJs$registerActivityLifecycleCallbacks$1$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.App
+        1 inst       0.0 KB  org.autojs.autojs.App$$ExternalSyntheticLambda7
+        1 inst       0.0 KB  org.autojs.autojs.App$Companion
+        1 inst       0.0 KB  org.autojs.autojs.App$setupDrawableImageLoader$1
+        1 inst       0.1 KB  org.autojs.autojs.AutoJs
+        1 inst       0.0 KB  org.autojs.autojs.AutoJs$1
+        1 inst       0.0 KB  org.autojs.autojs.AutoJs$Companion
+        1 inst       0.1 KB  org.autojs.autojs.AutoJs$createGlobalConsole$1
+        1 inst       0.0 KB  org.autojs.autojs.app.AppOps
+        2 inst       0.0 KB  org.autojs.autojs.app.AppOps$getAppOps$1
+       13 inst       0.3 KB  org.autojs.autojs.app.FragmentPagerAdapterBuilder
+       13 inst       0.6 KB  org.autojs.autojs.app.FragmentPagerAdapterBuilder$1
+       13 inst       0.2 KB  org.autojs.autojs.app.OnActivityResultDelegate$Mediator
+       13 inst       0.1 KB  org.autojs.autojs.app.tool.AbstractJsonSocketTool$$ExternalSyntheticLambda2
+       13 inst       0.8 KB  org.autojs.autojs.app.tool.JsonSocketClientTool
+        1 inst       0.0 KB  org.autojs.autojs.app.tool.JsonSocketClientTool$$ExternalSyntheticLambda14
+        1 inst       0.0 KB  org.autojs.autojs.app.tool.JsonSocketClientTool$Companion
+       13 inst       0.4 KB  org.autojs.autojs.app.tool.JsonSocketServerTool
+       13 inst       0.2 KB  org.autojs.autojs.app.tool.PointerLocationTool
+        1 inst       0.0 KB  org.autojs.autojs.app.tool.PointerLocationTool$Companion
+        2 inst       0.0 KB  org.autojs.autojs.app.tool.PointerLocationTool$Companion$PointerLocation
+        1 inst       0.0 KB  org.autojs.autojs.core.accessibility.AccessibilityDelegate$Companion
+        1 inst       0.0 KB  org.autojs.autojs.core.accessibility.AccessibilityNotificationObserver
+        1 inst       0.0 KB  org.autojs.autojs.core.accessibility.AccessibilityNotificationObserver$Companion
+        1 inst       0.0 KB  org.autojs.autojs.core.accessibility.AccessibilityService$Companion   <== AccessibilityService
+       41 inst       1.1 KB  org.autojs.autojs.core.accessibility.AccessibilityTool
+        1 inst       0.0 KB  org.autojs.autojs.core.accessibility.AccessibilityTool$Companion
+        1 inst       0.0 KB  org.autojs.autojs.core.accessibility.LayoutInspector
+        1 inst       0.0 KB  org.autojs.autojs.core.accessibility.LayoutInspector$Companion
+        1 inst       0.0 KB  org.autojs.autojs.core.accessibility.OnKeyListener$Observer
+        1 inst       0.0 KB  org.autojs.autojs.core.accessibility.OnKeyListener$Observer$Companion
+        1 inst       0.0 KB  org.autojs.autojs.core.activity.ActivityInfoProvider   <== ActivityInfoProvider
+        1 inst       0.0 KB  org.autojs.autojs.core.activity.ActivityInfoProvider$Companion   <== ActivityInfoProvider
+        1 inst       0.1 KB  org.autojs.autojs.core.console.ConsoleFloaty
+        1 inst       0.0 KB  org.autojs.autojs.core.console.ConsoleImpl$Companion
+        1 inst       0.1 KB  org.autojs.autojs.core.console.ConsoleImpl$Configurator
+        4 inst       0.1 KB  org.autojs.autojs.core.console.ConsoleImpl$Stage
+        1 inst       0.0 KB  org.autojs.autojs.core.inputevent.InputDevices
+        1 inst       0.0 KB  org.autojs.autojs.core.inputevent.InputEventObserver
+        1 inst       0.0 KB  org.autojs.autojs.core.inputevent.InputEventObserver$1
+        1 inst       0.0 KB  org.autojs.autojs.core.inputevent.ShellKeyObserver
+        1 inst       0.0 KB  org.autojs.autojs.core.notification.NotificationListenerService$Companion   <== NotificationListenerService
+       13 inst       0.2 KB  org.autojs.autojs.core.permission.RequestPermissionCallbacks
+       11 inst       0.4 KB  org.autojs.autojs.core.pref.Language
+       11 inst       0.1 KB  org.autojs.autojs.core.pref.Language$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.core.pref.Language$Companion
+        1 inst       0.0 KB  org.autojs.autojs.core.pref.Pref
+        1 inst       0.0 KB  org.autojs.autojs.core.pref.Pref$$ExternalSyntheticLambda1
+        1 inst       0.0 KB  org.autojs.autojs.core.pref.PrefRx
+        6 inst       0.2 KB  org.autojs.autojs.core.pref.PrefRx$$ExternalSyntheticLambda1
+        4 inst       0.1 KB  org.autojs.autojs.core.pref.PrefRx$$ExternalSyntheticLambda2
+        1 inst       0.0 KB  org.autojs.autojs.core.record.Recorder$AbstractRecorder$1
+        1 inst       0.0 KB  org.autojs.autojs.core.record.accessibility.AccessibilityActionRecorder
+        1 inst       0.0 KB  org.autojs.autojs.core.ui.inflater.util.Drawables$Companion
+      144 inst       2.2 KB  org.autojs.autojs.core.ui.widget.JsSwitch$$ExternalSyntheticLambda0
+        1 inst       0.1 KB  org.autojs.autojs.deviceid.DeviceIdProvider   <== DeviceIdProvider
+        1 inst       0.0 KB  org.autojs.autojs.deviceid.DeviceIdProvider$Companion   <== DeviceIdProvider
+        1 inst       0.0 KB  org.autojs.autojs.engine.RootAutomatorEngine$Companion
+        1 inst       0.0 KB  org.autojs.autojs.engine.ScriptEngineManager
+        1 inst       0.0 KB  org.autojs.autojs.engine.ScriptEngineManager$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.engine.ScriptEngineService   <== ScriptEngineService
+        1 inst       0.0 KB  org.autojs.autojs.engine.ScriptEngineService$1   <== ScriptEngineService
+        1 inst       0.0 KB  org.autojs.autojs.engine.ScriptEngineService$2   <== ScriptEngineService
+       13 inst       0.4 KB  org.autojs.autojs.event.BackPressedHandler$DoublePressExit
+       13 inst       0.2 KB  org.autojs.autojs.event.BackPressedHandler$Observer
+        1 inst       0.0 KB  org.autojs.autojs.event.EventDispatcher
+        1 inst       0.0 KB  org.autojs.autojs.event.GlobalKeyObserver
+        1 inst       0.0 KB  org.autojs.autojs.event.GlobalKeyObserver$$ExternalSyntheticLambda1
+        1 inst       0.0 KB  org.autojs.autojs.execution.ScriptExecutionGlobalListener
+        1 inst       0.0 KB  org.autojs.autojs.execution.ScriptExecutionObserver
+        2 inst       0.0 KB  org.autojs.autojs.external.receiver.BaseBroadcastReceiver   <== BaseBroadcastReceiver
+        1 inst       0.0 KB  org.autojs.autojs.external.receiver.DynamicBroadcastReceivers
+        1 inst       0.0 KB  org.autojs.autojs.external.receiver.DynamicBroadcastReceivers$Companion
+        1 inst       0.0 KB  org.autojs.autojs.inrt.InrtBootCompletedReceiver$Companion   <== InrtBootCompletedReceiver
+        1 inst       0.0 KB  org.autojs.autojs.ipc.InAppEventBus
+        1 inst       0.0 KB  org.autojs.autojs.ipc.LayoutInspectEventBus
+        1 inst       0.0 KB  org.autojs.autojs.leakcanary.LeakCanarySetup
+        2 inst       0.0 KB  org.autojs.autojs.model.explorer.Explorer
+        8 inst       0.2 KB  org.autojs.autojs.model.explorer.ExplorerDirPage
+        4 inst       0.1 KB  org.autojs.autojs.model.explorer.ExplorerFileItem
+        1 inst       0.0 KB  org.autojs.autojs.model.explorer.ExplorerFileProvider   <== ExplorerFileProvider
+        3 inst       0.1 KB  org.autojs.autojs.model.explorer.ExplorerProjectPage
+        1 inst       0.0 KB  org.autojs.autojs.model.explorer.ExplorerSamplePage
+        1 inst       0.0 KB  org.autojs.autojs.model.explorer.ExplorerSorter$$ExternalSyntheticLambda2
+        1 inst       0.0 KB  org.autojs.autojs.model.explorer.ExplorerSorter$$ExternalSyntheticLambda3
+        1 inst       0.0 KB  org.autojs.autojs.model.explorer.ExplorerSorter$$ExternalSyntheticLambda4
+        1 inst       0.0 KB  org.autojs.autojs.model.explorer.ExplorerSorter$$ExternalSyntheticLambda5
+        1 inst       0.0 KB  org.autojs.autojs.model.explorer.WorkspaceFileProvider   <== WorkspaceFileProvider
+        2 inst       0.1 KB  org.autojs.autojs.network.UpdateChecker
+        2 inst       0.0 KB  org.autojs.autojs.network.UpdateChecker$$ExternalSyntheticLambda3
+        2 inst       0.0 KB  org.autojs.autojs.network.UpdateChecker$$ExternalSyntheticLambda4
+        2 inst       0.0 KB  org.autojs.autojs.network.UpdateChecker$1
+        1 inst       0.0 KB  org.autojs.autojs.network.UpdateChecker$Builder
+        2 inst       0.0 KB  org.autojs.autojs.network.UpdateChecker$Builder$$ExternalSyntheticLambda0
+        2 inst       0.7 KB  org.autojs.autojs.network.UpdateChecker$Dialog$Builder$Pending
+        2 inst       0.1 KB  org.autojs.autojs.network.UpdateChecker$ObservableEmptyException
+        2 inst       0.0 KB  org.autojs.autojs.network.UpdateChecker$PromptMode
+       13 inst       0.2 KB  org.autojs.autojs.permission.AllFilesAccessPermission
+        1 inst       0.0 KB  org.autojs.autojs.permission.AllFilesAccessPermission$Companion
+       13 inst       0.2 KB  org.autojs.autojs.permission.BibiAccessibilityPermission
+       13 inst       0.2 KB  org.autojs.autojs.permission.BibiBluetoothMicPermission
+       13 inst       0.2 KB  org.autojs.autojs.permission.BibiBootAutostartPermission
+        1 inst       0.0 KB  org.autojs.autojs.permission.BibiHostPermissionRouterImpl
+       13 inst       0.2 KB  org.autojs.autojs.permission.BibiMicrophonePermission
+       14 inst       0.2 KB  org.autojs.autojs.permission.DisplayOverOtherAppsPermission
+       13 inst       0.2 KB  org.autojs.autojs.permission.IgnoreBatteryOptimizationsPermission
+       13 inst       0.2 KB  org.autojs.autojs.permission.MediaProjectionPermission
+       13 inst       0.2 KB  org.autojs.autojs.permission.PostNotificationsPermission
+        1 inst       0.0 KB  org.autojs.autojs.permission.PostNotificationsPermission$Companion
+       13 inst       0.2 KB  org.autojs.autojs.permission.ShizukuPermission
+       13 inst       0.2 KB  org.autojs.autojs.permission.UsageStatsPermission
+       13 inst       0.2 KB  org.autojs.autojs.permission.VivoBackgroundPopupPermission
+        1 inst       0.0 KB  org.autojs.autojs.permission.VivoBackgroundPopupPermission$Companion
+       13 inst       0.2 KB  org.autojs.autojs.permission.WriteSecureSettingsPermission
+       13 inst       0.2 KB  org.autojs.autojs.permission.WriteSystemSettingsPermission
+       13 inst       0.2 KB  org.autojs.autojs.permission.XiaomiBackgroundPopupPermission
+        1 inst       0.0 KB  org.autojs.autojs.permission.XiaomiBackgroundPopupPermission$Companion
+       16 inst       0.6 KB  org.autojs.autojs.pio.PFile
+        1 inst       0.0 KB  org.autojs.autojs.pio.PFiles
+        3 inst       0.0 KB  org.autojs.autojs.pio.PFiles$OpenMode
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginResponseHandler
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginResponseHandler$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginResponseHandler$$ExternalSyntheticLambda1
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginResponseHandler$$ExternalSyntheticLambda2
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginResponseHandler$$ExternalSyntheticLambda3
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginResponseHandler$$ExternalSyntheticLambda4
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginResponseHandler$$ExternalSyntheticLambda5
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginService   <== DevPluginService
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginService$Companion   <== DevPluginService
+        2 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginService$State   <== DevPluginService
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.DevPluginService$State$Companion   <== DevPluginService
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.JsonSocketClient$Companion
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.JsonSocketServer$Companion
+        2 inst       0.0 KB  org.autojs.autojs.pluginclient.Router
+        1 inst       0.0 KB  org.autojs.autojs.pluginclient.Router$RootRouter
+        3 inst       0.1 KB  org.autojs.autojs.project.BuildInfo
+        4 inst       0.0 KB  org.autojs.autojs.project.FuzzyDeserializer
+        3 inst       0.1 KB  org.autojs.autojs.project.LaunchConfig
+        3 inst       0.2 KB  org.autojs.autojs.project.ProjectConfig
+        1 inst       0.1 KB  org.autojs.autojs.rhino.AndroidClassLoader
+        1 inst       0.0 KB  org.autojs.autojs.rhino.AndroidClassLoader$Companion
+        1 inst       0.0 KB  org.autojs.autojs.rhino.AndroidContextFactory$Companion
+        1 inst       0.0 KB  org.autojs.autojs.rhino.AndroidContextFactory$WrapFactory
+        1 inst       0.0 KB  org.autojs.autojs.rhino.InterruptibleAndroidContextFactory
+        1 inst       0.0 KB  org.autojs.autojs.runtime.ScriptBridges
+        1 inst       0.0 KB  org.autojs.autojs.runtime.ScriptRuntime$Companion
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.AppUtils
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.AppUtils$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.AppUtils$Companion
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.Permissions$Companion
+        2 inst       0.0 KB  org.autojs.autojs.runtime.api.Permissions$Companion$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.ScreenMetrics$Companion
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.Shell
+        1 inst       0.1 KB  org.autojs.autojs.runtime.api.Shell$MyShellTermSession
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.WrappedShizuku
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.WrappedShizuku$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.WrappedShizuku$$ExternalSyntheticLambda1
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.WrappedShizuku$$ExternalSyntheticLambda2
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.WrappedShizuku$$ExternalSyntheticLambda3
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.WrappedShizuku$$ExternalSyntheticLambda4
+        1 inst       0.0 KB  org.autojs.autojs.runtime.api.WrappedShizuku$mUserServiceConnection$1
+       26 inst       0.4 KB  org.autojs.autojs.service.ForegroundService   <== ForegroundService
+       13 inst       0.2 KB  org.autojs.autojs.service.NotificationService   <== NotificationService
+        1 inst       0.0 KB  org.autojs.autojs.storage.database.IntentTaskDatabase
+        1 inst       0.0 KB  org.autojs.autojs.storage.database.TimedTaskDatabase
+        1 inst       0.0 KB  org.autojs.autojs.storage.file.TmpScriptFilesCleanupScheduler
+        1 inst       0.0 KB  org.autojs.autojs.storage.file.TmpScriptFilesCleanupWorker$Companion
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryCleanupScheduler
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDao_Impl
+        2 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDao_Impl$$ExternalSyntheticLambda18
+        2 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDao_Impl$$ExternalSyntheticLambda6
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDao_Impl$1
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDao_Impl$2
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDao_Impl$3
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDao_Impl$Companion
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDatabase$Companion
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDatabase$Companion$MIGRATION_1_2$1
+        1 inst       0.1 KB  org.autojs.autojs.storage.history.HistoryDatabase_Impl
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.HistoryDatabase_Impl$createOpenDelegate$_openDelegate$1
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.TrashBlobStore$Companion
+        1 inst       0.0 KB  org.autojs.autojs.storage.history.TrashPartialCleanupWorker$Companion
+        2 inst       0.0 KB  org.autojs.autojs.storage.history.TrashStatsRow
+        2 inst       0.0 KB  org.autojs.autojs.storage.history.VersionHistoryStatsRow
+        1 inst       0.0 KB  org.autojs.autojs.theme.ThemeChangeNotifier
+        2 inst       0.0 KB  org.autojs.autojs.theme.ThemeColor
+        1 inst       0.0 KB  org.autojs.autojs.theme.ThemeColor$Companion
+        1 inst       0.0 KB  org.autojs.autojs.theme.ThemeColorManager
+        1 inst       0.0 KB  org.autojs.autojs.theme.ThemeColorManager$BackgroundColorManager
+        1 inst       0.0 KB  org.autojs.autojs.theme.ThemeColorManager$ThemeColorMutableManager
+        1 inst       0.0 KB  org.autojs.autojs.theme.app.ColorSelectBaseActivity$$ExternalSyntheticLambda1   <== ColorSelectBaseActivity
+        1 inst       0.0 KB  org.autojs.autojs.theme.app.ColorSelectBaseActivity$Companion   <== ColorSelectBaseActivity
+       91 inst      78.5 KB  org.autojs.autojs.theme.widget.ThemeColorFloatingActionButton
+       13 inst      13.3 KB  org.autojs.autojs.theme.widget.ThemeColorSwipeRefreshLayout
+       13 inst      13.7 KB  org.autojs.autojs.theme.widget.ThemeColorToolbar
+        3 inst       0.0 KB  org.autojs.autojs.theme.widget.ThemeColorToolbar$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.timing.AlarmTimedTaskScheduler
+        1 inst       0.0 KB  org.autojs.autojs.timing.TimedTaskManager
+        1 inst       0.0 KB  org.autojs.autojs.timing.TimedTaskScheduler
+        1 inst       0.0 KB  org.autojs.autojs.timing.WorkTimedTaskScheduler
+        1 inst       0.0 KB  org.autojs.autojs.tool.CrashHandler
+        1 inst       0.0 KB  org.autojs.autojs.tool.CrashHandler$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.tool.CrashHandler$Companion
+        1 inst       0.0 KB  org.autojs.autojs.tool.UiHandler
+        2 inst       0.0 KB  org.autojs.autojs.ui.BaseActivity$$ExternalSyntheticLambda0   <== BaseActivity
+        2 inst       0.0 KB  org.autojs.autojs.ui.BaseActivity$sam$androidx_lifecycle_Observer$0   <== BaseActivity
+        1 inst       0.0 KB  org.autojs.autojs.ui.doc.DocumentationActivity$Companion   <== DocumentationActivity
+       25 inst       4.9 KB  org.autojs.autojs.ui.doc.DocumentationFragment   <== DocumentationFragment
+       13 inst       0.1 KB  org.autojs.autojs.ui.doc.DocumentationFragment$$ExternalSyntheticLambda0   <== DocumentationFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.doc.DocumentationFragment$$ExternalSyntheticLambda1   <== DocumentationFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.doc.DocumentationFragment$$ExternalSyntheticLambda2   <== DocumentationFragment
+        1 inst       0.0 KB  org.autojs.autojs.ui.doc.DocumentationFragment$Companion   <== DocumentationFragment
+       25 inst       0.4 KB  org.autojs.autojs.ui.doc.DocumentationFragment$special$$inlined$viewBinding$1   <== DocumentationFragment
+        2 inst       0.0 KB  org.autojs.autojs.ui.doc.DocumentationFragment$special$$inlined$viewBinding$1$1   <== DocumentationFragment
+        1 inst       0.1 KB  org.autojs.autojs.ui.enhancedfloaty.ResizableExpandableFloatyWindow
+        1 inst       0.0 KB  org.autojs.autojs.ui.enhancedfloaty.ResizableExpandableFloatyWindow$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.ui.enhancedfloaty.ResizableExpandableFloatyWindow$Companion
+        1 inst       0.0 KB  org.autojs.autojs.ui.enhancedfloaty.ViewStack
+        6 inst       5.7 KB  org.autojs.autojs.ui.explorer.ExplorerProjectToolbar
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerProjectToolbar$$ExternalSyntheticLambda2
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerProjectToolbar$$ExternalSyntheticLambda3
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerProjectToolbar$$ExternalSyntheticLambda4
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerProjectToolbar$$ExternalSyntheticLambda6
+        6 inst       6.6 KB  org.autojs.autojs.ui.explorer.ExplorerView
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$$ExternalSyntheticLambda12
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$$ExternalSyntheticLambda13
+        3 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$$ExternalSyntheticLambda14
+        5 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$$ExternalSyntheticLambda20
+        1 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$$ExternalSyntheticLambda26
+        5 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$$ExternalSyntheticLambda27
+        5 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$$ExternalSyntheticLambda28
+        5 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$$ExternalSyntheticLambda29
+        1 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$Companion
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerAdapter
+        6 inst       0.6 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerCategoryViewHolder
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerCategoryViewHolder$$ExternalSyntheticLambda0
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerCategoryViewHolder$$ExternalSyntheticLambda1
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerCategoryViewHolder$$ExternalSyntheticLambda2
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerCategoryViewHolder$$ExternalSyntheticLambda3
+        8 inst       1.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda0
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda1
+       12 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda10
+       12 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda11
+        4 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda13
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda14
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda15
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda16
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda17
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda18
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda2
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda22
+        4 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda23
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda24
+        8 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda30
+        8 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda31
+        8 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda32
+        8 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda33
+        8 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda34
+        8 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda35
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda7
+        4 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda8
+       12 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerItemViewHolder$$ExternalSyntheticLambda9
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerPageState
+       10 inst       1.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerPageViewHolder
+       10 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerPageViewHolder$$ExternalSyntheticLambda14
+       10 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$ExplorerPageViewHolder$$ExternalSyntheticLambda15
+        6 inst       0.1 KB  org.autojs.autojs.ui.explorer.ExplorerView$init$1$1$1$1
+        1 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$refreshCurrentPage$3
+        1 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerView$refreshCurrentPage$4
+        1 inst       0.0 KB  org.autojs.autojs.ui.explorer.ExplorerViewHelper
+        1 inst       0.0 KB  org.autojs.autojs.ui.fragment.BindingDelegates
+       13 inst      12.1 KB  org.autojs.autojs.ui.main.FloatingActionMenu
+       13 inst       6.3 KB  org.autojs.autojs.ui.main.MainActivity   <== MainActivity
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.MainActivity$$ExternalSyntheticLambda0   <== MainActivity
+        2 inst       0.0 KB  org.autojs.autojs.ui.main.MainActivity$$ExternalSyntheticLambda1   <== MainActivity
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.MainActivity$$ExternalSyntheticLambda2   <== MainActivity
+        1 inst       0.0 KB  org.autojs.autojs.ui.main.MainActivity$Companion   <== MainActivity
+       13 inst       0.3 KB  org.autojs.autojs.ui.main.MainActivity$mBackPressedCallback$1   <== MainActivity
+        6 inst       0.2 KB  org.autojs.autojs.ui.main.MainActivity$setUpSearchMenuItem$1   <== MainActivity
+        6 inst       0.1 KB  org.autojs.autojs.ui.main.MainActivity$setUpSearchMenuItem$2$1   <== MainActivity
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.MainActivity$setUpTabViewPager$2$1   <== MainActivity
+       13 inst       0.6 KB  org.autojs.autojs.ui.main.MainActivity$setUpToolbar$1   <== MainActivity
+       76 inst       0.9 KB  org.autojs.autojs.ui.main.ViewPagerFragment$$ExternalSyntheticLambda0   <== ViewPagerFragment
+       13 inst       4.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment   <== DrawerFragment
+       13 inst       0.1 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda1   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda10   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda11   <== DrawerFragment
+        2 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda12   <== DrawerFragment
+        2 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda13   <== DrawerFragment
+       13 inst       0.3 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda14   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda15   <== DrawerFragment
+       13 inst       0.3 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda16   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda17   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda18   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda19   <== DrawerFragment
+       13 inst       0.1 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda2   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda20   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda21   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda22   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda23   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda24   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda25   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda26   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda27   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda28   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda29   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda3   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda30   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda31   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda32   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda33   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda34   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda35   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda36   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda37   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda38   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda39   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda4   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda40   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda41   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda42   <== DrawerFragment
+       13 inst       0.1 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda43   <== DrawerFragment
+        2 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda44   <== DrawerFragment
+        2 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda45   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda46   <== DrawerFragment
+      325 inst       3.8 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda47   <== DrawerFragment
+        3 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda48   <== DrawerFragment
+        3 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda49   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda5   <== DrawerFragment
+        3 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda50   <== DrawerFragment
+        3 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda51   <== DrawerFragment
+        3 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda52   <== DrawerFragment
+        3 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda53   <== DrawerFragment
+        3 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda54   <== DrawerFragment
+        3 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda55   <== DrawerFragment
+        2 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda6   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda7   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda8   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$$ExternalSyntheticLambda9   <== DrawerFragment
+        1 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$Companion   <== DrawerFragment
+       13 inst       0.3 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$onCreate$2   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$onCreate$24   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$onCreate$26   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$onCreate$28   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$onCreate$5   <== DrawerFragment
+        2 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$sam$androidx_lifecycle_Observer$0   <== DrawerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$special$$inlined$viewBinding$1   <== DrawerFragment
+        2 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerFragment$special$$inlined$viewBinding$1$1   <== DrawerFragment
+       13 inst       0.3 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuAdapter
+       26 inst       1.8 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuDisposableItem
+       26 inst       0.4 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuDisposableItem$$ExternalSyntheticLambda0
+      104 inst       3.8 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuGroup
+       40 inst       3.5 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuGroupViewHolder
+      144 inst      17.2 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuItemViewHolder
+      144 inst       1.7 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuItemViewHolder$$ExternalSyntheticLambda0
+      144 inst       1.7 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuItemViewHolder$$ExternalSyntheticLambda1
+      144 inst       1.7 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuItemViewHolder$$ExternalSyntheticLambda2
+      144 inst       1.7 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuItemViewHolder$$ExternalSyntheticLambda3
+      144 inst       2.2 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuItemViewHolder$$ExternalSyntheticLambda4
+      144 inst       1.7 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuItemViewHolder$$ExternalSyntheticLambda5
+        1 inst       0.0 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuItemViewHolder$Companion
+       65 inst       2.3 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuShortcutItem
+      299 inst      19.0 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuToggleableItem
+      325 inst       3.8 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuToggleableItem$$ExternalSyntheticLambda13
+      325 inst       6.3 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuToggleableItem$$ExternalSyntheticLambda14
+      325 inst       3.8 KB  org.autojs.autojs.ui.main.drawer.DrawerMenuToggleableItem$$ExternalSyntheticLambda15
+       13 inst      12.1 KB  org.autojs.autojs.ui.main.plugin.PluginFloatingActionMenu
+       13 inst       2.4 KB  org.autojs.autojs.ui.main.plugin.PluginFragment   <== PluginFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.plugin.PluginFragment$$ExternalSyntheticLambda1   <== PluginFragment
+        1 inst       0.0 KB  org.autojs.autojs.ui.main.plugin.PluginFragment$Companion   <== PluginFragment
+       25 inst       4.8 KB  org.autojs.autojs.ui.main.scripts.ExplorerFragment   <== ExplorerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.scripts.ExplorerFragment$$ExternalSyntheticLambda0   <== ExplorerFragment
+        6 inst       0.1 KB  org.autojs.autojs.ui.main.scripts.ExplorerFragment$onViewCreated$1$1   <== ExplorerFragment
+       25 inst       0.4 KB  org.autojs.autojs.ui.main.scripts.ExplorerFragment$special$$inlined$viewBinding$1   <== ExplorerFragment
+        2 inst       0.0 KB  org.autojs.autojs.ui.main.scripts.ExplorerFragment$special$$inlined$viewBinding$1$1   <== ExplorerFragment
+       13 inst       2.5 KB  org.autojs.autojs.ui.main.task.TaskManagerFragment   <== TaskManagerFragment
+       13 inst       0.2 KB  org.autojs.autojs.ui.main.task.TaskManagerFragment$special$$inlined$viewBinding$1   <== TaskManagerFragment
+       13 inst      14.0 KB  org.autojs.autojs.ui.pager.ScrollControllableViewPager
+        7 inst       0.2 KB  org.autojs.autojs.ui.viewmodel.ExplorerItemManager
+        1 inst       0.0 KB  org.autojs.autojs.ui.viewmodel.ExplorerItemManager$Companion
+        6 inst       0.1 KB  org.autojs.autojs.ui.viewmodel.ExplorerItemManager$SortConfig
+        1 inst       0.0 KB  org.autojs.autojs.ui.viewmodel.ExplorerItemManager$SortConfig$Companion
+       13 inst       0.2 KB  org.autojs.autojs.ui.widget.DrawerAutoClose
+       13 inst      11.9 KB  org.autojs.autojs.ui.widget.EWebView
+       13 inst       0.2 KB  org.autojs.autojs.ui.widget.EWebView$MyWebChromeClient
+        8 inst       9.7 KB  org.autojs.autojs.ui.widget.FirstCharView
+        1 inst       0.0 KB  org.autojs.autojs.ui.widget.FirstCharView$Companion
+       13 inst      11.8 KB  org.autojs.autojs.ui.widget.NestedWebView
+      144 inst     200.8 KB  org.autojs.autojs.ui.widget.PrefSwitch
+       13 inst       0.2 KB  org.autojs.autojs.ui.widget.ScrollAwareFABBehavior
+        1 inst       0.0 KB  org.autojs.autojs.util.ColorUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.DisplayUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.DocsUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.EnvironmentUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils
+       33 inst       0.5 KB  org.autojs.autojs.util.FileUtils$CandidateCriterion
+       32 inst       1.2 KB  org.autojs.autojs.util.FileUtils$IconData
+      825 inst      38.7 KB  org.autojs.autojs.util.FileUtils$TYPE
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda0
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda1
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda10
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda11
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda12
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda13
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda14
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda15
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda16
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda17
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda18
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda19
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda2
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda20
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda21
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda22
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda24
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda25
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda26
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda27
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda28
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda29
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda3
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda30
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda32
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda33
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda34
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda4
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda5
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda6
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda7
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda8
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$$ExternalSyntheticLambda9
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TYPE$Companion
+      825 inst      22.6 KB  org.autojs.autojs.util.FileUtils$TYPE$Icon
+       37 inst       0.6 KB  org.autojs.autojs.util.FileUtils$TypeData
+        1 inst       0.0 KB  org.autojs.autojs.util.FileUtils$TypeDataHolder
+        1 inst       0.0 KB  org.autojs.autojs.util.IntentUtils$App
+        1 inst       0.0 KB  org.autojs.autojs.util.JsonUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.LocaleUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.NetworkUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.NotificationUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.RhinoUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.RhinoUtils$$ExternalSyntheticLambda22
+        1 inst       0.0 KB  org.autojs.autojs.util.RhinoUtils$$ExternalSyntheticLambda23
+        1 inst       0.0 KB  org.autojs.autojs.util.RhinoUtils$$ExternalSyntheticLambda24
+        1 inst       0.0 KB  org.autojs.autojs.util.RhinoUtils$$ExternalSyntheticLambda25
+        1 inst       0.0 KB  org.autojs.autojs.util.RomUtils
+        3 inst       0.1 KB  org.autojs.autojs.util.RootUtils$RootMode
+        1 inst       0.0 KB  org.autojs.autojs.util.StringUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.UpdateUtils
+        1 inst       0.0 KB  org.autojs.autojs.util.UpdateUtils$$ExternalSyntheticLambda2
+        1 inst       0.0 KB  org.autojs.autojs.util.UpdateUtils$IntervalChecker
+        1 inst       0.0 KB  org.autojs.autojs.util.ViewUtils
+       13 inst       0.1 KB  org.autojs.autojs.util.ViewUtils$$ExternalSyntheticLambda10
+       13 inst       0.2 KB  org.autojs.autojs.util.ViewUtils$$ExternalSyntheticLambda11
+        3 inst       0.0 KB  org.autojs.autojs.util.ViewUtils$$ExternalSyntheticLambda12
+        6 inst       0.1 KB  org.autojs.autojs.util.ViewUtils$$ExternalSyntheticLambda7
+        1 inst       0.0 KB  org.autojs.autojs.util.ViewUtils$AutoNightMode$Companion
+        4 inst       0.1 KB  org.autojs.autojs.util.ViewUtils$MODE
+      288 inst      17.4 KB  org.autojs.autojs.util.ViewUtils$installFullRowRippleForwarder$1$1
+      288 inst       6.8 KB  org.autojs.autojs.util.ViewUtils$installFullRowRippleForwarder$1$1$$ExternalSyntheticLambda2
+        6 inst       0.1 KB  org.autojs.autojs.util.ViewUtils$onceGlobalLayout$1
+        1 inst       0.0 KB  org.autojs.autojs.util.WebViewUtils$Companion
+       13 inst       0.2 KB  org.autojs.autojs.util.WebViewUtils$Companion$$ExternalSyntheticLambda0
+       13 inst       0.3 KB  org.autojs.autojs.util.WebViewUtils$Companion$excludeWebViewFromSystemBars$2
+        1 inst       0.0 KB  org.autojs.autojs.util.WorkingDirectoryUtils
+
+==============================================================================
+四、Activity / Service / Fragment 实例与销毁状态 (mDestroyed)
+==============================================================================
+  -- Activity --
+       13 inst  org.autojs.autojs.ui.main.MainActivity   mDestroyed=True: 12 个, 其中 12 个仍可达
+  -- Service --
+        1 inst  com.brycewg.asrkb.wake.WakeWordService
+        1 inst  androidx.work.impl.background.systemjob.SystemJobService
+        1 inst  com.brycewg.asrkb.ui.floating.FloatingAsrService
+  -- Fragment --
+       25 inst  org.autojs.autojs.ui.main.scripts.ExplorerFragment
+       25 inst  org.autojs.autojs.ui.doc.DocumentationFragment
+       13 inst  org.autojs.autojs.ui.main.plugin.PluginFragment
+       13 inst  org.autojs.autojs.ui.main.task.TaskManagerFragment
+       13 inst  org.autojs.autojs.ui.main.drawer.DrawerFragment
+  -- android.app.Dialog (top5) --
+        2 inst  com.afollestad.materialdialogs.MaterialDialog
+  -- android.app.Application (top5) --
+        1 inst  org.autojs.autojs.App
+  -- android.content.ContentProvider (top5) --
+        1 inst  leakcanary.internal.MainProcessAppWatcherInstaller
+        1 inst  com.twofortyfouram.spackle.internal.DefaultProcessNameContentProvider
+        1 inst  org.autojs.autojs.deviceid.DeviceIdProvider
+        1 inst  leakcanary.internal.PlumberInstaller
+        1 inst  rikka.shizuku.ShizukuProvider
+  -- android.content.BroadcastReceiver (top5) --
+        3 inst  androidx.work.impl.constraints.trackers.BroadcastReceiverConstraintTracker$broadcastReceiver$1
+        3 inst  WV.ry
+        2 inst  org.autojs.autojs.external.receiver.BaseBroadcastReceiver
+        1 inst  WV.ti1
+        1 inst  WV.go2
+  -- android.os.Handler (top5) --
+      322 inst  android.os.Handler
+      144 inst  android.view.View$VisibilityChangeForAutofillHandler
+       21 inst  android.view.GestureDetector$GestureHandler
+       13 inst  WV.cg
+       13 inst  WV.lk
+
+==============================================================================
+五、LeakCanary KeyedWeakReference 监视对象与泄漏链
+==============================================================================
+
+  监视对象: ?   (key=14581720-cebb-4294-bd82-5636bb89e4bc, name=)
+    referent 不可达 — 无泄漏
+
+  监视对象: ?   (key=60bd3e53-c942-4e39-be7e-594d70555379, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.drawer.DrawerFragment
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mPagerAdapter ↓
+        org.autojs.autojs.app.FragmentPagerAdapterBuilder$1
+          .mFragmentManager ↓
+        androidx.fragment.app.FragmentManagerImpl
+          .mFragmentStore ↓
+        androidx.fragment.app.FragmentStore
+          .mAdded ↓
+        java.util.ArrayList
+          .elementData ↓
+        java.lang.Object[][10]
+          .[i] ↓
+      ★ LEAKED: org.autojs.autojs.ui.main.drawer.DrawerFragment
+
+  监视对象: ?   (key=bdc150ab-03f8-44c3-981f-9cfe4e29872e, name=)
+    状态: 仍可达自 GC Root — 泄漏! android.widget.LinearLayout
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mActionBarDrawerToggle ↓
+        org.autojs.autojs.ui.main.MainActivity$setUpToolbar$1
+          .mDrawerLayout ↓
+        androidx.drawerlayout.widget.DrawerLayout
+          .mChildren ↓
+        android.view.View[][12]
+          .[i] ↓
+        androidx.fragment.app.FragmentContainerView
+          .mMatchParentChildren ↓
+        java.util.ArrayList
+          .elementData ↓
+        java.lang.Object[][1]
+          .[i] ↓
+      ★ LEAKED: android.widget.LinearLayout
+
+  监视对象: ?   (key=50dc2a05-80c6-4ff1-b0cb-23bec55e59ed, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.doc.DocumentationFragment
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mPagerAdapter ↓
+        org.autojs.autojs.app.FragmentPagerAdapterBuilder$1
+          .mStoredFragments ↓
+        android.util.SparseArray
+          .mValues ↓
+        java.lang.Object[][9]
+          .[i] ↓
+      ★ LEAKED: org.autojs.autojs.ui.doc.DocumentationFragment
+
+  监视对象: ?   (key=ffac9959-ed2d-4956-aad8-a10e7c6eea05, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.widget.EWebView
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mPagerAdapter ↓
+        org.autojs.autojs.app.FragmentPagerAdapterBuilder$1
+          .mStoredFragments ↓
+        android.util.SparseArray
+          .mValues ↓
+        java.lang.Object[][9]
+          .[i] ↓
+        org.autojs.autojs.ui.doc.DocumentationFragment
+          .mWebView ↓
+        org.autojs.autojs.ui.widget.NestedWebView
+          .mParent ↓
+        org.autojs.autojs.theme.widget.ThemeColorSwipeRefreshLayout
+          .mListener ↓
+      ★ LEAKED: org.autojs.autojs.ui.widget.EWebView
+
+  监视对象: ?   (key=cd6aa9b0-eeba-4aa0-8a87-bb58ae7cc5a3, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.scripts.ExplorerFragment
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mPagerAdapter ↓
+        org.autojs.autojs.app.FragmentPagerAdapterBuilder$1
+          .mCurrentPrimaryItem ↓
+      ★ LEAKED: org.autojs.autojs.ui.main.scripts.ExplorerFragment
+
+  监视对象: ?   (key=a1e0f81d-b23f-4c23-b76b-d051d93d1691, name=)
+    referent 已清空 (weak ref cleared)
+
+  监视对象: ?   (key=49a9adad-a5ab-474a-b34b-29f48ff68b5c, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.MainActivity
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+      ★ LEAKED: org.autojs.autojs.ui.main.MainActivity
+
+  监视对象: ?   (key=a52f02ec-7a6b-419f-b7d6-ec140726bb06, name=)
+    状态: 仍可达自 GC Root — 泄漏! androidx.lifecycle.ReportFragment
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mFragments ↓
+        android.app.FragmentController
+          .mHost ↓
+        android.app.Activity$HostCallbacks
+          .mFragmentManager ↓
+        android.app.FragmentManagerImpl
+          .mAdded ↓
+        java.util.ArrayList
+          .elementData ↓
+        java.lang.Object[][10]
+          .[i] ↓
+      ★ LEAKED: androidx.lifecycle.ReportFragment
+
+  监视对象: ?   (key=e58dcad1-4204-4a9d-8fc8-0481c6cbca00, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.doc.DocumentationFragment
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mPagerAdapter ↓
+        org.autojs.autojs.app.FragmentPagerAdapterBuilder$1
+          .mStoredFragments ↓
+        android.util.SparseArray
+          .mValues ↓
+        java.lang.Object[][9]
+          .[i] ↓
+      ★ LEAKED: org.autojs.autojs.ui.doc.DocumentationFragment
+
+  监视对象: ?   (key=6eefa87b-e82a-491b-b87e-8d0a7ec8b785, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.widget.EWebView
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mPagerAdapter ↓
+        org.autojs.autojs.app.FragmentPagerAdapterBuilder$1
+          .mStoredFragments ↓
+        android.util.SparseArray
+          .mValues ↓
+        java.lang.Object[][9]
+          .[i] ↓
+        org.autojs.autojs.ui.doc.DocumentationFragment
+          .mWebView ↓
+        org.autojs.autojs.ui.widget.NestedWebView
+          .mParent ↓
+        org.autojs.autojs.theme.widget.ThemeColorSwipeRefreshLayout
+          .mListener ↓
+      ★ LEAKED: org.autojs.autojs.ui.widget.EWebView
+
+  监视对象: ?   (key=d3fe6297-a84f-4a60-8708-866368e2b1f1, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.scripts.ExplorerFragment
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mPagerAdapter ↓
+        org.autojs.autojs.app.FragmentPagerAdapterBuilder$1
+          .mCurrentPrimaryItem ↓
+      ★ LEAKED: org.autojs.autojs.ui.main.scripts.ExplorerFragment
+
+  监视对象: ?   (key=ff7303a7-e137-4805-90c5-ee65cab62cb7, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.drawer.DrawerFragment
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mPagerAdapter ↓
+        org.autojs.autojs.app.FragmentPagerAdapterBuilder$1
+          .mFragmentManager ↓
+        androidx.fragment.app.FragmentManagerImpl
+          .mFragmentStore ↓
+        androidx.fragment.app.FragmentStore
+          .mAdded ↓
+        java.util.ArrayList
+          .elementData ↓
+        java.lang.Object[][10]
+          .[i] ↓
+      ★ LEAKED: org.autojs.autojs.ui.main.drawer.DrawerFragment
+
+  监视对象: ?   (key=dec2c8fd-afa2-4809-bff0-7065551d9b52, name=)
+    状态: 仍可达自 GC Root — 泄漏! android.widget.LinearLayout
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+        org.autojs.autojs.ui.main.MainActivity
+          .mActionBarDrawerToggle ↓
+        org.autojs.autojs.ui.main.MainActivity$setUpToolbar$1
+          .mDrawerLayout ↓
+        androidx.drawerlayout.widget.DrawerLayout
+          .mChildren ↓
+        android.view.View[][12]
+          .[i] ↓
+        androidx.fragment.app.FragmentContainerView
+          .mMatchParentChildren ↓
+        java.util.ArrayList
+          .elementData ↓
+        java.lang.Object[][1]
+          .[i] ↓
+      ★ LEAKED: android.widget.LinearLayout
+
+  监视对象: ?   (key=ba2b0647-1c7c-4ab3-ba4b-e457ed65b9f8, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.MainActivity
+
+  监视对象: ?   (key=6961e222-2526-49f6-be7e-6a33951d7b95, name=)
+    状态: 仍可达自 GC Root — 泄漏! androidx.lifecycle.ReportFragment
+
+  监视对象: ?   (key=293020d6-4301-45f5-b7c4-51204e5ab4ca, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.doc.DocumentationFragment
+
+  监视对象: ?   (key=ddb7e60d-49a6-40ce-9ef0-c6650f84420d, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.widget.EWebView
+
+  监视对象: ?   (key=4c82dae5-793e-44db-8df7-358c36f6e87d, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.scripts.ExplorerFragment
+
+  监视对象: ?   (key=5b596d09-53db-4c8d-83f9-91a3e17a0041, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.drawer.DrawerFragment
+
+  监视对象: ?   (key=f5901a92-9ae1-4d49-a5b7-cc12d57d492b, name=)
+    状态: 仍可达自 GC Root — 泄漏! android.widget.LinearLayout
+
+  监视对象: ?   (key=76fd165d-00ff-40e4-953b-af9581a70221, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.MainActivity
+
+  监视对象: ?   (key=fe9b7830-14a2-4de0-b0d4-0b107e491c65, name=)
+    状态: 仍可达自 GC Root — 泄漏! androidx.lifecycle.ReportFragment
+
+  监视对象: ?   (key=77bd6068-cfd1-45cf-b80b-2dd204cd4c53, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.doc.DocumentationFragment
+
+  监视对象: ?   (key=f303b7b5-8a65-43b7-a96a-ee2dd07403a5, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.widget.EWebView
+
+  监视对象: ?   (key=c1990add-be1b-4a03-8e46-8d418aa30b81, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.scripts.ExplorerFragment
+
+  监视对象: ?   (key=17dbbecd-a21e-43ee-9546-172960ff30b1, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.drawer.DrawerFragment
+
+  监视对象: ?   (key=223eb382-3576-41fb-b1f0-e4155fac0ce0, name=)
+    状态: 仍可达自 GC Root — 泄漏! android.widget.LinearLayout
+
+  监视对象: ?   (key=d9ac0ac2-d8c4-49fa-9a25-b6871a8763a3, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.MainActivity
+
+  监视对象: ?   (key=f412dfdc-d629-4c52-b719-6f41bbcb51e5, name=)
+    状态: 仍可达自 GC Root — 泄漏! androidx.lifecycle.ReportFragment
+
+  监视对象: ?   (key=c8592d0a-553e-453e-b862-c2c489057754, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.drawer.DrawerFragment
+
+  监视对象: ?   (key=1c2ca2c1-2084-4865-ba53-a58c39d76cf4, name=)
+    状态: 仍可达自 GC Root — 泄漏! android.widget.LinearLayout
+
+  监视对象: ?   (key=de066cb8-54f0-4ab8-b2bc-4ec2f16b42af, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.doc.DocumentationFragment
+
+  监视对象: ?   (key=7275ae26-d658-4159-958d-f6616c544ab4, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.widget.EWebView
+
+  监视对象: ?   (key=dd19183b-ccb2-4343-8419-ad01e3d8c681, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.scripts.ExplorerFragment
+
+  监视对象: ?   (key=58b442ac-d681-4317-89db-f4734e1ea0da, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.MainActivity
+
+  监视对象: ?   (key=1d0a90ef-24d3-43b7-b595-325d81703ba4, name=)
+    状态: 仍可达自 GC Root — 泄漏! androidx.lifecycle.ReportFragment
+
+  监视对象: ?   (key=83e16262-af57-4cc0-a375-9d0e11285580, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.drawer.DrawerFragment
+
+  监视对象: ?   (key=f71ef7db-e0f0-4465-964b-1684107cd347, name=)
+    状态: 仍可达自 GC Root — 泄漏! android.widget.LinearLayout
+
+  监视对象: ?   (key=80b79e0b-0680-4a22-8af6-02d8ef2bc139, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.doc.DocumentationFragment
+
+  监视对象: ?   (key=e0e621d3-bb2d-40d9-832d-1fd3fe75a221, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.widget.EWebView
+
+  监视对象: ?   (key=ee13d85c-ac99-4538-9470-23a7527d7f2c, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.scripts.ExplorerFragment
+
+  监视对象: ?   (key=aa638186-9f43-4f80-93dc-d176f0f4bb67, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.MainActivity
+
+  监视对象: ?   (key=a58854fb-8d50-45f8-870d-e562bd77bf21, name=)
+    状态: 仍可达自 GC Root — 泄漏! androidx.lifecycle.ReportFragment
+
+  监视对象: ?   (key=fe8aaa02-b897-49c9-ba08-6e4e09bb6620, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.scripts.ExplorerFragment
+
+  监视对象: ?   (key=e120a3bb-73a0-4efd-b8c6-058df6e19455, name=)
+    referent 不可达 — 无泄漏
+
+  监视对象: ?   (key=9274f17b-5570-4f5a-be49-b91aab1df00f, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.MainActivity
+
+  监视对象: ?   (key=d6412ada-9075-47be-a1bb-f7918fc3f4df, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.widget.EWebView
+
+  监视对象: ?   (key=640b4c13-2238-4984-80f4-9e56bd0109e1, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.doc.DocumentationFragment
+
+  监视对象: ?   (key=8af2c94c-9345-40f2-99ad-d7cee7665d01, name=)
+    状态: 仍可达自 GC Root — 泄漏! android.widget.LinearLayout
+
+  监视对象: ?   (key=b6f87181-3510-46a7-9cd0-01d766ee3391, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.drawer.DrawerFragment
+
+  监视对象: ?   (key=6aaf9284-9d84-45f1-9585-4d6ea2417435, name=)
+    状态: 仍可达自 GC Root — 泄漏! androidx.lifecycle.ReportFragment
+
+  监视对象: ?   (key=57fd4baa-28fd-483a-9339-5743d905e418, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.MainActivity
+
+  监视对象: ?   (key=01b44f04-ee7f-4cce-bdb9-571cbbd78b1a, name=)
+    状态: 仍可达自 GC Root — 泄漏! android.widget.LinearLayout
+
+  监视对象: ?   (key=74c914f2-e870-4987-8389-460542189fbb, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.drawer.DrawerFragment
+
+  监视对象: ?   (key=71f6d15c-4fa0-4d4d-a36d-64061f0b3819, name=)
+    状态: 仍可达自 GC Root — 泄漏! android.widget.FrameLayout
+
+  监视对象: ?   (key=6b1ba9ac-16e0-4c6f-bc4e-31d566195f82, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.main.scripts.ExplorerFragment
+
+  监视对象: ?   (key=ebf97648-a833-48c6-bb6e-85d9c2b2b8b6, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.widget.EWebView
+
+  监视对象: ?   (key=444e3669-5a4f-4e84-ab86-4a090ee721e9, name=)
+    状态: 仍可达自 GC Root — 泄漏! androidx.lifecycle.ReportFragment
+
+  监视对象: ?   (key=a0f773e3-4498-4afb-8ddd-8248ea48a19b, name=)
+    状态: 仍可达自 GC Root — 泄漏! org.autojs.autojs.ui.doc.DocumentationFragment
+
+共监视 60 个对象, 其中 57 个仍可达 (泄漏候选)
+
+==============================================================================
+六、已销毁但可达的组件 (硬证据泄漏) 路径
+==============================================================================
+
+  org.autojs.autojs.ui.main.MainActivity (mDestroyed=True, 仍被持有)
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+      ★ LEAKED: org.autojs.autojs.ui.main.MainActivity
+
+  org.autojs.autojs.ui.main.MainActivity (mDestroyed=True, 仍被持有)
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.greenrobot.eventbus.EventBus
+          .static:defaultInstance ↓
+        org.greenrobot.eventbus.EventBus
+          .typesBySubscriber ↓
+        java.util.HashMap
+          .table ↓
+        java.util.HashMap$Node[][16]
+          .[i] ↓
+        java.util.HashMap$Node
+          .key ↓
+        org.autojs.autojs.ui.explorer.ExplorerView
+          .mContext ↓
+      ★ LEAKED: org.autojs.autojs.ui.main.MainActivity
+
+  org.autojs.autojs.ui.main.MainActivity (mDestroyed=True, 仍被持有)
+      GC Root: THREAD_OBJECT (java.lang.Thread)
+        java.lang.Thread
+          .contextClassLoader ↓
+        dalvik.system.PathClassLoader
+          .<classloader> ↓
+        class org.autojs.autojs.runtime.api.Permissions
+          .static:requestMultiplePermissionsLauncherCache ↓
+        java.util.WeakHashMap
+          .table ↓
+        java.util.WeakHashMap$Entry[][32]
+          .[i] ↓
+        java.util.WeakHashMap$Entry
+          .next ↓
+        java.util.WeakHashMap$Entry
+          .value ↓
+        androidx.activity.result.ActivityResultRegistry$register$2
+          .this$0 ↓
+        androidx.activity.ComponentActivity$activityResultRegistry$1
+          .this$0 ↓
+      ★ LEAKED: org.autojs.autojs.ui.main.MainActivity

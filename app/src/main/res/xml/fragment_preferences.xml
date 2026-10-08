@@ -15,6 +15,20 @@
 
     </org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory>
 
+    <!-- Operit (AI Agent) library entry (P7.1 / D-4). The module activity is exported=false,
+         so this drawer entry is the single entry point into the Operit main screen. -->
+    <org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory
+        app:layout="@layout/preference_category_custom"
+        app:title="@string/text_operit_entry">
+
+        <org.autojs.autojs.ui.settings.OperitMainPreference
+            app:layout="@layout/preference_custom"
+            app:title="@string/text_operit_entry"
+            app:summary="@string/summary_operit_entry"
+            app:icon="@drawable/ic_operit_ai" />
+
+    </org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory>
+
     <org.autojs.autojs.theme.preference.ThemeColorPreferenceCategory
         app:layout="@layout/preference_category_custom"
         app:title="@string/text_appearance">

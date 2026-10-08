@@ -11,6 +11,8 @@
 
 .DS_Store
 .externalNativeBuild
+.cxx/
+**/rust/target/
 output.json
 output-metadata.json
 desktop.ini

@@ -42,6 +42,20 @@ val isInrtTaskRequested = taskNames.any { it.contains(flavorNameInrt, true) }
 
 utils.registerTemplateApkCopy(project)
 
+// Operit port (P3, 2026-10-08): BouncyCastle family unification — the single-APP runtime
+// classpath must carry exactly one BC line. jdk18on 1.78 (operit + apk-parser) is kept; the
+// legacy jdk15on/jdk15to18 artifacts pulled transitively (pdfbox-android et al.) are excluded
+// at the aggregation point. Module-level excludes do not propagate through AAR metadata,
+// so this must live here. SYNC.md §4 deviation table.
+configurations.all {
+    exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
+    exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
+    exclude(group = "org.bouncycastle", module = "bcutil-jdk15on")
+    exclude(group = "org.bouncycastle", module = "bcprov-jdk15to18")
+    exclude(group = "org.bouncycastle", module = "bcpkix-jdk15to18")
+    exclude(group = "org.bouncycastle", module = "bcutil-jdk15to18")
+}
+
 dependencies /* Unclassified */ {
     // Compose
     // implementation("androidx.compose.ui:ui-android:1.6.7")
@@ -98,6 +112,9 @@ dependencies /* Unclassified */ {
     // Embedded HTTP MCP tool server (ported from eness-1/AutoX :mcp module)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)
+
+    // Operit 1:1 port module (host wiring point ② of the port plan §3)
+    implementation(project(":modules:operit"))
 
     // Glide
     implementation(libs.glide)
@@ -637,6 +654,11 @@ android {
             "LICENSE-junit.txt",
             "spec.txt",
             "EmojiReference.txt",
+            // Operit port (P3, 2026-10-08): eclipse-collections / eclipse-collections-api
+            // (pulled by operit's hnswlib-core vector index) ship duplicate EDL/EPL license
+            // files in both jars.
+            "LICENSE-EDL-1.0.txt",
+            "LICENSE-EPL-1.0.txt",
         ).let { resources.excludes.addAll(it) }
 
         if (isInrtTaskRequested) {

@@ -21,7 +21,11 @@ android {
 }
 
 dependencies {
-    implementation(libs.bcprov.jdk15on)
-    implementation(libs.bcpkix.jdk15on)
+    // Operit port (P3, 2026-10-08): BouncyCastle unified onto the jdk18on family —
+    // apk-parser/pdfbox-android/operit share one APK runtime classpath; the classic
+    // API surface (X509CertificateHolder/CMSSignedData/BouncyCastleProvider) is kept
+    // by 1.78. SYNC.md §4 deviation table.
+    implementation(libs.bcprov.jdk18on)
+    implementation(libs.bcpkix.jdk18on)
     implementation(libs.annotation)
 }

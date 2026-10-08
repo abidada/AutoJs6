@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import androidx.multidex.MultiDexApplication
+import androidx.work.Configuration as WorkConfiguration
 import com.brycewg.asrkb.host.BibiLibrary
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomViewTarget
@@ -40,6 +41,7 @@ import org.autojs.autojs.tool.CrashHandler
 import org.autojs.autojs.ui.error.CrashReportActivity
 import org.autojs.autojs.ui.floating.FloatyWindowManger
 import org.autojs.autojs.util.ViewUtils
+import com.xiaoyu.ai.BuildConfig
 import com.xiaoyu.ai.R
 import org.greenrobot.eventbus.EventBus
 import java.lang.ref.WeakReference
@@ -51,10 +53,30 @@ import java.lang.reflect.Method
  * Modified by JetBrains AI Assistant (GPT-5.2) as of Feb 7, 2026.
  * Modified by JetBrains AI Assistant (GPT-5.3-Codex (xhigh)) as of Mar 9, 2026.
  */
-class App : MultiDexApplication() {
+class App : MultiDexApplication(), WorkConfiguration.Provider {
 
     lateinit var dynamicBroadcastReceivers: DynamicBroadcastReceivers
         private set
+
+    /**
+     * D-5 (Operit library port): WorkManager on-demand initialization.
+     *
+     * Upstream Operit removes the `androidx.work.WorkManagerInitializer` startup entry from the
+     * merged manifest (see `modules/operit/src/main/AndroidManifest.xml`) and instead relies on its
+     * own `OperitApplication : Configuration.Provider` to configure WorkManager. That contract
+     * breaks in library form: the real Application is this host `App`, and `OperitApplication` is
+     * only instantiated reflectively, so neither auto-init nor provider-init ran and the host's own
+     * `TimedTaskScheduler.init(this)` (App.onCreate) died with
+     * "WorkManager is not initialized properly".
+     *
+     * Supplying the configuration here — exactly as upstream Operit does — restores on-demand
+     * initialization for the whole process and keeps the module manifest byte-identical to upstream
+     * (upstream-sync-first).
+     */
+    override val workManagerConfiguration: WorkConfiguration
+        get() = WorkConfiguration.Builder()
+            .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.INFO)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -100,6 +122,27 @@ class App : MultiDexApplication() {
                 // 语音分发执行面（v2）：脚本列表/执行经宿主桥接，走与文件列表运行按钮同链路
                 com.brycewg.asrkb.host.ScriptHost.bridge = org.autojs.autojs.host.AutoJsScriptHostBridge
                 BibiLibrary.init(this, BibiHostPermissionRouterImpl)
+
+                // Operit module bootstrap (library port; guards its own non-main processes).
+                com.ai.assistance.operit.hostcompat.OperitLibrary.init(this)
+                // P4.1 (C16): register the host accessibility backend for the Operit UI tools
+                // (bibi ScriptHost.bridge precedent). Degrades gracefully while the
+                // accessibility service is not connected.
+                com.ai.assistance.operit.hostcompat.OperitLibrary.setAccessibilityBackend(
+                    org.autojs.autojs.host.AutoJsAccessibilityHostBridge
+                )
+                // P4.2 (C17): share the host's already-granted screen-capture session with the
+                // Operit module instead of triggering a second consent dialog.
+                com.ai.assistance.operit.hostcompat.OperitLibrary.setScreenCaptureBackend(
+                    org.autojs.autojs.host.AutoJsScreenCaptureHostBridge
+                )
+                // P4.3 (C15): delegate Operit's speech stack (STT/TTS) to bibi's script
+                // recognition link + TtsPlaybackCoordinator, so the microphone stays owned
+                // by bibi (C18) and Operit never opens a second audio session.
+                org.autojs.autojs.host.AutoJsSpeechHostBridge.attach(this)
+                com.ai.assistance.operit.hostcompat.OperitLibrary.setSpeechBackend(
+                    org.autojs.autojs.host.AutoJsSpeechHostBridge
+                )
 
                 // Embedded MCP tool server: restore after process restart if enabled.
                 if (McpPrefs.load(this).enabled) {

@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Operit module manifest — library-ized from upstream app/src/main/AndroidManifest.xml
+    (baseline dev@f1bbcd80). Deviations from upstream are annotated inline and mirrored in
+    SYNC.md §6 (C/P-class ledger). Upstream diff rule: re-apply upstream changes to the
+    components, keep the library-ization rewrites below intact.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Shizuku permissions -->
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
+
+    <!-- ===== Operit 核心功能必需(保留) ===== -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SHORT_SERVICE" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 麦克风前台服务权限 (bibi owns the mic per C15/C18; FGS type kept for chat runtime) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+
+    <!-- 持续高性能模式 -->
+    <uses-permission android:name="android.permission.SUSTAINED_PERFORMANCE_MODE" />
+
+    <!-- 闹钟权限(普通闹钟,非精确闹钟) -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+
+    <!-- 后台运行/高耗电/唤醒 -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"
+        tools:ignore="ForegroundServicePermission" />
+
+    <!-- 工作流开机重排(WorkflowBootReceiver);保留以维持工作流跨重启存活 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- 语音识别(经 bibi 桥;宿主已授予) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!--
+      Q4 / D-9 权限精简(全裁):下列上游权限与宿主场景无关,全部移除。
+      对应 Agent 工具保留代码,但调用时 executor 内的 SecurityException 兜底返回失败(不崩)。
+      已移除:位置(FINE/COARSE)、蓝牙(BLUETOOTH/ADMIN/CONNECT/SCAN)、
+      电话(CALL_PHONE)、短信(SEND/READ/RECEIVE_SMS)、媒体音频(READ_MEDIA_AUDIO)、
+      全量存储(MANAGE_EXTERNAL_STORAGE)、写系统设置(WRITE_SETTINGS)、使用统计(PACKAGE_USAGE_STATS)、
+      查询全部应用(QUERY_ALL_PACKAGES)、相机(CAMERA)、语音交互(BIND_VOICE_INTERACTION)、
+      精确闹钟(SCHEDULE_EXACT_ALARM)。
+      (RECEIVE_BOOT_COMPLETED 已恢复——WorkflowBootReceiver 工作流开机重排需要。)
+      如需恢复某项,取消对应注释即可。
+    -->
+    <!--
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.BIND_VOICE_INTERACTION" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    -->
+
+    <!-- C11: provider-APK queries removed (upstream queried com.ai.assistance.operit.provider). -->
+
+    <!-- C10: signature-level permission guarding Operit's exported business receivers.
+         Only held by apps signed with the host key (adb/shell included via host-grant). -->
+    <permission
+        android:name="com.xiaoyu.ai.operit.permission.INVOKE"
+        android:protectionLevel="signature" />
+
+    <!-- Library: <application> is a pure component container. Upstream application-level
+         attributes (name/icon/label/theme/largeHeap/cleartext/backup rules…) are supplied
+         by the host app. -->
+    <application>
+
+        <!-- OpenCL 库权限声明 (Android 10+ 命名空间隔离解决方案) -->
+        <uses-native-library
+            android:name="libOpenCL.so"
+            android:required="false" />
+
+        <!-- Vulkan 库权限声明 -->
+        <uses-native-library
+            android:name="libvulkan.so"
+            android:required="false" />
+
+        <activity
+            android:name="live.pw.renderX.LatexView"
+            tools:node="remove" />
+
+        <activity
+            android:name=".core.tools.defaultTool.websession.browser.WebSessionPermissionRequestActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:finishOnTaskLaunch="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
+            android:name=".core.tools.defaultTool.websession.userscript.install.UserscriptImportPickerActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:finishOnTaskLaunch="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="true"
+            android:multiprocess="false"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
+        <!-- FileProvider for APK installation. C9/C-class: authority namespaced under
+             operit.* to avoid clashing with the host's own FileProvider (same meta-data key,
+             different paths file). The identity subclass keeps the merger entries separate
+             (merger keys providers by android:name). Matching constant:
+             "${packageName}.operit.fileprovider". -->
+        <provider
+            android:name="com.ai.assistance.operit.hostcompat.OperitFileProvider"
+            android:authorities="${applicationId}.operit.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- C9: DocumentsProvider authorities renamed from ${applicationId}.documents.*
+             (upstream) to com.xiaoyu.ai.operit.documents.* so an official Operit install can
+             coexist on the same device. Matching constants live in C-class code files. -->
+        <provider
+            android:name=".provider.WorkspaceDocumentsProvider"
+            android:authorities="com.xiaoyu.ai.operit.documents.workspace"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
+        <provider
+            android:name=".provider.MemoryDocumentsProvider"
+            android:authorities="com.xiaoyu.ai.operit.documents.memory"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
+        <provider
+            android:name=".provider.OperitDataDocumentsProvider"
+            android:authorities="com.xiaoyu.ai.operit.documents.data"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
+        <!-- 禁用 WorkManager 的自动初始化，由 Application 手动管理 -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+        <!-- §8.1: module entry activity. Upstream kept singleTask + LAUNCHER/VIEW/SEND filters;
+             here the host drawer is the only entry (P7 adds the optional desktop alias), so all
+             system intent-filters are stripped and exported turns false (same-app starts only). -->
+        <activity
+            android:name=".ui.main.MainActivity"
+            android:exported="false"
+            android:configChanges="orientation|keyboardHidden|screenSize|screenLayout"
+            android:windowSoftInputMode="adjustPan"
+            android:taskAffinity="com.xiaoyu.ai.operit"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Operit">
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <!-- §8.1/P7: optional standalone desktop icon, disabled by default. -->
+        <activity-alias
+            android:name=".OperitDesktopAlias"
+            android:targetActivity=".ui.main.MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_simple"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- C15: ASSIST/VOICE_ASSIST entry points removed (bibi owns voice/assistant). -->
+        <activity
+            android:name=".services.assistant.OperitAssistActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:finishOnTaskLaunch="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- C13: :crash process removed; host owns crash reporting (:crash_report). -->
+        <activity
+            android:name=".ui.error.CrashReportActivity"
+            android:exported="false"
+            android:label="@string/title_activity_crash_report"
+            android:theme="@style/Theme.Operit" />
+
+        <!-- C13: :repair process removed. -->
+        <activity
+            android:name=".ui.recovery.DataRecoveryActivity"
+            android:exported="true"
+            android:label="@string/title_activity_data_recovery"
+            android:theme="@style/Theme.Operit">
+            <intent-filter>
+                <action android:name="com.xiaoyu.ai.operit.action.OPEN_DATA_RECOVERY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".integrations.tasker.ActivityConfigAIAgentAction"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_simple"
+            android:label="AI Agent Action">
+            <intent-filter>
+                <action android:name="net.dinglisch.android.tasker.ACTION_EDIT_EVENT" />
+            </intent-filter>
+        </activity>
+
+        <!-- C17: module-owned MediaProjection consent/capture components are unused
+             (capture delegates to the host session); declarations removed. -->
+
+        <!-- Floating Chat Service -->
+        <service
+            android:name=".services.FloatingChatService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <service
+            android:name=".services.notification.OperitNotificationListenerService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- AI 前台服务 - 保持网络连接稳定 -->
+        <service
+            android:name=".api.chat.AIForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync|microphone|specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the user-requested assistant runtime alive for external HTTP control when no standard foreground service type fully describes that mode." />
+        </service>
+
+        <!-- 添加广播接收器配置.
+             C10: pre-existing DUMP-protected debug receivers keep DUMP (adb debugging channel);
+             business receivers without protection carry the signature permission instead. -->
+        <receiver
+            android:name=".core.tools.javascript.ScriptExecutionReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="com.xiaoyu.ai.operit.EXECUTE_JS" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".core.tools.packTool.ToolPkgDebugInstallReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="com.xiaoyu.ai.operit.DEBUG_INSTALL_TOOLPKG" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".core.tools.packTool.PackageDebugRefreshReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="com.xiaoyu.ai.operit.DEBUG_REFRESH_PACKAGES" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".core.tools.packTool.ToolPkgComposeDslDebugDumpReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="com.xiaoyu.ai.operit.DUMP_COMPOSE_DSL_UI" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".integrations.intent.ExternalChatReceiver"
+            android:exported="true"
+            android:permission="com.xiaoyu.ai.operit.permission.INVOKE">
+            <intent-filter>
+                <action android:name="com.xiaoyu.ai.operit.EXTERNAL_CHAT" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".services.UIDebuggerService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Shows a user-triggered floating UI debugger overlay across apps for inspection tasks that do not match other foreground service types." />
+        </service>
+
+        <!-- Voice Assistant Widget Receiver -->
+        <receiver
+            android:name=".widget.VoiceAssistantWidgetReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/voice_assistant_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.ToolPkgDesktopWidgetReceiver"
+            android:exported="true"
+            android:enabled="true"
+            android:label="@string/toolpkg_widget_host_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/toolpkg_desktop_widget_info" />
+        </receiver>
+
+        <activity
+            android:name=".widget.ToolPkgDesktopWidgetConfigActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:label="@string/toolpkg_widget_picker_title"
+            android:theme="@style/Theme.Operit">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <!-- C10: Tasker integration requires a third-party sender (no signature possible);
+             known impact logged in SYNC.md §6. -->
+        <receiver
+            android:name=".integrations.tasker.WorkflowTaskerReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.xiaoyu.ai.operit.TRIGGER_WORKFLOW" />
+                <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING" />
+            </intent-filter>
+        </receiver>
+
+        <!-- C10: system sender (BOOT_COMPLETED) — signature permission is safe here. -->
+        <receiver
+            android:name=".integrations.tasker.WorkflowBootReceiver"
+            android:exported="true"
+            android:enabled="true"
+            android:permission="com.xiaoyu.ai.operit.permission.INVOKE">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- C15: voice-interaction assistant components stay compiled (speech bridges to bibi)
+             but are NOT declared as a system assistant entry. -->
+        <service
+            android:name=".services.assistant.OperitVoiceInteractionService"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_VOICE_INTERACTION"
+            android:exported="false">
+            <meta-data
+                android:name="android.voice_interaction"
+                android:resource="@xml/interaction_service" />
+        </service>
+
+        <service
+            android:name=".services.assistant.OperitVoiceInteractionSessionService"
+            android:permission="android.permission.BIND_VOICE_INTERACTION"
+            android:exported="false" />
+
+    </application>
+
+</manifest>

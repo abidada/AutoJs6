@@ -1461,6 +1461,10 @@
     <string name="summary_bibi_bluetooth_mic_permission">蓝牙耳机麦克风优先(可选)</string>
     <string name="text_bibi_boot_autostart">BIBI 开机自启</string>
     <string name="summary_bibi_boot_autostart">开机后自动启动 BIBI 悬浮球服务(可选)</string>
+
+    <!-- Operit (AI Agent) 库入口, 由 Operit 移植 (P7.1 / D-4) 添加. -->
+    <string name="text_operit_entry">Operit (AI 智能体)</string>
+    <string name="summary_operit_entry">自主 AI 智能体 · 工具调用 · 工作流 · MCP</string>
     <string name="text_bibi_voice_dispatch">语音设置</string>
     <string name="summary_bibi_voice_dispatch">配置语音识别文字对应任务的分发规则</string>
     <string name="error_open_voice_dispatch_settings">打开语音设置失败</string>

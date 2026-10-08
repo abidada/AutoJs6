@@ -17,6 +17,12 @@ private val modules = listOf(
     "expandable-recyclerview",
     "recyclerview-flexibledivider",
     "bibi",
+    "operit",
+    "operit-quickjs",
+    "operit-terminal",
+    "operit-streamnative",
+    "operit-ripgrep",
+    "operit-toolpkgwasm",
 )
 
 private val libs = listOf(
