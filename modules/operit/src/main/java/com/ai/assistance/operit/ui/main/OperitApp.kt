@@ -337,6 +337,13 @@ fun OperitApp(
 
     BackHandler(enabled = currentScreen !is Screen.AiChat, onBack = { requestGoBack() })
 
+    // 抽屉为自绘实现，不会自行拦截系统返回：抽屉打开时返回键仅关闭抽屉。
+    // 注册在上一条之后，enabled 时优先接管返回事件
+    BackHandler(
+            enabled = drawerState.isOpen || drawerState.targetValue == DrawerValue.Open,
+            onBack = { scope.launch { drawerState.close() } }
+    )
+
     val canGoBack = routerState.canPop
 
     var isLoading by remember { mutableStateOf(false) }
