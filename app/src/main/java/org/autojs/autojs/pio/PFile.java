@@ -43,9 +43,13 @@ public class PFile extends File {
         init();
     }
 
+    // SimpleDateFormat is not thread-safe; cache per thread to avoid recreation in hot paths.
+    // zh-CN: SimpleDateFormat 非线程安全; 用 ThreadLocal 缓存避免热路径反复构造.
+    private static final ThreadLocal<SimpleDateFormat> FULL_DATE_FORMAT =
+            ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()));
+
     public static CharSequence getFullDateString(long date) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-        return dateFormat.format(new Date(date));
+        return FULL_DATE_FORMAT.get().format(new Date(date));
     }
 
     private void init() {

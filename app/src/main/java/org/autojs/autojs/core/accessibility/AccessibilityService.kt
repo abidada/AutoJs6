@@ -31,8 +31,9 @@ open class AccessibilityService : android.accessibilityservice.AccessibilityServ
     var bridge: AccessibilityBridge? = null
 
     // eventType -> (ownerId -> callback)
-    private val eventBox = HashMap<Int, MutableMap<String, AccessibilityEventCallback?>>()
-    private val eventBoxLock = Any()
+    // internal: companion 门控方法 (refreshWindowContentObservedState) 需读取
+    internal val eventBox = HashMap<Int, MutableMap<String, AccessibilityEventCallback?>>()
+    internal val eventBoxLock = Any()
 
     private val gestureEventDispatcher = EventDispatcher<GestureListener>()
 
@@ -186,6 +187,39 @@ open class AccessibilityService : android.accessibilityservice.AccessibilityServ
         private val delegates = TreeMap<Int, AccessibilityDelegate>()
         private var containsAllEventTypes = false
         private val eventTypes = HashSet<Int>()
+
+        /**
+         * 当前是否有脚本回调订阅了窗口内容变化事件.
+         * 供服务收窄 system 侧 eventTypes (剔除 CONTENT_CHANGED) 时做门控判断:
+         * 无脚本订阅则不必向系统请求该事件类型 (它是事件洪水的最大来源);
+         * 脚本注册时动态放宽 (见 [refreshWindowContentObservedState]).
+         */
+        @Volatile
+        var isWindowContentObservedByScript = false
+            private set
+
+        /**
+         * 脚本注册/注销事件回调后同步门控状态.
+         * zh-CN: 由 SimpleActionAutomator.registerEvent / removeEvent 调用;
+         * 实际读取 instance 的 eventBox (实例字段), 服务未连接时只清标记.
+         */
+        fun refreshWindowContentObservedState() {
+            val inst = instance
+            val observed = inst != null && synchronized(inst.eventBoxLock) {
+                inst.eventBox.containsKey(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
+            }
+            isWindowContentObservedByScript = observed
+        }
+
+        /**
+         * 确保系统侧 eventTypes 包含 TYPE_WINDOW_CONTENT_CHANGED (门控放宽):
+         * 服务收窄后脚本又订阅了内容变化事件时, 立即补回订阅而无需重连服务.
+         * zh-CN: 仅在 instance 已连接时生效; 幂等 (已含该位则不重复 setServiceInfo).
+         */
+        fun ensureWindowContentEventTypeRequested() {
+            val inst = instance as? AccessibilityServiceUsher ?: return
+            inst.restoreWindowContentEventType()
+        }
 
         private val LOCK = ReentrantLock()
         private val ENABLED = LOCK.newCondition()

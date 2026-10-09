@@ -64,7 +64,8 @@ internal class FloatingAsrInteractionController(
         private const val AUTO_RETRY_DELAY_MS = 300L
         private const val ERROR_DISPLAY_MS = 1000L
         private const val EDGE_HANDLE_AUTO_HIDE_DELAY_MS = 2500L
-        private const val AMPLITUDE_DISPATCH_INTERVAL_MS = 32L
+        // ~15Hz: 驱动球图标 alpha 脉动足够细腻; 32ms(~30Hz) 时主线程消息翻倍无感知收益
+        private const val AMPLITUDE_DISPATCH_INTERVAL_MS = 66L
         private const val SHAKE_START_TONE_MS = 200
         private const val SHAKE_STOP_TONE_MS = 260
     }

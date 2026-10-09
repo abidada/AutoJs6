@@ -617,6 +617,10 @@ class PluginCenterFragment : Fragment(R.layout.fragment_plugin_center) {
         emptyHintJob = null
         pkgChangeRefreshJob?.cancel()
         pkgChangeRefreshJob = null
+        // 断开 adapter ↔ RecyclerView 双向引用: adapter.mObservable 强持有 RecyclerView
+        // DataObserver, 而 adapter 是 Fragment 字段, 不清会让已销毁的 View 树
+        // (含 ThemeColorRecyclerView/FrameLayout) 被 LeakCanary 判为 retained 泄漏.
+        _binding?.pluginCenterRecyclerView?.adapter = null
         _binding = null
     }
 

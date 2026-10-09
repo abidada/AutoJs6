@@ -60,6 +60,9 @@ class AsrAccessibilityService(private val host: AccessibilityService) : SensorEv
         private const val TAG = "AsrAccessibilityService"
         private const val CLIPBOARD_RESTORE_DELAY_MS = 150L
 
+        /** 滚动退避窗口: TYPE_VIEW_SCROLLED 后暂缓 IME 检测的时长 */
+        private const val SCROLL_BACKOFF_MS = 400L
+
         private var instance: AsrAccessibilityService? = null
 
         /** 无障碍层窗口宿主：服务连接期间非空，供悬浮球等常驻窗口挂载 TYPE_ACCESSIBILITY_OVERLAY。 */
@@ -353,6 +356,10 @@ class AsrAccessibilityService(private val host: AccessibilityService) : SensorEv
     private var lastImeWindowVisible: Boolean? = null
     private var lastEditableFocusAt: Long = 0L
     private val holdAfterFocusMs: Long = 600L
+
+    // 滚动退避: 滑动期间暂缓 IME 可见性检测 (见 onAccessibilityEvent)
+    private var scrollBackoffUntil: Long = 0L
+    private var scrollBackoffFlushScheduled = false
     private var lastA11yAggEmitAt: Long = 0L
     private var aggWinStateChanged: Int = 0
     private var aggWinContentChanged: Int = 0
@@ -365,6 +372,15 @@ class AsrAccessibilityService(private val host: AccessibilityService) : SensorEv
         // 现用于辅助判断"仅在输入法面板显示时显示悬浮球"的场景
         // 为避免频繁遍历树，做轻量节流
         if (event == null) return
+
+        // 滚动退避: TYPE_VIEW_SCROLLED (自身或其他包) 到达意味着用户正在滑动列表,
+        // 退避窗口内暂缓 IME 可见性检测, 避免外部包事件 (如状态栏更新) 在滑动途中
+        // 触发主线程全树 DFS 造成离散掉帧; 退避结束后由后续事件或收尾补检.
+        // zh-CN: 必须在 isRelevantEventType 过滤之前捕获 (SCROLLED 不在 relevant 列表).
+        if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) {
+            scrollBackoffUntil = System.currentTimeMillis() + SCROLL_BACKOFF_MS
+            return
+        }
 
         if (DebugLogManager.isRecording()) {
             // 事件计数（1s 聚合输出一次）
@@ -387,12 +403,33 @@ class AsrAccessibilityService(private val host: AccessibilityService) : SensorEv
         }
 
         if (!pendingCheck) {
+            val now = System.currentTimeMillis()
+            if (now < scrollBackoffUntil) {
+                // 滚动退避窗口内不调度; 窗口结束后若无新事件, 由退避到期补检兜底.
+                scheduleScrollBackoffFlush()
+                return
+            }
             pendingCheck = true
             handler.postDelayed({
                 pendingCheck = false
                 tryDispatchImeVisibilityHint()
             }, 70)
         }
+    }
+
+    /** 滚动退避到期后的补检兜底: 滑动停止且无新事件时也能恢复一次 IME 检测. */
+    private fun scheduleScrollBackoffFlush() {
+        if (scrollBackoffFlushScheduled) return
+        scrollBackoffFlushScheduled = true
+        val delay = (scrollBackoffUntil - System.currentTimeMillis()).coerceAtLeast(0L)
+        handler.postDelayed({
+            scrollBackoffFlushScheduled = false
+            if (pendingCheck) return@postDelayed
+            val prefs = prefsOrNull ?: return@postDelayed
+            if (!shouldCheckImeVisibility(prefs)) return@postDelayed
+            if (System.currentTimeMillis() < scrollBackoffUntil) return@postDelayed
+            tryDispatchImeVisibilityHint()
+        }, delay + 30L)
     }
 
     fun onKeyEvent(event: KeyEvent?): Boolean {
@@ -502,8 +539,9 @@ class AsrAccessibilityService(private val host: AccessibilityService) : SensorEv
         val winVisible = isImeWindowVisible()
         maybeDispatchImeWindowHiddenStop(winVisible)
 
-        val active = determineImeSceneActive(now)
-        updateImeVisibilityState(active)
+        // 复用本轮已取的 winVisible, 不再经 determineImeSceneActive 重复遍历 windows
+        val hold = (now - lastEditableFocusAt <= holdAfterFocusMs)
+        updateImeVisibilityState(winVisible || hold)
     }
 
     /**
@@ -983,12 +1021,15 @@ class AsrAccessibilityService(private val host: AccessibilityService) : SensorEv
         }
     }
 
-    private fun findFocusedEditableNode(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+    private fun findFocusedEditableNode(root: AccessibilityNodeInfo, allowDeepScan: Boolean = true): AccessibilityNodeInfo? {
         root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)?.let { f ->
             if (isEditableLike(f)) return f
             @Suppress("DEPRECATION")
             f.recycle()
         }
+        // 本 app 自家窗口是标准 EditText (findFocus 可命中), 递归 DFS 300-450 节点的
+        // 深扫只对外部窗口 (游戏/自绘 UI) 才有意义, 本包前景时跳过避免主线程大块遍历.
+        if (!allowDeepScan) return null
         return findEditableNodeRecursive(root)
     }
 
@@ -1179,7 +1220,9 @@ class AsrAccessibilityService(private val host: AccessibilityService) : SensorEv
                     try {
                         if (w?.type != AccessibilityWindowInfo.TYPE_APPLICATION) continue
                         val root = w.root ?: continue
-                        val node = findFocusedEditableNode(root)
+                        // 本包窗口跳过深扫: 标准 EditText 由 findFocus 命中, 外部窗口才递归 DFS
+                        val isOwnWindow = root.packageName?.toString() == host.packageName
+                        val node = findFocusedEditableNode(root, allowDeepScan = !isOwnWindow)
                         if (node != null) {
                             @Suppress("DEPRECATION")
                             node.recycle()

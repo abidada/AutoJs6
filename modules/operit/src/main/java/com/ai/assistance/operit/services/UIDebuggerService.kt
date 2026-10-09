@@ -108,6 +108,10 @@ class UIDebuggerService : Service(), ViewModelStoreOwner {
             unbindService(connection)
             isBound = false
         }
+        // 正常 unbind 不触发 onServiceDisconnected (仅对方 crash 时回调),
+        // 不清字段会一直持有已 destroy 的 FloatingChatService (经 LocalBinder.this$0),
+        // 被 LeakCanary 判 retained 并触发周期性 GC 检测.
+        floatingChatService = null
     }
 
     private fun createNotificationChannel() {

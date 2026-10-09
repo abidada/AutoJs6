@@ -7,6 +7,7 @@
     <bool name="pref_enable_a11y_service_with_root_access">true</bool>
     <bool name="pref_enable_a11y_service_with_secure_settings">true</bool>
     <bool name="pref_extending_js_build_in_objects">false</bool>
+    <bool name="pref_a11y_narrow_event_types">true</bool>
     <bool name="pref_gesture_observing">false</bool>
     <bool name="pref_guard_mode">false</bool>
     <bool name="pref_record_toast">true</bool>
