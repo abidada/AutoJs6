@@ -1,6 +1,6 @@
 package com.brycewg.asrkb.ui.widgets
 
-import android.animation.ValueAnimator
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -26,8 +26,7 @@ class ProcessingSpinnerView @JvmOverloads constructor(
     private var secondarySweepAngle: Float = 40f
     private var secondaryArcAlpha: Float = 0.4f
     private var secondaryArcEnabled: Boolean = false
-    private var rotationDeg: Float = 0f
-    private var animator: ValueAnimator? = null
+    private var animator: ObjectAnimator? = null
     private var shouldAnimate: Boolean = false
 
     fun setSpinnerColor(color: Int) {
@@ -69,8 +68,7 @@ class ProcessingSpinnerView @JvmOverloads constructor(
         shouldAnimate = false
         animator?.cancel()
         animator = null
-        rotationDeg = 0f
-        invalidate()
+        rotation = 0f
     }
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {
@@ -108,15 +106,12 @@ class ProcessingSpinnerView @JvmOverloads constructor(
         // 取消旧动画（如果存在）
         animator?.cancel()
 
-        // 创建并启动新动画
-        animator = ValueAnimator.ofFloat(0f, 360f).apply {
+        // 旋转 View.ROTATION 属性: RenderNode transform 由 RenderThread 合成,
+        // 每帧不触发 onDraw/display list 重录 (旧实现每帧 invalidate 全窗口重绘).
+        animator = ObjectAnimator.ofFloat(this, View.ROTATION, 0f, 360f).apply {
             duration = 1000
-            repeatCount = ValueAnimator.INFINITE
+            repeatCount = ObjectAnimator.INFINITE
             interpolator = LinearInterpolator()
-            addUpdateListener { a ->
-                rotationDeg = a.animatedValue as Float
-                invalidate()
-            }
             start()
         }
     }
@@ -133,9 +128,7 @@ class ProcessingSpinnerView @JvmOverloads constructor(
         val top = cy - radius
         val right = cx + radius
         val bottom = cy + radius
-        canvas.save()
-        canvas.rotate(rotationDeg, cx, cy)
-        // 以 -90 度为起点（顶部），绘制一段弧形
+        // 静态绘制弧线; 旋转由 View.ROTATION 属性动画在 RenderThread 合成, 不在此 canvas.rotate
         canvas.drawArc(left, top, right, bottom, -90f, sweepAngle, false, paint)
         if (secondaryArcEnabled) {
             val originalColor = paint.color
@@ -143,7 +136,6 @@ class ProcessingSpinnerView @JvmOverloads constructor(
             canvas.drawArc(left, top, right, bottom, 90f, secondarySweepAngle, false, paint)
             paint.color = originalColor
         }
-        canvas.restore()
     }
 
     private fun applyAlpha(color: Int, alpha: Float): Int {
