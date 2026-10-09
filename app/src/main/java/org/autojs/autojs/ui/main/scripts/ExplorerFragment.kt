@@ -196,7 +196,12 @@ class ExplorerFragment : ViewPagerFragment(0), OnFloatingActionButtonClickListen
         if (activity?.isFinishing == false) {
             saveViewStates()
         }
-        mExplorerView?.notifyDataSetChanged()
+        // Removed: forcing a full rebind on onStop caused a whole list refresh every time
+        // the user pressed Home or switched apps. Returning to the page will naturally
+        // re-bind visible items via onViewCreated/restoreViewStates when needed.
+        // zh-CN: 移除: onStop 强制全表 rebind 会在按 Home / 切应用时触发整列表刷新.
+        // 回到页面时 onViewCreated/restoreViewStates 会按需 rebind 可见 item, 无需在此触发.
+        // mExplorerView?.notifyDataSetChanged()
     }
 
     override fun onDestroy() {
