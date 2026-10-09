@@ -81,7 +81,20 @@ public class ScreenCapturer {
     private VirtualDisplay mVirtualDisplay;
     private OnScreenCaptureAvailableListener mOnScreenCaptureAvailableListener;
     private int mDetectedOrientation;
-    private int mAppliedOrientation = ORIENTATION_AUTO;
+    // @Bugfix on Oct 9, 2026: initialize to ORIENTATION_NONE so the very first
+    // refreshVirtualDisplay(...isInit=true) call always wins and correctly assigns
+    // mAppliedOrientation to the actual detected orientation. Otherwise the previous
+    // initial value (ORIENTATION_AUTO == ORIENTATION_UNDEFINED == 0) would never match
+    // any real orientation (PORTRAIT / LANDSCAPE), causing every subsequent capture()
+    // to falsely detect "orientation changed" and recreate VirtualDisplay, tripping
+    // Android 14+'s SecurityException ("Don't take multiple captures ...").
+    //
+    // zh-CN: 初始化为 ORIENTATION_NONE, 让首次 refreshVirtualDisplay(isInit=true) 总能
+    // 把 mAppliedOrientation 正确赋值为真实方向. 否则旧的初值 (ORIENTATION_AUTO ==
+    // ORIENTATION_UNDEFINED == 0) 永远不会等于真实方向 (PORTRAIT/LANDSCAPE),
+    // 导致后续每次 capture() 都误判"方向变化"重建 VirtualDisplay, 触发 Android 14+
+    // 的 SecurityException ("Don't take multiple captures ...").
+    private int mAppliedOrientation = ORIENTATION_NONE;
     private int mPixelFormat = PixelFormat.RGBA_8888;
     private volatile boolean mImageAvailable = false;
     private boolean mShouldRefreshVirtualDisplayOnNextCapture = false;
@@ -89,6 +102,13 @@ public class ScreenCapturer {
     // and again later via finalize(); the second call must be a no-op.
     // zh-CN: release 幂等保护: 引擎退出时会显式释放, 之后 finalize 可能再次触发, 二次调用必须无效.
     private volatile boolean mReleased = false;
+
+    // Set to false when the MediaProjection is stopped by the system / user (via onStop callback)
+    // or when release() is called. Read by ScreenCaptureManager to decide whether the cached
+    // capturer can be reused without re-popping the permission dialog.
+    // zh-CN: 当 MediaProjection 被系统/用户停止 (onStop 回调) 或 release() 被调用时置为 false.
+    // ScreenCaptureManager 据此判断缓存的 capturer 是否还能复用 (从而避免重复弹授权框).
+    private volatile boolean mAvailable = true;
 
     public ScreenCapturer(Context context, Intent data, Options options, Handler handler) {
         mOptions = options;
@@ -267,7 +287,16 @@ public class ScreenCapturer {
         // MediaProjection#stop 派发 onStop 之前已被回收 (引擎退出), 此前会导致死线程告警.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && mMediaProjectionCallback == null) {
             mMediaProjectionCallback = new MediaProjection.Callback() {
-                /* Empty body. */
+                @Override
+                public void onStop() {
+                    // The projection was stopped by the system / user / another app. Mark the
+                    // capturer as no longer available so ScreenCaptureManager will build a fresh
+                    // session (and re-pop the permission dialog) on next request.
+                    // zh-CN: 投影被系统/用户/其他应用停止. 标记 capturer 不可用, 让
+                    // ScreenCaptureManager 下次申请时重建会话 (并重新弹授权框).
+                    mAvailable = false;
+                    release();
+                }
             };
             mMediaProjection.registerCallback(mMediaProjectionCallback, new Handler(Looper.getMainLooper()));
         }
@@ -316,10 +345,19 @@ public class ScreenCapturer {
         // zh-CN:
         // AUTO 模式下只要方向发生变化, 就直接重建 VirtualDisplay.
         // 部分设备上 VirtualDisplay.resize(...) 可能无法可靠切换输出方向, 从而导致画布尺寸与内容方向错配.
+        //
+        // @Bugfix on Oct 9, 2026:
+        //  ! Android 14+ 对同一 MediaProjection 上 createVirtualDisplay 的调用次数有限制
+        //  ! (抛 SecurityException "Don't take multiple captures ...").
+        //  ! 之前 mAppliedOrientation 初始为 ORIENTATION_AUTO(0) 而 mDetectedOrientation 是
+        //  ! PORTRAIT/LANDSCAPE, 导致每次 capture 都误判"方向变化"触发重建.
+        //  ! 现在: 初始把 mAppliedOrientation 对齐到首次实际方向; AUTO 模式下仅在真实方向
+        //  ! 发生改变时才重建, 否则仅做 resize/setSurface.
+        boolean orientationChanged = orientation != mAppliedOrientation;
         boolean shouldRecreate = !isInit
                 && mVirtualDisplay != null
                 && mOrientation == ORIENTATION_AUTO
-                && orientation != mAppliedOrientation;
+                && orientationChanged;
 
         if (mVirtualDisplay == null) {
             if (isInit) {
@@ -337,10 +375,20 @@ public class ScreenCapturer {
             return;
         }
 
-        refreshImageReader(width.get(), height.get());
-        mVirtualDisplay.setSurface(mImageReader.getSurface());
-        mVirtualDisplay.resize(width.get(), height.get(), mScreenDensity);
-        mAppliedOrientation = orientation;
+        // Only touch surface/size when something actually changed; otherwise leave the
+        // VirtualDisplay pipeline alone so we don't repeatedly trip Android 14+'s
+        // "don't take multiple captures" SecurityException.
+        // zh-CN: 仅在尺寸/方向真的变化时才动 surface/resize, 否则保持 VirtualDisplay 不动,
+        // 避免反复触发 Android 14+ 的 "Don't take multiple captures" SecurityException.
+        boolean sizeChanged = mImageReader == null
+                || mImageReader.getWidth() != width.get()
+                || mImageReader.getHeight() != height.get();
+        if (sizeChanged || orientationChanged) {
+            refreshImageReader(width.get(), height.get());
+            mVirtualDisplay.setSurface(mImageReader.getSurface());
+            mVirtualDisplay.resize(width.get(), height.get(), mScreenDensity);
+            mAppliedOrientation = orientation;
+        }
     }
 
     private void setImageListener(Handler handler) {
@@ -380,6 +428,30 @@ public class ScreenCapturer {
         mVirtualDisplay.setSurface(mImageReader.getSurface());
     }
 
+    // Last time (uptimeMillis) a capture() successfully returned a frame.
+    // zh-CN: 上次 capture() 成功返回帧的时间戳.
+    private volatile long mLastSuccessfulCaptureUptimeMillis = 0L;
+
+    /**
+     * Kick the VirtualDisplay pipeline by detaching and re-attaching the ImageReader surface.
+     * Does NOT recreate the VirtualDisplay itself, so it doesn't count against Android 14+'s
+     * "createVirtualDisplay calls per MediaProjection" budget.
+     *
+     * zh-CN: 通过脱离并重挂 ImageReader surface 来"踢"一下 VirtualDisplay 管线.
+     * 不重建 VirtualDisplay 本体, 因此不占用 Android 14+ 的"每个 MediaProjection
+     * 的 createVirtualDisplay 次数"预算.
+     */
+    private void kickVirtualDisplaySurface() {
+        try {
+            if (mVirtualDisplay == null || mImageReader == null) return;
+            android.view.Surface surface = mImageReader.getSurface();
+            mVirtualDisplay.setSurface(null);
+            mVirtualDisplay.setSurface(surface);
+        } catch (Throwable ignored) {
+            /* Best effort — if the VirtualDisplay is dead, isValid() will catch it next time. */
+        }
+    }
+
     @Nullable
     public Image capture() {
         if (mOptions.isAsync) {
@@ -389,18 +461,35 @@ public class ScreenCapturer {
         final long start = SystemClock.uptimeMillis();
         final long deadline = start + CAPTURE_TOTAL_TIMEOUT_MS;
 
+        // If the last successful capture was a long time ago (e.g. a different script was
+        // running back then), the VirtualDisplay may be dormant. Kick it once before entering
+        // the wait loop so we don't burn the whole timeout budget waiting for frames that
+        // would never come on their own. Kicks are throttled so a healthy fast-path never
+        // pays this cost.
+        // zh-CN: 若距上次成功截屏已过较长时间 (例如之前是另一个脚本在跑), VirtualDisplay
+        // 可能处于休眠状态. 进入等待循环前先踢一次, 避免把整个超时预算都耗在等永远
+        // 不会来的帧上. 踢动有节流, 健康路径不会付出代价.
+        final long STALE_THRESHOLD_MS = 1500;
+        if (mLastSuccessfulCaptureUptimeMillis == 0
+                || (start - mLastSuccessfulCaptureUptimeMillis) > STALE_THRESHOLD_MS) {
+            kickVirtualDisplaySurface();
+        }
+
         // For AUTO mode, do a best-effort self-check before acquiring the frame.
-        // zh-CN: AUTO 模式下, 在取帧之前做一次尽力自检, 发现画布尺寸不匹配则主动刷新 VirtualDisplay.
+        // NOTE on Oct 9, 2026: only refresh when ORIENTATION changed, not on size jitter.
+        // The previous "size mismatch" check could fire spuriously on devices where
+        // ScreenMetrics reports slightly different values (with/without nav bar), causing
+        // every capture() to recreate VirtualDisplay and trip Android 14+'s
+        // "Don't take multiple captures" SecurityException.
+        // zh-CN: AUTO 模式下, 在取帧之前做一次尽力自检.
+        // 注意: 仅在方向真的变化时才刷新, 尺寸抖动不触发.
+        // 之前的"尺寸不匹配"检查在 ScreenMetrics 返回值抖动 (含/不含导航栏) 的设备上
+        // 会误触发, 导致每次 capture() 都重建 VirtualDisplay, 触发 Android 14+ 的
+        // "Don't take multiple captures" SecurityException.
         if (mOrientation == ORIENTATION_AUTO) {
+            int prevOrientation = mDetectedOrientation;
             refreshDetectedOrientation();
-
-            int expectedWidth = getExpectedWidthByDetectedOrientation();
-            int expectedHeight = getExpectedHeightByDetectedOrientation();
-
-            // ImageReader size represents the "canvas" size of VirtualDisplay.
-            // zh-CN: ImageReader 尺寸代表 VirtualDisplay 的 "画布" 尺寸.
-            if (mImageReader != null
-                    && (mImageReader.getWidth() != expectedWidth || mImageReader.getHeight() != expectedHeight)) {
+            if (mDetectedOrientation != prevOrientation) {
                 refreshVirtualDisplay(mDetectedOrientation, false);
             }
         }
@@ -418,10 +507,19 @@ public class ScreenCapturer {
             if (now >= deadline) break;
 
             // Early self-healing in AUTO mode to avoid spending the whole budget waiting on a bad pipeline.
-            // zh-CN: AUTO 模式下尽早自愈, 避免把整个预算都耗在一个已失效的管线 (如 BufferQueue abandoned) 上.
+            // NOTE on Oct 9, 2026: only invoke refreshVirtualDisplay if orientation actually changed.
+            // Previously this ran on every capture pass, which (when combined with size/orientation
+            // mis-detection) would recreate VirtualDisplay multiple times per session, tripping
+            // Android 14+'s "Don't take multiple captures" SecurityException.
+            // zh-CN: AUTO 模式下尽早自愈. 注意: 仅在方向真的变化时才调 refreshVirtualDisplay.
+            // 之前每次 capture 循环都会调, 叠加尺寸/方向误判时会话内多次重建 VirtualDisplay,
+            // 触发 Android 14+ 的 "Don't take multiple captures" SecurityException.
             if (mOrientation == ORIENTATION_AUTO && (now - start) >= EARLY_HEALING_AT_MS) {
+                int prevOrientation = mDetectedOrientation;
                 refreshDetectedOrientation();
-                refreshVirtualDisplay(mDetectedOrientation, false);
+                if (mDetectedOrientation != prevOrientation) {
+                    refreshVirtualDisplay(mDetectedOrientation, false);
+                }
             }
 
             Image acquireLatestImage = acquireLatestImage(deadline);
@@ -431,10 +529,16 @@ public class ScreenCapturer {
                 int expectedWidth = getExpectedWidthByDetectedOrientation();
                 int expectedHeight = getExpectedHeightByDetectedOrientation();
                 if (acquireLatestImage.getWidth() != expectedWidth || acquireLatestImage.getHeight() != expectedHeight) {
-                    // Drop mismatched frame and refresh display once more.
-                    // zh-CN: 丢弃尺寸不匹配的帧, 并再次刷新 display.
+                    // Drop mismatched frame. Don't proactively refresh VirtualDisplay here:
+                    // if we're seeing a mismatched frame it's likely a transient from a recent
+                    // surface change, and another refresh would only compound the problem on
+                    // Android 14+ (where createVirtualDisplay calls are rate-limited per
+                    // MediaProjection instance).
+                    // zh-CN: 丢弃尺寸不匹配的帧. 此处不主动刷新 VirtualDisplay:
+                    // 看到不匹配帧多半是最近一次 surface 切换的过渡帧, 再刷一次只会在
+                    // Android 14+ (MediaProjection 实例对 createVirtualDisplay 次数有限) 上
+                    // 让问题更严重.
                     acquireLatestImage.close();
-                    refreshVirtualDisplay(mDetectedOrientation, false);
                     continue;
                 }
             }
@@ -443,19 +547,40 @@ public class ScreenCapturer {
                 mUnderUsingImage.close();
             }
             mUnderUsingImage = acquireLatestImage;
+            mLastSuccessfulCaptureUptimeMillis = SystemClock.uptimeMillis();
             return mUnderUsingImage;
         }
 
-        // If timed out, force a best-effort rebuild once to recover from "no-frame" bad state.
-        // zh-CN: 若超时, 尝试强制重建一次以从 "无帧" 坏状态中自愈.
+        // If timed out, DO NOT force-rebuild the VirtualDisplay. On Android 14+,
+        // MediaProjection#createVirtualDisplay can only be called a limited number of times
+        // per MediaProjection instance; calling it again on timeout throws
+        // SecurityException ("Don't take multiple captures ...").
+        //
+        // Instead, only refresh the ImageReader surface on the SAME VirtualDisplay —
+        // this is enough to recover from "BufferQueue abandoned" style bad states without
+        // touching the MediaProjection pipeline.
+        //
+        // zh-CN: 超时后, 不要强制重建 VirtualDisplay. Android 14+ 对同一 MediaProjection
+        // 实例上调 createVirtualDisplay 的次数有限制, 再调会抛 SecurityException
+        // ("Don't take multiple captures ...").
+        // 改为仅在同一个 VirtualDisplay 上刷新 ImageReader surface —— 这足以从
+        // "BufferQueue abandoned" 等坏状态中自愈, 而不动 MediaProjection 管线.
         if (mOrientation == ORIENTATION_AUTO) {
             refreshDetectedOrientation();
-            if (mVirtualDisplay != null) {
-                mVirtualDisplay.release();
-                mVirtualDisplay = null;
+            if (mVirtualDisplay != null && mImageReader != null) {
+                int w = getExpectedWidthByDetectedOrientation();
+                int h = getExpectedHeightByDetectedOrientation();
+                if (mImageReader.getWidth() != w || mImageReader.getHeight() != h) {
+                    refreshImageReader(w, h);
+                    try {
+                        mVirtualDisplay.setSurface(mImageReader.getSurface());
+                        mVirtualDisplay.resize(w, h, mScreenDensity);
+                        mAppliedOrientation = mDetectedOrientation;
+                    } catch (Throwable ignored) {
+                        /* VirtualDisplay may already be dead; nothing more we can do. */
+                    }
+                }
             }
-            initVirtualDisplay(getExpectedWidthByDetectedOrientation(), getExpectedHeightByDetectedOrientation(), mScreenDensity);
-            mAppliedOrientation = mDetectedOrientation;
             mShouldRefreshVirtualDisplayOnNextCapture = false;
         }
 
@@ -466,6 +591,54 @@ public class ScreenCapturer {
 
     public Options getOptions() {
         return mOptions;
+    }
+
+    /**
+     * Expose the underlying MediaProjection so host bridges (e.g. Operit's
+     * AutoJsScreenCaptureHostBridge) can read it without reflection.
+     * May return null after release().
+     *
+     * zh-CN: 暴露底层 MediaProjection, 让宿主桥 (如 Operit 的 AutoJsScreenCaptureHostBridge)
+     * 无需反射即可读取. release() 之后可能返回 null.
+     */
+    @Nullable
+    public MediaProjection getMediaProjection() {
+        return mMediaProjection;
+    }
+
+    /**
+     * Whether the underlying MediaProjection is still alive (not stopped by the system,
+     * not released by us). Used by ScreenCaptureManager to decide if this capturer can be
+     * reused for a new capture request without re-popping the permission dialog.
+     *
+     * zh-CN: 底层 MediaProjection 是否仍然可用 (未被系统停止, 未被我们 release).
+     * ScreenCaptureManager 据此判断当前 capturer 能否复用 (避免重复弹授权框).
+     */
+    public boolean isAvailable() {
+        return mAvailable;
+    }
+
+    /**
+     * Whether the capturer can serve a new capture request without re-authorization.
+     *
+     * <p>
+     * NOTE on Oct 9, 2026: this intentionally mirrors AutoX's "available" semantics —
+     * only check that the MediaProjection hasn't been stopped, NOT that the VirtualDisplay
+     * is still valid. The previous strict check (display.getDisplay().isValid()) would
+     * return false as soon as the script went to background or the display pipeline
+     * momentarily invalidated the surface, even though the MediaProjection itself was
+     * still perfectly usable (visible via `dumpsys media_projection`). This caused
+     * cross-script reuse to fail and re-pop the permission dialog.
+     *
+     * zh-CN: 当前 capturer 是否能在不重新授权的情况下服务新的截屏请求.
+     * 注意: 此处刻意对齐 AutoX 的 "available" 语义 —— 只检查 MediaProjection 是否未被
+     * 停止, 不检查 VirtualDisplay 是否仍有效. 之前的严格检查 (display.getDisplay()
+     * .isValid()) 会在脚本退到后台或显示管线临时失效时返回 false, 即便 MediaProjection
+     * 本体仍完全可用 (dumpsys media_projection 可见). 这导致跨脚本复用失败,
+     * 重复弹授权框.
+     */
+    public boolean isValid() {
+        return mAvailable && mMediaProjection != null;
     }
 
     @Subscribe
@@ -489,6 +662,7 @@ public class ScreenCapturer {
     public void release() {
         if (mReleased) return;
         mReleased = true;
+        mAvailable = false;
 
         // Release the display pipeline first, then stop the projection itself.
         // Stopping the projection while a VirtualDisplay is still attached may leave
@@ -532,6 +706,20 @@ public class ScreenCapturer {
 
     public void setImageCaptureCallback(OnScreenCaptureAvailableListener onScreenCaptureAvailableListener) {
         mOnScreenCaptureAvailableListener = onScreenCaptureAvailableListener;
+    }
+
+    /**
+     * Clear the registered capture callback only if it currently equals the given one.
+     * Used when a ScriptRuntime exits so it detaches its own listener without clobbering
+     * a newer runtime's listener that may have been attached after.
+     *
+     * zh-CN: 仅当当前注册的回调与传入回调相等时才清除. 用于 ScriptRuntime 退出时
+     * 只摘掉自己的回调, 不会误清其他 (后注册的) runtime 回调.
+     */
+    public synchronized void unsetImageCaptureCallbackIfMatches(OnScreenCaptureAvailableListener listener) {
+        if (listener != null && mOnScreenCaptureAvailableListener == listener) {
+            mOnScreenCaptureAvailableListener = null;
+        }
     }
 
     @Override

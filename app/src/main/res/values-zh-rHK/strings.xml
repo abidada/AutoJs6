@@ -447,6 +447,7 @@
     <string name="screen_capturer_foreground_notification_channel_name">屏幕捕獲器前台服務</string>
     <string name="screen_capturer_foreground_notification_text">此通知用於捕獲屏幕截圖</string>
     <string name="screen_capturer_foreground_notification_title">屏幕捕獲器前台服務</string>
+    <string name="screen_capturer_foreground_notification_action_stop">停止截圖</string>
     <string name="summary_about_app_tips">更佳的用户使用體驗</string>
     <string name="summary_all_files_access">允許 AutoJs6 訪問所有文件, 包括外部存儲</string>
     <string name="summary_all_files_access_inrt">允許應用訪問所有文件, 包括外部存儲</string>

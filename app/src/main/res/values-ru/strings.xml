@@ -451,6 +451,7 @@
     <string name="screen_capturer_foreground_notification_channel_name">Служба захвата экрана на переднем плане</string>
     <string name="screen_capturer_foreground_notification_text">Это уведомление отображается для захвата экрана</string>
     <string name="screen_capturer_foreground_notification_title">Служба захвата экрана на переднем плане</string>
+    <string name="screen_capturer_foreground_notification_action_stop">Остановить захват экрана</string>
     <string name="summary_about_app_tips">Лучший пользовательский опыт</string>
     <string name="summary_all_files_access">Позволяет AutoJs6 получать доступ ко всем файлам, включая файлы на внешнем хранилище</string>
     <string name="summary_all_files_access_inrt">Разрешить приложению доступ ко всем файлам, включая внешнее хранилище</string>

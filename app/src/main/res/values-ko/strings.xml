@@ -453,6 +453,7 @@
     <string name="screen_capturer_foreground_notification_channel_name">스크린 캡처 전경 서비스</string>
     <string name="screen_capturer_foreground_notification_text">이 알림은 화면 캡처를 위해 표시됩니다</string>
     <string name="screen_capturer_foreground_notification_title">스크린 캡처 전경 서비스</string>
+    <string name="screen_capturer_foreground_notification_action_stop">화면 캡처 중지</string>
     <string name="summary_about_app_tips">더 나은 사용자 경험</string>
     <string name="summary_all_files_access">AutoJs6 가 외부 저장소를 포함한 모든 파일에 접근할 수 있도록 허용합니다</string>
     <string name="summary_all_files_access_inrt">앱이 외부 저장소를 포함한 모든 파일에 접근할 수 있도록 허용합니다</string>

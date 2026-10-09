@@ -452,6 +452,7 @@
     <string name="screen_capturer_foreground_notification_channel_name">スクリーンキャプチャーのフォアグラウンドサービス</string>
     <string name="screen_capturer_foreground_notification_text">画面のキャプチャを行うため, この通知が表示される</string>
     <string name="screen_capturer_foreground_notification_title">スクリーンキャプチャーのフォアグラウンドサービス</string>
+    <string name="screen_capturer_foreground_notification_action_stop">スクリーンキャプチャを停止</string>
     <string name="summary_about_app_tips">より良いユーザーエクスペリエンス</string>
     <string name="summary_all_files_access">AutoJs6 が外部ストレージを含むすべてのファイルにアクセスすることを許可します</string>
     <string name="summary_all_files_access_inrt">アプリが外部ストレージを含むすべてのファイルにアクセスすることを許可する</string>

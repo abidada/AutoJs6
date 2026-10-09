@@ -725,6 +725,7 @@
     <string name="screen_capturer_foreground_notification_channel_name">Screen capturer foreground service</string>
     <string name="screen_capturer_foreground_notification_text">This notification is being displayed for capturing screen</string>
     <string name="screen_capturer_foreground_notification_title">Screen capturer foreground service</string>
+    <string name="screen_capturer_foreground_notification_action_stop">Stop screen capture</string>
     <string name="summary_about_app_tips">Better user experience</string>
     <string name="summary_all_files_access">Allows AutoJs6 to access all files, including those in external storage</string>
     <string name="summary_all_files_access_inrt">Allow the application to access all files, including external storage</string>

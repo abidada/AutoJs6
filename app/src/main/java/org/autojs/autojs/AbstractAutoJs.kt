@@ -13,6 +13,7 @@ import org.autojs.autojs.core.accessibility.AccessibilityService
 import org.autojs.autojs.core.accessibility.LayoutInspector
 import org.autojs.autojs.core.activity.ActivityInfoProvider
 import org.autojs.autojs.core.console.GlobalConsole
+import org.autojs.autojs.core.image.capture.ScreenCaptureManager
 import org.autojs.autojs.core.pref.Pref.registerOnSharedPreferenceChangeListener
 import org.autojs.autojs.core.record.accessibility.AccessibilityActionRecorder
 import org.autojs.autojs.engine.LoopBasedJavaScriptEngine
@@ -54,6 +55,15 @@ abstract class AbstractAutoJs protected constructor(val application: Application
     val layoutInspector = LayoutInspector(applicationContext)
     val uiHandler = UiHandler(applicationContext)
     val infoProvider = ActivityInfoProvider(applicationContext)
+
+    // Application-level owner of the MediaProjection / ScreenCapturer session.
+    // Holding it here (not on ScriptRuntime) is what lets multiple scripts share a single
+    // capture session — the system permission dialog only appears once per process.
+    // zh-CN: MediaProjection / ScreenCapturer 会话的应用级持有者.
+    // 把它挂在这里 (而非 ScriptRuntime) 是多脚本共享同一截屏会话的关键 ——
+    // 系统授权框每进程只出现一次.
+    val screenCaptureManager = ScreenCaptureManager()
+
     val scriptEngineService: ScriptEngineService = run {
         val scriptEngineManager = ScriptEngineManager(applicationContext)
         scriptEngineManager.registerEngine(JavaScriptSource.ENGINE) {

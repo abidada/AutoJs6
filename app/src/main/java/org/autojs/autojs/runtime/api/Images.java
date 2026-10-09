@@ -26,7 +26,6 @@ import org.autojs.autojs.core.image.ImageWrapper;
 import org.autojs.autojs.core.image.RhinoColorFinder;
 import org.autojs.autojs.core.image.Shootable;
 import org.autojs.autojs.core.image.TemplateMatching;
-import org.autojs.autojs.core.image.capture.ScreenCaptureRequester;
 import org.autojs.autojs.core.image.capture.ScreenCapturer;
 import org.autojs.autojs.core.image.capture.ScreenCapturerForegroundService;
 import org.autojs.autojs.core.opencv.Mat;
@@ -62,7 +61,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static android.app.Activity.RESULT_OK;
 import static org.autojs.autojs.util.RhinoUtils.isMainThread;
 import static org.autojs.autojs.util.StringUtils.str;
 
@@ -119,8 +117,24 @@ public class Images {
     private volatile ScreenCapturer.OnScreenCaptureAvailableListener mOnScreenCaptureAvailableListener;
     private Image mPreCapture;
     private ImageWrapper mPreCaptureImage;
-    private ScreenCapturer mScreenCapturer;
-    private ScreenCaptureRequester mScreenCaptureRequester;
+
+    // NOTE by refactoring on Oct 9, 2026:
+    //  ! mScreenCapturer is no longer owned per-ScriptRuntime. It now lives on
+    //  ! AutoJs.instance.screenCaptureManager so that the MediaProjection session
+    //  ! survives across script runs (the system permission dialog only shows up once
+    //  ! per process, matching AutoX's behavior).
+    //  !
+    //  ! zh-CN: mScreenCapturer 不再归属于单个 ScriptRuntime. 它现在挂在
+    //  ! AutoJs.instance.screenCaptureManager 上, 让 MediaProjection 会话跨脚本复用
+    //  ! (系统授权框每进程只出现一次, 与 AutoX 行为一致).
+    //  !
+    //  ! The field is kept only as a transient reference for backwards compatibility with
+    //  ! existing call sites that read it via getScreenCapturer(). Its lifecycle (creation
+    //  ! and release) is managed by ScreenCaptureManager.
+    //  !
+    //  ! zh-CN: 字段仅作为临时引用保留, 供仍调用 getScreenCapturer() 的旧代码读取.
+    //  ! 其创建与销毁由 ScreenCaptureManager 统一管理.
+    private volatile ScreenCapturer mScreenCapturer;
 
     public Images(Context context, ScriptRuntime scriptRuntime) {
         mContext = context;
@@ -241,54 +255,85 @@ public class Images {
     }
 
     public ScriptPromiseAdapter requestScreenCapture(int orientation, int width, int height, boolean isAsync) {
-        ScriptPromiseAdapter promiseAdapter = new ScriptPromiseAdapter();
-        if (mScreenCapturer == null) {
-            Handler handler = isAsync ? new Handler(Looper.getMainLooper()) : new Handler(mScriptRuntime.loopers.getServantLooper());
-            Context contextForRequest = mScriptRuntime.app.getCurrentActivity();
-            if (contextForRequest == null) contextForRequest = mContext;
-            mScreenCaptureRequester = new ScreenCaptureRequester();
-            mScreenCaptureRequester.request(contextForRequest, new ScreenCaptureRequester.Callback() {
-                @Override
-                public void onRequestResult(int resultCode, @Nullable Intent intent) {
-                    if (resultCode == RESULT_OK && intent != null) {
-                        try {
-                            ScreenCapturer.Options options = new ScreenCapturer.Options(
-                                    width, height, orientation, ScreenMetrics.getDeviceScreenDensity(), isAsync
-                            );
-                            mScreenCapturer = new ScreenCapturer(mContext, intent, options, handler);
-                            mScreenCapturer.setImageCaptureCallback(mOnScreenCaptureAvailableListener);
+        // Route through the application-level ScreenCaptureManager so the MediaProjection
+        // session is shared across scripts (no repeat permission dialogs).
+        // zh-CN: 走应用级 ScreenCaptureManager, 让 MediaProjection 会话跨脚本共享 (不重复弹授权框).
+        Handler handler = isAsync ? new Handler(Looper.getMainLooper()) : new Handler(mScriptRuntime.loopers.getServantLooper());
+        Context contextForRequest = mScriptRuntime.app.getCurrentActivity();
+        if (contextForRequest == null) contextForRequest = mContext;
 
-                            int delayMs = Pref.getScreenCaptureRequestDelay();
-                            if (delayMs < mScreenCaptureRequestDelayMin) delayMs = mScreenCaptureRequestDelayMin;
-                            if (delayMs > mScreenCaptureRequestDelayMax) delayMs = mScreenCaptureRequestDelayMax;
+        ScreenCapturer.Options options = new ScreenCapturer.Options(
+                width, height, orientation, ScreenMetrics.getDeviceScreenDensity(), isAsync
+        );
 
-                            mScreenCaptureReadyUptimeMillis = SystemClock.uptimeMillis() + delayMs;
-
-                            // @Caution by JetBrains AI Assistant (GPT-5.2) on Jan 19, 2025.
-                            //  ! Resolve immediately to avoid breaking ResultAdapter.wait semantics.
-                            //  ! zh-CN: 必须立即 resolve, 避免破坏 ResultAdapter.wait 的语义/线程模型.
-                            promiseAdapter.resolve(true);
-                        } catch (SecurityException ex) {
-                            promiseAdapter.reject(ex);
-                        }
-                    } else {
-                        promiseAdapter.resolve(false);
+        return AutoJs.getInstance().getScreenCaptureManager().requestScreenCapture(
+                contextForRequest,
+                options,
+                isAsync,
+                handler,
+                (androidx.core.util.Consumer<ScreenCapturer>) capturer -> {
+                    // Per-runtime wiring: attach this runtime's image listener and remember
+                    // the capturer transiently so legacy getScreenCapturer() callers still work.
+                    // zh-CN: 按 runtime 接线 —— 挂上本 runtime 的图像回调, 并暂存 capturer
+                    // 以便旧的 getScreenCapturer() 调用方仍能工作.
+                    mScreenCapturer = capturer;
+                    if (mOnScreenCaptureAvailableListener != null) {
+                        capturer.setImageCaptureCallback(mOnScreenCaptureAvailableListener);
                     }
-                }
 
-                @Override
-                public void onRequestError(@NonNull Throwable t) {
-                    promiseAdapter.reject(t);
+                    int delayMs = Pref.getScreenCaptureRequestDelay();
+                    if (delayMs < mScreenCaptureRequestDelayMin) delayMs = mScreenCaptureRequestDelayMin;
+                    if (delayMs > mScreenCaptureRequestDelayMax) delayMs = mScreenCaptureRequestDelayMax;
+                    mScreenCaptureReadyUptimeMillis = SystemClock.uptimeMillis() + delayMs;
                 }
-            });
+        );
+    }
+
+    /**
+     * Adopt an existing shared ScreenCapturer (owned by the application-level manager)
+     * for use by this runtime. Called by the Rhino augment layer when it detects that
+     * the manager already holds a valid session, letting the script skip the entire
+     * permission-request + promise-wait flow.
+     *
+     * zh-CN: 让本 runtime 接管一个已存在的共享 ScreenCapturer (由应用级 manager 持有).
+     * Rhino augment 层在检测到 manager 已有有效会话时调用, 让脚本跳过整个授权申请
+     * + promise 等待流程.
+     */
+    public synchronized void adoptSharedScreenCapturer(@NonNull ScreenCapturer capturer) {
+        mScreenCapturer = capturer;
+        if (mOnScreenCaptureAvailableListener != null) {
+            capturer.setImageCaptureCallback(mOnScreenCaptureAvailableListener);
         }
-        return promiseAdapter;
+        // No ready-gate needed here: we didn't pop a permission dialog, so there's no
+        // fade-out animation to wait for. Leave mScreenCaptureReadyUptimeMillis at 0 so
+        // captureScreen() proceeds without the initial delay.
+        // zh-CN: 此处无需就绪门闩 —— 没弹授权框, 也就没有渐隐动画需要等待.
+        // 让 mScreenCaptureReadyUptimeMillis 保持 0, captureScreen() 不会引入首次延迟.
     }
 
     @Nullable
     public ImageWrapper captureScreen() {
         synchronized (this) {
-            if (mScreenCapturer == null) {
+            // Prefer the shared capturer from the manager. The transient mScreenCapturer field
+            // is only a hint left by the most recent requestScreenCapture() call on this runtime;
+            // it may be null (e.g. right after a fresh script starts) even though a perfectly
+            // good shared session exists in the manager.
+            // zh-CN: 优先从 manager 读共享 capturer. mScreenCapturer 临时字段仅是本 runtime 上次
+            // requestScreenCapture() 留下的引用; 即便它为 null (例如新脚本刚启动),
+            // manager 里也可能仍有可用的共享会话.
+            ScreenCapturer capturer = mScreenCapturer;
+            if (capturer == null || !capturer.isValid()) {
+                capturer = AutoJs.getInstance().getScreenCaptureManager().getScreenCapturer();
+                if (capturer != null && capturer.isValid()) {
+                    // Re-wire this runtime onto the shared capturer.
+                    // zh-CN: 把当前 runtime 重新接到共享 capturer 上.
+                    mScreenCapturer = capturer;
+                    if (mOnScreenCaptureAvailableListener != null) {
+                        capturer.setImageCaptureCallback(mOnScreenCaptureAvailableListener);
+                    }
+                }
+            }
+            if (capturer == null) {
                 throw new SecurityException(mContext.getString(R.string.error_no_screen_capture_permission));
             }
 
@@ -307,7 +352,7 @@ public class Images {
             // zh-CN: 在 Java 层做重试, 避免把短暂的 null 帧暴露给 JS 层.
             Image capture = null;
             for (int i = 0; i < 6; i++) {
-                capture = mScreenCapturer.capture();
+                capture = capturer.capture();
                 if (capture != null) break;
                 try {
                     Thread.sleep(40);
@@ -326,7 +371,7 @@ public class Images {
                     Thread.currentThread().interrupt();
                 }
                 for (int i = 0; i < 2; i++) {
-                    capture = mScreenCapturer.capture();
+                    capture = capturer.capture();
                     if (capture != null) break;
                     try {
                         Thread.sleep(40);
@@ -459,6 +504,29 @@ public class Images {
 
     public void stopScreenCapture() {
         releaseScreenCapturer();
+    }
+
+    /**
+     * Explicitly stop the global screen capture session. After this call, the next
+     * {@link #requestScreenCapture} will pop the system permission dialog again.
+     *
+     * <p>Parity with AutoX's {@code images.stopScreenCapturer()}.
+     *
+     * zh-CN: 显式停止全局截屏会话. 调用后, 下一次 requestScreenCapture 会重新弹授权框.
+     * 与 AutoX 的 images.stopScreenCapturer() 对齐.
+     */
+    public void stopScreenCapturer() {
+        synchronized (this) {
+            mScreenCapturer = null;
+            mPreCapture = null;
+            if (mPreCaptureImage != null) {
+                mPreCaptureImage.recycle();
+                mPreCaptureImage = null;
+            }
+            mScreenCaptureReadyUptimeMillis = 0L;
+        }
+        AutoJs.getInstance().getScreenCaptureManager().recycle();
+        stopScreenCapturerForegroundService();
     }
 
     public ImageWrapper rotate(@NonNull ImageWrapper image, float x, float y, float degree) {
@@ -657,12 +725,43 @@ public class Images {
         }
     }
 
+    /**
+     * Per-runtime cleanup called by ScriptRuntime.onExit().
+     *
+     * <p>
+     * IMPORTANT: this method intentionally does NOT release the shared ScreenCapturer
+     * or stop the underlying MediaProjection. The capture session is owned by
+     * {@code AutoJs.instance.screenCaptureManager} and is meant to survive across script
+     * runs so the system permission dialog only appears once per process.
+     *
+     * <p>
+     * Only per-script transient state is cleared here (cached preview frames, the
+     * transient capturer reference). To actually stop the projection, callers must use
+     * {@link #stopScreenCapturer()} or the "停止截图" notification action.
+     *
+     * zh-CN: ScriptRuntime.onExit() 触发的按 runtime 清理.
+     * 重要: 本方法故意不释放共享的 ScreenCapturer, 也不停止底层 MediaProjection.
+     * 截屏会话由 AutoJs.instance.screenCaptureManager 持有, 设计上要跨脚本存活,
+     * 让系统授权框每进程只出现一次.
+     * 这里只清理脚本级临时状态 (缓存预览帧, capturer 临时引用).
+     * 若要真正停止投影, 请调用 {@link #stopScreenCapturer()} 或通知栏的「停止截图」action.
+     */
     public void releaseScreenCapturer() {
         synchronized (this) {
-            if (mScreenCapturer != null) {
-                mScreenCapturer.release();
-                mScreenCapturer = null;
+            // Detach the per-runtime image listener so callbacks stop flowing into this
+            // (now-dying) runtime; the capturer itself stays alive in the manager.
+            // zh-CN: 摘掉当前 runtime 的图像回调, 让回调不再流入这个 (即将销毁的) runtime;
+            // capturer 本体在 manager 中继续存活.
+            ScreenCapturer capturer = mScreenCapturer;
+            if (capturer != null && mOnScreenCaptureAvailableListener != null) {
+                try {
+                    capturer.unsetImageCaptureCallbackIfMatches(mOnScreenCaptureAvailableListener);
+                } catch (Throwable ignored) {
+                    /* Best effort. */
+                }
             }
+            mScreenCapturer = null;
+
             // Reset gate.
             // zh-CN: 重置延迟门闩.
             mScreenCaptureReadyUptimeMillis = 0L;
@@ -675,21 +774,12 @@ public class Images {
                 mPreCaptureImage.recycle();
                 mPreCaptureImage = null;
             }
-            releaseScreenCaptureRequester();
         }
     }
 
     public void stopScreenCapturerForegroundService() {
         var applicationContext = AutoJs.getInstance().getApplication().getApplicationContext();
         applicationContext.stopService(new Intent(applicationContext, ScreenCapturerForegroundService.class));
-        releaseScreenCaptureRequester();
-    }
-
-    private void releaseScreenCaptureRequester() {
-        if (mScreenCaptureRequester != null) {
-            mScreenCaptureRequester.unbindService();
-            mScreenCaptureRequester = null;
-        }
     }
 
     @ScriptInterface

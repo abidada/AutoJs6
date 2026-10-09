@@ -636,8 +636,20 @@ class ScriptRuntime private constructor(builder: Builder) {
         ignoresException { media.recycle() }
         ignoresException { loopers.recycle() }
         ignoresException { recycleShell() }
+
+        // NOTE on Oct 9, 2026 refactor:
+        //  ! We deliberately do NOT stop the shared ScreenCapturer / MediaProjection here.
+        //  ! The capture session lives on AutoJs.instance.screenCaptureManager and is meant
+        //  ! to survive across script runs so the system permission dialog only shows up
+        //  ! once per process (parity with AutoX). images.releaseScreenCapturer() only
+        //  ! detaches this runtime's listener and clears per-runtime caches.
+        //  !
+        //  ! zh-CN: 此处刻意不停止共享的 ScreenCapturer / MediaProjection.
+        //  ! 截屏会话挂在 AutoJs.instance.screenCaptureManager 上, 设计上要跨脚本存活,
+        //  ! 让系统授权框每进程只出现一次 (与 AutoX 行为一致).
+        //  ! images.releaseScreenCapturer() 仅摘掉当前 runtime 的回调并清理 runtime 级缓存.
         ignoresException { images.releaseScreenCapturer() }
-        ignoresException { images.stopScreenCapturerForegroundService() }
+
         ignoresException { ocrMLKit.release() }
         ignoresException { sensors.unregisterAll() }
         ignoresException { timers.recycle() }

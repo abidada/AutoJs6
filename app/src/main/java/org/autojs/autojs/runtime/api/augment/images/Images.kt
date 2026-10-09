@@ -95,6 +95,7 @@ class Images(scriptRuntime: ScriptRuntime) : Augmentable(scriptRuntime), AsEmitt
         ::requestScreenCapture.name to AS_GLOBAL,
         ::requestScreenCaptureAsync.name to AS_GLOBAL,
         ::stopScreenCapture.name,
+        ::stopScreenCapturer.name,
         ::getScreenCaptureOptions.name,
         ::save.name,
         ::saveImage.name,
@@ -309,6 +310,27 @@ class Images(scriptRuntime: ScriptRuntime) : Augmentable(scriptRuntime), AsEmitt
                 requestScreenCaptureBadge.get() > 0 -> true
                 else -> {
                     requestScreenCaptureBadge.incrementAndGet()
+
+                    // Fast-path for cross-script reuse on Oct 9, 2026 refactor:
+                    //  ! If the application-level ScreenCaptureManager already holds a valid
+                    //  ! capturer, skip the promise/ResultAdapter.wait dance entirely and
+                    //  ! return true immediately. The wait-based path deadlocks when the
+                    //  ! manager resolves the promise synchronously, because Rhino's
+                    //  ! Promise.then callback dispatch needs the same servant Looper the
+                    //  ! script is about to block on.
+                    //  !
+                    //  ! zh-CN: 跨脚本复用快速路径: 若应用级 ScreenCaptureManager 已持有
+                    //  ! 有效 capturer, 跳过 promise/ResultAdapter.wait 直接返回 true.
+                    //  ! wait 路径在 manager 同步 resolve promise 时会死锁 —— Rhino 的
+                    //  ! Promise.then 回调派发依赖与脚本阻塞位置相同的 servant Looper.
+                    val rtImages = scriptRuntime.images
+                    val sharedCapturer = org.autojs.autojs.AutoJs.instance.screenCaptureManager.screenCapturer
+                    if (sharedCapturer != null && sharedCapturer.isValid) {
+                        rtImages.adoptSharedScreenCapturer(sharedCapturer)
+                        requestScreenCaptureBadge.decrementAndGet()
+                        return@ensureArgumentsAtMost true
+                    }
+
                     val result = callFunction(scriptRuntime, scriptRuntime.js_ResultAdapter, "wait", arrayOf(run {
                         stopScreenCapture(scriptRuntime, emptyArray<Any?>())
                         requestScreenCaptureInternal(scriptRuntime, *argList)
@@ -334,6 +356,18 @@ class Images(scriptRuntime: ScriptRuntime) : Augmentable(scriptRuntime), AsEmitt
         @RhinoRuntimeFunctionInterface
         fun stopScreenCapture(scriptRuntime: ScriptRuntime, args: Array<out Any?>) = ensureArgumentsIsEmpty(args) {
             scriptRuntime.images.stopScreenCapture()
+        }
+
+        // Added by refactor on Oct 9, 2026 — parity with AutoX's images.stopScreenCapturer().
+        //  ! Explicitly stops the global MediaProjection session. After this call, the next
+        //  ! requestScreenCapture() will pop the system permission dialog again.
+        //  !
+        //  ! zh-CN: 显式停止全局 MediaProjection 会话. 调用后下一次 requestScreenCapture()
+        //  ! 会重新弹系统授权框.
+        @JvmStatic
+        @RhinoRuntimeFunctionInterface
+        fun stopScreenCapturer(scriptRuntime: ScriptRuntime, args: Array<out Any?>) = ensureArgumentsIsEmpty(args) {
+            scriptRuntime.images.stopScreenCapturer()
         }
 
         // @Reference to module __images__.js from Auto.js Pro 9.3.11 by SuperMonster003 on Dec 19, 2023.

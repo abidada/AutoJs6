@@ -451,6 +451,7 @@
     <string name="screen_capturer_foreground_notification_channel_name">Servicio de primer plano del capturador de pantalla</string>
     <string name="screen_capturer_foreground_notification_text">Se está mostrando esta notificación para capturar la pantalla</string>
     <string name="screen_capturer_foreground_notification_title">Servicio de captura de pantalla en primer plano</string>
+    <string name="screen_capturer_foreground_notification_action_stop">Detener captura de pantalla</string>
     <string name="summary_about_app_tips">Mejor experiencia de usuario</string>
     <string name="summary_all_files_access">Permite que AutoJs6 acceda a todos los archivos, incluidos los del almacenamiento externo</string>
     <string name="summary_all_files_access_inrt">Permitir que la aplicación acceda a todos los archivos, incluido el almacenamiento externo</string>
