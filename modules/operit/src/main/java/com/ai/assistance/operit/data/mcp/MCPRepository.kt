@@ -47,7 +47,17 @@ import kotlinx.coroutines.withContext
  * 
  * 配置管理由MCPLocalServer单独处理
  */
-class MCPRepository(private val context: Context) {
+class MCPRepository(context: Context) {
+    // 宿主定制 D-14 (内存泄漏修复): 只保留 Application 上下文, 丢弃构造时传入的 Activity.
+    // 上游 init 中向进程级单例 MCPLocalServer.pluginMetadata 的 StateFlow 起了一个永不取消的
+    // 收集协程, 该协程挂起时的 continuation 会被 StateFlow 的 subscriber slot 长期持有,
+    // 从而把本实例 (以及构造时传入的 Activity) 一起钉住. LeakCanary 实证:
+    //   MCPLocalServer.INSTANCE -> ... -> MCPRepository$1$1.this$0 -> MCPRepository
+    //   -> context instance of MainActivity with mDestroyed = true
+    // 收敛为 applicationContext 后, 即使收集协程泄漏也不会再滞留已销毁的 Activity.
+    // 注: 本类对 context 的使用仅为 getString/filesDir/cacheDir/getExternalFilesDir/
+    // contentResolver, 均无需 Activity 上下文, 行为等价.
+    private val context: Context = context.applicationContext
     private val mcpLocalServer = MCPLocalServer.getInstance(context)
 
     companion object {
