@@ -151,6 +151,10 @@ open class ExplorerView : ThemeColorSwipeRefreshLayout, SwipeRefreshLayout.OnRef
         ColorStateList.valueOf(context.getColor(R.color.explorer_category_operation_button))
     }
 
+    // Cache the contrast-adjusted theme color; recomputed when view reattaches (theme may have changed).
+    // zh-CN: 缓存主题对比色计算结果; 视图重新 attach 时失效 (主题可能已切换).
+    private var mContrastThemeColor: Int? = null
+
     // Request host dialog to hide/show without losing state.
     // zh-CN: 请求宿主对话框隐藏/显示且不丢失状态.
     private var mRequestHostDialogHide: Runnable? = null
@@ -247,6 +251,10 @@ open class ExplorerView : ThemeColorSwipeRefreshLayout, SwipeRefreshLayout.OnRef
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         mExplorer?.registerChangeListener(this)
+
+        // Invalidate cached contrast theme color so next bind recomputes with current theme.
+        // zh-CN: attach 时失效主题对比色缓存, 下次 bind 用当前主题重算.
+        mContrastThemeColor = null
     }
 
     override fun onDetachedFromWindow() {
@@ -878,54 +886,36 @@ open class ExplorerView : ThemeColorSwipeRefreshLayout, SwipeRefreshLayout.OnRef
             if (item !is ExplorerItem) return
             mExplorerItem = item
 
+            // Synchronous binding: previous implementation launched ~6 RxJava Observables per bind
+            // (12+ scheduler hops per item), which flooded the main thread during scrolling.
+            // All values here are cheap: type is cached on the item; date/size formatting is
+            // ThreadLocal-cached; icon lookup is a when-expression.
+            // zh-CN: 同步绑定. 旧实现每次 bind 发射约 6 个 RxJava Observable (每 item 12+ 次线程切换),
+            // 滚动时主线程被回调打爆. 这里的取值都很廉价: type 已在 item 上缓存; 日期/大小格式化
+            // 走 ThreadLocal 缓存; 图标查表只是 when 表达式.
+
             setFirstChar(item)
 
-            setTextWith(mName) { ExplorerViewHelper.getDisplayName(context, item) }
-            setTextWith(mFileDate) { PFile.getFullDateString(item.lastModified()) }
-            setTextWith(mFileSize) { PFiles.formatSizeWithUnit(item.size) }
+            mName.text = ExplorerViewHelper.getDisplayName(context, item)
+            mFileDate.text = PFile.getFullDateString(item.lastModified())
+            mFileSize.text = PFiles.formatSizeWithUnit(item.size)
 
-            Observable.fromCallable {
-                val shouldEditShow = item.isTextEditable || item.isExternalEditable
-                val shouldRunShow = item.isExecutable || item.isMediaPlayable
-                val shouldInstallShow = item.isInstallable
+            val shouldEditShow = item.isTextEditable || item.isExternalEditable
+            val shouldRunShow = item.isExecutable || item.isMediaPlayable
+            val shouldInstallShow = item.isInstallable
 
-                val alreadyHasTwoImportantIcons = shouldEditShow && (shouldRunShow || shouldInstallShow)
-                val shouldInfoShow = !alreadyHasTwoImportantIcons && (item.isInstallable || item.isMediaMenu || item.isMediaPlayable)
+            val alreadyHasTwoImportantIcons = shouldEditShow && (shouldRunShow || shouldInstallShow)
+            val shouldInfoShow = !alreadyHasTwoImportantIcons && (item.isInstallable || item.isMediaMenu || item.isMediaPlayable)
 
-                listOf(shouldEditShow, shouldRunShow, shouldInstallShow, shouldInfoShow)
+            if (shouldEditShow || shouldRunShow || shouldInstallShow || shouldInfoShow) {
+                setVisibilityIf(mEdit, shouldEditShow)
+                setVisibilityIf(mRun, shouldRunShow)
+                setVisibilityIf(mInstall, shouldInstallShow)
+                setVisibilityIf(mInfo, shouldInfoShow)
+                setVisibilityIf(mActionIconContainer, true)
+            } else {
+                setVisibilityIf(mActionIconContainer, false)
             }
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { list ->
-                    val (shouldEditShow, shouldRunShow, shouldInstallShow, shouldInfoShow) = list
-                    if (shouldEditShow || shouldRunShow || shouldInstallShow || shouldInfoShow) {
-                        setVisibilityIf(mEdit, shouldEditShow)
-                        setVisibilityIf(mRun, shouldRunShow)
-                        setVisibilityIf(mInstall, shouldInstallShow)
-                        setVisibilityIf(mInfo, shouldInfoShow)
-                        setVisibilityIf(mActionIconContainer, true)
-                    } else {
-                        setVisibilityIf(mActionIconContainer, false)
-                    }
-                }
-        }
-
-        private fun setTextWith(textView: TextView, callable: () -> CharSequence) {
-            Observable.fromCallable(callable)
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { text -> textView.text = text }
-        }
-
-        private fun setVisibilityWith(view: View, callable: () -> Boolean) {
-            Observable.fromCallable(callable)
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { isVisible ->
-                    if (view.isVisible != isVisible) {
-                        view.isVisible = isVisible
-                    }
-                }
         }
 
         private fun setVisibilityIf(view: View, visibility: Int) {
@@ -939,47 +929,31 @@ open class ExplorerView : ThemeColorSwipeRefreshLayout, SwipeRefreshLayout.OnRef
         }
 
         private fun setFirstChar(item: ExplorerItem) {
-            Observable.fromCallable { ExplorerViewHelper.getIcon(item) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { icon ->
-                    mFirstChar.setIcon(icon)
+            val icon = ExplorerViewHelper.getIcon(item)
+            mFirstChar.setIcon(icon)
 
-                    val actions = when (item.type) {
-                        FileUtils.TYPE.JAVASCRIPT, FileUtils.TYPE.AUTO -> {
-                            Observable.fromCallable {
-                                ColorUtils.adjustColorForContrast(
-                                    context.getColor(R.color.item_background_dark),
-                                    ThemeColorManagerCompat.getColorPrimary(),
-                                    1.15,
-                                )
-                            }.map { themeColorForContrast ->
-                                listOf(
-                                    { mFirstChar.setIconTextColorByThemeColorLuminance() },
-                                    { mFirstChar.setStrokeColor(themeColorForContrast) },
-                                    { mFirstChar.setFillColor(themeColorForContrast) },
-                                    { mFirstChar.visibility = VISIBLE },
-                                )
-                            }
-                        }
-                        else -> Observable.just(
-                            listOf(
-                                { mFirstChar.setIconTextColorDayNight() },
-                                { mFirstChar.setStrokeColorDayNight() },
-                                { mFirstChar.setFillTransparent() },
-                                { mFirstChar.visibility = VISIBLE },
-                            )
-                        )
-                    }
+            when (item.type) {
+                FileUtils.TYPE.JAVASCRIPT, FileUtils.TYPE.AUTO -> {
+                    // Compute contrast-adjusted theme color once per ExplorerView attach; cached on the view.
+                    // zh-CN: 对比色每次 attach 算一次并缓存, 不再每 item 重算.
+                    val themeColorForContrast = mContrastThemeColor ?: ColorUtils.adjustColorForContrast(
+                        context.getColor(R.color.item_background_dark),
+                        ThemeColorManagerCompat.getColorPrimary(),
+                        1.15,
+                    ).also { mContrastThemeColor = it }
 
-                    actions.subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .flatMapCompletable { list ->
-                            Observable.fromIterable(list)
-                                .flatMapCompletable { action -> Completable.fromAction { action.invoke() } }
-                        }
-                        .subscribe()
+                    mFirstChar.setIconTextColorByThemeColorLuminance()
+                    mFirstChar.setStrokeColor(themeColorForContrast)
+                    mFirstChar.setFillColor(themeColorForContrast)
+                    mFirstChar.visibility = VISIBLE
                 }
+                else -> {
+                    mFirstChar.setIconTextColorDayNight()
+                    mFirstChar.setStrokeColorDayNight()
+                    mFirstChar.setFillTransparent()
+                    mFirstChar.visibility = VISIBLE
+                }
+            }
         }
 
         override fun onViewRecycled() {
