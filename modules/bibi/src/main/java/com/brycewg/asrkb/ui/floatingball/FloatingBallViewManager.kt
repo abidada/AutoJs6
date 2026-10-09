@@ -60,11 +60,6 @@ class FloatingBallViewManager(
     private var pillText: android.widget.TextView? = null
     private var lastPillText: String? = null
     private var processingSpinner: ProcessingSpinnerView? = null
-    private var recordingAuraView: RecordingAuraView? = null
-    private var recordingAuraLp: WindowManager.LayoutParams? = null
-
-    /** 光晕 add 时实际使用的 WindowManager；remove 用同一实例保证对称 */
-    private var recordingAuraWm: WindowManager? = null
     private var lp: WindowManager.LayoutParams? = null
 
     // 球视图挂载层：addView 时解析并绑定，后续所有窗口操作走同一 WindowManager 实例
@@ -81,7 +76,6 @@ class FloatingBallViewManager(
     private var recordingBreathAnimator: ValueAnimator? = null
     private var recordingFallbackRunnable: Runnable? = null
     private var recordingAmplitudeReceived: Boolean = false
-    private var smoothedRecordingAmplitude: Float = 0f
     private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var completionResetPosted: Boolean = false
     private var completionResetRunnable: Runnable? = null
@@ -213,7 +207,6 @@ class FloatingBallViewManager(
             val host = hostProvider()
             val params = createWindowLayoutParams(host)
             lp = params
-            ensureRecordingAuraOverlay()
 
             // 添加视图
             attachedHost = host
@@ -239,7 +232,6 @@ class FloatingBallViewManager(
             Log.d(TAG, "Ball view added successfully")
             return true
         } catch (e: Throwable) {
-            removeRecordingAuraOverlay()
             lp = null
             Log.e(TAG, "Failed to add ball view", e)
             return false
@@ -274,9 +266,6 @@ class FloatingBallViewManager(
         pillText = null
         lastPillText = null
         processingSpinner = null
-        recordingAuraView = null
-        recordingAuraLp = null
-        recordingAuraWm = null
         edgeHandleVisible = false
         lastAppliedAlpha = null
         lastAppliedBallSizeDp = null
@@ -319,7 +308,6 @@ class FloatingBallViewManager(
                 p.type = fallback.windowType
                 fallback.windowManager.addView(v, p)
             }
-            updateRecordingAuraLayout()
             return true
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to reattach ball, will rebuild on next show", e)
@@ -339,7 +327,6 @@ class FloatingBallViewManager(
         val v = ballView ?: return
         FloatingBallComposeViewFactory.applyTheme(v, prefs)
         val theme = BibiViewThemes.resolve(v.context)
-        recordingAuraView?.setAuraColor(theme.primary)
         processingSpinner?.setSpinnerColor(applyAlpha(theme.primary, PROCESSING_SPINNER_PRIMARY_ALPHA))
     }
 
@@ -419,7 +406,6 @@ class FloatingBallViewManager(
         if (newW != oldW) {
             applyPillWidth(newW)
         }
-        updateRecordingAuraLayout()
     }
 
     /** 胶囊宽度自测量：左右内边距 + 图标 + 文本测量宽，下限为球边长。 */
@@ -508,7 +494,7 @@ class FloatingBallViewManager(
         lastPillText = null
     }
 
-    /** 用实时录音振幅驱动悬浮球脉动。 */
+    /** 用实时录音振幅驱动悬浮球图标脉动。 */
     fun updateAmplitude(amplitude: Float) {
         if (currentState !is FloatingBallState.Recording) return
         val normalized = amplitude.coerceIn(0f, 1f)
@@ -516,12 +502,7 @@ class FloatingBallViewManager(
         cancelRecordingFallback()
         stopRecordingFallbackBreath(resetVisual = false)
 
-        smoothedRecordingAmplitude = RecordingAuraMath.smoothEnvelope(
-            smoothedRecordingAmplitude,
-            normalized
-        )
-        applyRecordingPulse(smoothedRecordingAmplitude)
-        recordingAuraView?.updateLevel(smoothedRecordingAmplitude)
+        applyRecordingPulse(normalized)
     }
 
     /** 根据悬浮球窗口大小按比例调整麦克风图标尺寸 */
@@ -580,12 +561,10 @@ class FloatingBallViewManager(
                 ) {
                     Log.w(TAG, "Failed to set ball icon (processing)", e)
                 }
-                stopRecordingAura()
                 stopRecordingBreathAnimation()
                 startProcessingSpinner(fadeIn = prevState is FloatingBallState.Recording)
             }
             is FloatingBallState.Error -> {
-                stopRecordingAura()
                 stopRecordingBreathAnimation()
                 stopProcessingSpinner()
                 processingSpinner?.visibility = View.GONE
@@ -600,7 +579,6 @@ class FloatingBallViewManager(
                 ) {
                     Log.w(TAG, "Failed to set ball icon (idle/move)", e)
                 }
-                stopRecordingAura()
                 stopRecordingBreathAnimation()
                 stopProcessingSpinner()
                 processingSpinner?.visibility = View.GONE
@@ -682,9 +660,6 @@ class FloatingBallViewManager(
     fun updateViewLayout(v: View, params: WindowManager.LayoutParams) {
         try {
             viewWm().updateViewLayout(v, params)
-            if (params === lp) {
-                updateRecordingAuraLayout()
-            }
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to update view layout", e)
         }
@@ -706,7 +681,6 @@ class FloatingBallViewManager(
         p.y = windowY
         try {
             viewWm().updateViewLayout(root, p)
-            updateRecordingAuraLayout()
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to update logical ball position", e)
         }
@@ -716,8 +690,6 @@ class FloatingBallViewManager(
     fun cleanup() {
         completionResetRunnable?.let { mainHandler.removeCallbacks(it) }
         completionResetRunnable = null
-        stopRecordingAura()
-        removeRecordingAuraOverlay()
         stopProcessingSpinner()
         stopRecordingBreathAnimation()
         edgeAnimator?.cancel()
@@ -799,129 +771,6 @@ class FloatingBallViewManager(
         }
         stateAlphaAnimator = null
     }
-
-    private fun startRecordingAura() {
-        val theme = try {
-            BibiViewThemes.resolve(ballView?.context ?: context)
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to resolve aura theme", e)
-            null
-        }
-        val aura = ensureRecordingAuraOverlay() ?: return
-        if (theme != null) {
-            aura.setAuraColor(theme.primary)
-        }
-        aura.start()
-        updateRecordingAuraLayout()
-    }
-
-    private fun stopRecordingAura() {
-        try {
-            recordingAuraView?.stop()
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to stop recording aura", e)
-        }
-    }
-
-    private fun ensureRecordingAuraOverlay(): RecordingAuraView? {
-        val existing = recordingAuraView
-        if (existing != null && recordingAuraLp != null) {
-            updateRecordingAuraLayout()
-            return existing
-        }
-
-        val themedContext = ballView?.context ?: context
-        val aura = RecordingAuraView(themedContext).apply {
-            id = R.id.recordingAura
-        }
-        val params = createRecordingAuraLayoutParams()
-        return try {
-            val wm = viewWm()
-            wm.addView(aura, params)
-            recordingAuraWm = wm
-            recordingAuraView = aura
-            recordingAuraLp = params
-            aura
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to add recording aura overlay", e)
-            recordingAuraView = null
-            recordingAuraLp = null
-            recordingAuraWm = null
-            null
-        }
-    }
-
-    private fun removeRecordingAuraOverlay() {
-        val aura = recordingAuraView ?: run {
-            recordingAuraLp = null
-            return
-        }
-        // 拆除失败（如 a11y 层 token 失效瞬间）由助手保留引用重试，避免窗口滞留
-        val wm = recordingAuraWm ?: viewWm()
-        removeWindowViewWithRetry(wm, aura, "recording-aura")
-        recordingAuraView = null
-        recordingAuraLp = null
-        recordingAuraWm = null
-    }
-
-    private fun createRecordingAuraLayoutParams(): WindowManager.LayoutParams {
-        val logicalSizePx = getLogicalBallSizePx()
-        val windowSizePx = expandedWindowSize(logicalSizePx)
-        val (windowX, windowY) = recordingAuraWindowPosition(logicalSizePx, windowSizePx)
-        return WindowManager.LayoutParams(
-            windowSizePx,
-            windowSizePx,
-            attachedHost?.windowType ?: WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = windowX
-            y = windowY
-        }
-    }
-
-    private fun updateRecordingAuraLayout() {
-        val aura = recordingAuraView ?: return
-        if (aura.visibility != View.VISIBLE) return
-        val params = recordingAuraLp ?: return
-        val logicalSizePx = getLogicalBallSizePx()
-        val targetSizePx = expandedWindowSize(logicalSizePx)
-        val (targetX, targetY) = recordingAuraWindowPosition(logicalSizePx, targetSizePx)
-        if (params.width == targetSizePx &&
-            params.height == targetSizePx &&
-            params.x == targetX &&
-            params.y == targetY
-        ) {
-            return
-        }
-        params.width = targetSizePx
-        params.height = targetSizePx
-        params.x = targetX
-        params.y = targetY
-        try {
-            viewWm().updateViewLayout(aura, params)
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to update recording aura layout", e)
-        }
-    }
-
-    private fun recordingAuraWindowPosition(
-        logicalSizePx: Int,
-        expandedWindowSizePx: Int
-    ): Pair<Int, Int> = RecordingAuraMath.expandedWindowPositionForLogical(
-        logicalX = currentLogicalX(logicalSizePx),
-        logicalY = currentLogicalY(logicalSizePx),
-        logicalSizePx = logicalSizePx,
-        expandedWindowSizePx = expandedWindowSizePx
-    )
-
-    private fun expandedWindowSize(logicalSizePx: Int): Int = (logicalSizePx * RecordingAuraMath.EXPANDED_WINDOW_SCALE + 0.5f)
-        .toInt()
-        .coerceAtLeast(logicalSizePx)
 
     /** 圆球方形边长（含胶囊高度基准）。 */
     private fun getBallSizePx(): Int {
@@ -1262,7 +1111,6 @@ class FloatingBallViewManager(
             p.x = windowX
             p.y = windowY
             viewWm().updateViewLayout(v, p)
-            updateRecordingAuraLayout()
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to reset position to default", e)
         }
@@ -1303,7 +1151,6 @@ class FloatingBallViewManager(
             p.x = nx
             p.y = ny
             viewWm().updateViewLayout(v, p)
-            updateRecordingAuraLayout()
             cachedDockAnchor = anchor
             persistBallPosition()
         } catch (e: Throwable) {
@@ -1701,7 +1548,6 @@ class FloatingBallViewManager(
 
         stopRecordingBreathAnimation(resetVisual = false)
         recordingAmplitudeReceived = false
-        smoothedRecordingAmplitude = 0f
         icon.imageAlpha = 255
         icon.alpha = RECORDING_MAX_ALPHA
         scheduleRecordingFallbackBreath()
@@ -1742,7 +1588,6 @@ class FloatingBallViewManager(
         cancelRecordingFallback()
         stopRecordingFallbackBreath(resetVisual)
         recordingAmplitudeReceived = false
-        smoothedRecordingAmplitude = 0f
     }
 
     private fun stopRecordingFallbackBreath(resetVisual: Boolean = true) {
