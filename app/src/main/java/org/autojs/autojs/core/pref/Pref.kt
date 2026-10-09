@@ -156,6 +156,17 @@ object Pref {
             resources.getBoolean(R.bool.pref_gesture_observing)
         )
 
+    /**
+     * 无障碍事件收窄开关: 剔除 TYPE_WINDOW_CONTENT_CHANGED 订阅 (事件洪水最大来源).
+     * 默认开启; 关闭即回到订阅一切事件的原行为.
+     * 有脚本 registerEvent 订阅内容变化时自动放宽, 与本开关叠加生效.
+     */
+    val a11yNarrowEventTypes
+        get() = getBoolean(
+            R.string.key_a11y_narrow_event_types,
+            resources.getBoolean(R.bool.pref_a11y_narrow_event_types)
+        )
+
     @JvmStatic
     val isQuickRestartEnabled
         get() = getString(R.string.key_restart_strategy, key(R.string.default_key_restart_strategy)) == key(R.string.key_restart_strategy_quick)

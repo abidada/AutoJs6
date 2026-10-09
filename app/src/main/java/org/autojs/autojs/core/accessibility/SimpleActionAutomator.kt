@@ -205,14 +205,24 @@ class SimpleActionAutomator(private val accessibilityBridge: AccessibilityBridge
 
         if (callback == null) {
             service.removeAccessibilityEventCallback(mA11yEventOwnerId, eventName)
+            AccessibilityService.refreshWindowContentObservedState()
             return
         }
         service.addAccessibilityEventCallback(mA11yEventOwnerId, eventName, callback)
+        AccessibilityService.refreshWindowContentObservedState()
+
+        // 门控放宽: 脚本订阅了内容变化事件而服务此前收窄剔除时, 立即恢复完整 eventTypes
+        if (eventName.equals("window_content_changed", ignoreCase = true) ||
+            eventName.equals("windowContentChanged", ignoreCase = true)
+        ) {
+            AccessibilityService.ensureWindowContentEventTypeRequested()
+        }
     }
 
     // @Created by 抠脚本人 on Jul 10, 2023.
     fun removeEvent(eventName: String) {
         AccessibilityService.instance?.removeAccessibilityEventCallback(mA11yEventOwnerId, eventName)
+        AccessibilityService.refreshWindowContentObservedState()
     }
 
     /**
@@ -222,6 +232,7 @@ class SimpleActionAutomator(private val accessibilityBridge: AccessibilityBridge
      */
     fun removeAllEventsForThisRuntime() {
         AccessibilityService.instance?.removeAllAccessibilityEventCallbacks(mA11yEventOwnerId)
+        AccessibilityService.refreshWindowContentObservedState()
     }
 
     private fun performAction(simpleAction: SimpleAction): Boolean {

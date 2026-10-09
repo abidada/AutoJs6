@@ -33,6 +33,15 @@ class AccessibilityServiceUsher : CoreAccessibilityService() {
                 serviceInfo.flags = serviceInfo.flags and AccessibilityServiceInfo.FLAG_REQUEST_TOUCH_EXPLORATION_MODE.inv()
             }
         }
+        // 事件收窄 (性能优化): TYPE_WINDOW_CONTENT_CHANGED 是无障碍事件洪水最大来源
+        // (状态栏时钟/电量/通知图标/任意 app 内容变化), 本 app 内无真实消费者:
+        // bibi IME 检测是拉取式; ActivityInfoProvider 只读 WINDOW_STATE_CHANGED;
+        // 脚本 Events API 无内容变化监听. 默认剔除; 有脚本经 registerEvent 订阅时放宽.
+        // pref 开关 a11yNarrowEventTypes 兜底, 关闭即回到订阅一切的原行为.
+        if (Pref.a11yNarrowEventTypes && !CoreAccessibilityService.isWindowContentObservedByScript) {
+            serviceInfo.eventTypes = serviceInfo.eventTypes and AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED.inv()
+            Log.i(TAG, "Narrowed eventTypes: TYPE_WINDOW_CONTENT_CHANGED excluded (no script observer)")
+        }
         setServiceInfo(serviceInfo)
         super.onServiceConnected()
         // 重复连接时先拆旧核心, 避免传感器监听与悬浮层宿主滞留
@@ -56,6 +65,22 @@ class AccessibilityServiceUsher : CoreAccessibilityService() {
         asrCore?.onDetached()
         asrCore = null
         super.onDestroy()
+    }
+
+    /**
+     * 门控放宽: 把 TYPE_WINDOW_CONTENT_CHANGED 补回系统侧订阅 (幂等).
+     * zh-CN: 脚本经 registerEvent 订阅内容变化事件时调用; 无需重连服务.
+     */
+    fun restoreWindowContentEventType() {
+        try {
+            val info = serviceInfo
+            if (info.eventTypes and AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED != 0) return
+            info.eventTypes = info.eventTypes or AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+            setServiceInfo(info)
+            Log.i(TAG, "Restored eventTypes: TYPE_WINDOW_CONTENT_CHANGED (script observer registered)")
+        } catch (e: Throwable) {
+            Log.w(TAG, "Failed to restore window content event type", e)
+        }
     }
 
     companion object {

@@ -172,6 +172,7 @@
     <string name="key_scripts_after_app_restart" translatable="false">key_$_scripts_after_app_restart</string>
     <string name="key_server_address" translatable="false">key_$_server_address</string>
     <string name="key_server_socket_normally_closed" translatable="false">key_$_server_socket_normally_closed</string>
+    <string name="key_a11y_narrow_event_types" translatable="false">key_$_a11y_narrow_event_types</string>
     <string name="key_stable_mode" translatable="false">key_$_stable_mode</string>
     <string name="key_theme_color" translatable="false">key_$_theme_color</string>
     <string name="key_theme_color_accent" translatable="false">key_$_theme_color_accent</string>
