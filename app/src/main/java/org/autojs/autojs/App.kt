@@ -143,6 +143,9 @@ class App : MultiDexApplication(), WorkConfiguration.Provider {
                 com.ai.assistance.operit.hostcompat.OperitLibrary.setSpeechBackend(
                     org.autojs.autojs.host.AutoJsSpeechHostBridge
                 )
+                // 悬浮窗联动（批2/F5）：监听 Operit 悬浮窗服务广播，悬浮窗展开且
+                // 宿主主界面在前台时把主界面退后台（补充模块侧 delegate 的自愿退让链路）。
+                org.autojs.autojs.host.OperitFloatingCoordinator.register(this)
 
                 // Embedded MCP tool server: restore after process restart if enabled.
                 if (McpPrefs.load(this).enabled) {

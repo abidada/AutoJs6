@@ -582,13 +582,25 @@ class ChatHistoryDelegate(
             }
             ChatSelectionMode.LOCAL_ONLY -> {
                 coroutineScope.launch {
+                    // 先给全局会话一个短窗口就绪（覆盖宿主已初始化完成的常规场景），
+                    // 超时后继续挂起等待：宿主懒初始化期间 FLOATING 槽可能早于全局
+                    // currentChatId 创建，直接放弃会导致该槽 currentChatId 恒为 null，
+                    // 后续消息被静默丢弃或落入自动新建的孤立会话。
                     val initialChatId =
                         withTimeoutOrNull(300) {
                             chatHistoryManager.currentChatIdFlow.first { it != null }
                         } ?: chatHistoryManager.currentChatIdFlow.value
 
                     if (initialChatId == null) {
-                        AppLogger.d(TAG, "本地会话初始化时没有 currentChatId")
+                        AppLogger.d(TAG, "本地会话初始化时全局 currentChatId 未就绪，等待其就绪后跟随")
+                        val lateChatId = chatHistoryManager.currentChatIdFlow.first { it != null }!!
+                        if (!chatHistoryManager.chatExists(lateChatId)) {
+                            AppLogger.w(TAG, "延迟就绪的 currentChatId 不存在，跳过本地会话初始化: $lateChatId")
+                            return@launch
+                        }
+                        AppLogger.d(TAG, "本地会话延迟初始化 currentChatId: $lateChatId")
+                        _currentChatId.value = lateChatId
+                        loadChatMessages(lateChatId)
                         return@launch
                     }
 

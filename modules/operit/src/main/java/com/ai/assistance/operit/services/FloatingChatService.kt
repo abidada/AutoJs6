@@ -19,6 +19,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Lifecycle
 import com.ai.assistance.operit.core.application.ForegroundServiceCompat
@@ -53,6 +54,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -102,6 +105,8 @@ class FloatingChatService : Service(), FloatingWindowCallback {
         const val ACTION_FLOATING_CHAT_SERVICE_STOPPED = "com.ai.assistance.operit.action.FLOATING_CHAT_SERVICE_STOPPED"
         const val ACTION_FLOATING_CHAT_WINDOW_SHOWN = "com.ai.assistance.operit.action.FLOATING_CHAT_WINDOW_SHOWN"
         const val ACTION_FLOATING_CHAT_WINDOW_SHOW_FAILED = "com.ai.assistance.operit.action.FLOATING_CHAT_WINDOW_SHOW_FAILED"
+        const val ACTION_FLOATING_CHAT_MODE_CHANGED = "com.ai.assistance.operit.action.FLOATING_CHAT_MODE_CHANGED"
+        const val EXTRA_FLOATING_CHAT_MODE = "FLOATING_CHAT_MODE"
 
         const val EXTRA_AUTO_ENTER_VOICE_CHAT = "AUTO_ENTER_VOICE_CHAT"
         const val EXTRA_WAKE_LAUNCHED = "WAKE_LAUNCHED"
@@ -306,6 +311,15 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             )
             isServiceReady = true
 
+            // 观察模式状态：所有路径（UI 拖球缩窗、语音切换、外部 INITIAL_MODE）改模式
+            // 都会经过这个 StateFlow，统一在此发出模式变化广播供宿主/主界面同步。
+            serviceScope.launch {
+                snapshotFlow { windowState.currentMode.value }
+                    .distinctUntilChanged()
+                    .drop(1)
+                    .collect { mode -> sendModeChangedBroadcast(mode) }
+            }
+
         } catch (e: Exception) {
             AppLogger.e(TAG, "Error in onCreate", e)
             stopSelf()
@@ -398,12 +412,24 @@ class FloatingChatService : Service(), FloatingWindowCallback {
             val isFirstStart = !hasHandledStartCommand
             if (keepIfExists && instance != null && !isFirstStart) {
                 AppLogger.d(TAG, "Service already running; keep_if_exists=true, skip mode change")
+                // 仍尊重显式给出的 INITIAL_MODE：服务可能在球模式下运行，
+                // 此时再次进入需要以窗口尺寸物理展开，而不是只改 Compose 状态。
+                if (!isFirstStart) {
+                    intent?.getStringExtra("INITIAL_MODE")?.let { modeName ->
+                        runCatching { FloatingMode.valueOf(modeName) }
+                            .onSuccess { requestedMode ->
+                                if (requestedMode != windowState.currentMode.value) {
+                                    switchToMode(requestedMode)
+                                }
+                            }
+                    }
+                }
             } else {
                 // Handle initial mode from intent
                 intent?.getStringExtra("INITIAL_MODE")?.let { modeName ->
                     try {
                         val mode = FloatingMode.valueOf(modeName)
-                        windowState.currentMode.value = mode
+                        switchToMode(mode)
                         AppLogger.d(TAG, "Set mode from intent: $mode")
                     } catch (e: IllegalArgumentException) {
                         AppLogger.w(TAG, "Invalid mode name in intent: $modeName")
@@ -793,8 +819,26 @@ class FloatingChatService : Service(), FloatingWindowCallback {
     }
 
     fun switchToMode(mode: FloatingMode) {
-        windowState.currentMode.value = mode
         AppLogger.d(TAG, "Switching to mode: $mode")
+        // 视图已添加时走物理切换（resize/动画/位置钳制），仅改 Compose 状态会让
+        // 物理窗口停留在旧尺寸（表现为聊天内容被裁进球尺寸的残片窗口）。
+        if (::windowManager.isInitialized && windowManager.isViewAdded()) {
+            windowManager.applyModeChange(mode)
+        } else {
+            windowState.currentMode.value = mode
+        }
+        sendModeChangedBroadcast(mode)
+    }
+
+    private fun sendModeChangedBroadcast(mode: FloatingMode) {
+        try {
+            sendBroadcast(
+                Intent(ACTION_FLOATING_CHAT_MODE_CHANGED)
+                    .setPackage(packageName)
+                    .putExtra(EXTRA_FLOATING_CHAT_MODE, mode.name)
+            )
+        } catch (_: Exception) {
+        }
     }
 
     suspend fun setFloatingWindowVisible(visible: Boolean) {

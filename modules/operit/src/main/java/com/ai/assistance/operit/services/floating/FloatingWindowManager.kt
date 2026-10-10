@@ -675,6 +675,22 @@ class FloatingWindowManager(
         return Pair(newX, newY)
     }
 
+    /**
+     * 供服务侧（非 Compose 回调路径）切换模式：保证在主线程执行完整的物理
+     * resize/位置钳制/动画流程（[switchMode]）；视图未添加时退化为仅同步状态。
+     * 这修复了服务运行中再次以 INITIAL_MODE 启动时只改 Compose 状态、
+     * 物理窗口停留在旧尺寸导致的"残片窗口"。
+     */
+    fun applyModeChange(newMode: FloatingMode) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            switchMode(newMode)
+        } else {
+            mainHandler.post { switchMode(newMode) }
+        }
+    }
+
+    fun isViewAdded(): Boolean = isViewAdded
+
     private fun switchMode(newMode: FloatingMode) {
         if (state.isTransitioning || state.currentMode.value == newMode) return
         state.isTransitioning = true
@@ -691,7 +707,12 @@ class FloatingWindowManager(
         // 取消之前的动画
         sizeAnimator?.cancel()
 
-        val view = composeView ?: return
+        val view = composeView ?: run {
+            // 视图未添加（如 onDestroy 后的迟到调用）：仅同步状态，不触碰窗口物理参数。
+            state.currentMode.value = newMode
+            state.isTransitioning = false
+            return
+        }
         val currentParams = view.layoutParams as WindowManager.LayoutParams
 
         val displayMetrics = context.resources.displayMetrics

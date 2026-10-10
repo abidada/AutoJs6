@@ -352,7 +352,7 @@ class MessageCoordinationDelegate(
                 }
 
                 if (chatHistoryDelegate.currentChatId.value == null) {
-                    AppLogger.e(TAG, "创建新对话超时，无法发送消息")
+                    AppLogger.e(TAG, "创建新对话超时，消息未发出（静默丢弃防护）：promptType=$promptFunctionType, textLength=${messageTextOverride?.length ?: 0}")
                     uiStateDelegate.showErrorMessage(context.getString(R.string.chat_cannot_create_new))
                     return@launch
                 }

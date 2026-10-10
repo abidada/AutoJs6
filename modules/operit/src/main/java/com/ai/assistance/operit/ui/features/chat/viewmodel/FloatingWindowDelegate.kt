@@ -68,6 +68,11 @@ class FloatingWindowDelegate(
                     FloatingChatService.ACTION_FLOATING_CHAT_WINDOW_SHOW_FAILED -> {
                         disconnectFromService(updateFloatingMode = true)
                     }
+                    FloatingChatService.ACTION_FLOATING_CHAT_MODE_CHANGED -> {
+                        // 模式变化本身不需要改 isFloatingMode（服务仍在运行），
+                        // 目前仅作为状态可观测性预留；主界面按钮的准确性由
+                        // tryBindToRunningService 的置位保证。
+                    }
                 }
             }
         }
@@ -108,6 +113,7 @@ class FloatingWindowDelegate(
                 addAction(FloatingChatService.ACTION_FLOATING_CHAT_SERVICE_STOPPED)
                 addAction(FloatingChatService.ACTION_FLOATING_CHAT_WINDOW_SHOWN)
                 addAction(FloatingChatService.ACTION_FLOATING_CHAT_WINDOW_SHOW_FAILED)
+                addAction(FloatingChatService.ACTION_FLOATING_CHAT_MODE_CHANGED)
             }
             if (Build.VERSION.SDK_INT >= 33) {
                 context.registerReceiver(serviceLifecycleReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
@@ -132,6 +138,10 @@ class FloatingWindowDelegate(
             val ok = context.bindService(intent, serviceConnection, 0)
             if (ok) {
                 isBoundToService = true
+                // 服务已经在外部入口（语音唤醒/工作流/设置页等）运行：主界面按钮
+                // 必须反映真实状态为"已开启"，否则用户点击时 toggle 语义反转
+                //（以为在开，实际在关）。
+                _isFloatingMode.value = true
                 AppLogger.d(TAG, "已绑定到已运行的悬浮窗服务")
             }
         } catch (e: Exception) {
